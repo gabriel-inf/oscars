@@ -4,11 +4,13 @@ package net.es.oscars.nsibridge.test.cuke;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
+import net.es.oscars.common.soap.gen.SubjectAttributes;
 import net.es.oscars.nsibridge.config.OscarsStubSecConfig;
 import net.es.oscars.nsibridge.config.OscarsStubConfig;
 import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.oscars.OscarsProxy;
 import net.es.oscars.nsibridge.prov.ScheduleUtils;
+import net.es.oscars.nsibridge.soap.impl.OscarsSecurityContext;
 import net.es.oscars.utils.task.sched.Schedule;
 import net.es.oscars.utils.task.sched.Workflow;
 import org.apache.log4j.Logger;
@@ -42,7 +44,7 @@ public class EnvironmentSteps {
         ScheduleUtils.scheduleProvMonitor();
         ScheduleUtils.scheduleResvTimeoutMonitor();
 
-
+        OscarsSecurityContext.getInstance().setSubjectAttributes(new SubjectAttributes());
         didSetup = true;
 
     }

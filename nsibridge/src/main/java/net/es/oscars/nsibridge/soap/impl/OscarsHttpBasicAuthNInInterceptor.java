@@ -1,5 +1,10 @@
 package net.es.oscars.nsibridge.soap.impl;
 
+import net.es.oscars.common.soap.gen.MessagePropertiesType;
+import net.es.oscars.common.soap.gen.SubjectAttributes;
+import net.es.oscars.nsibridge.config.OscarsStubConfig;
+import net.es.oscars.nsibridge.config.SpringContext;
+import net.es.oscars.nsibridge.oscars.OscarsProxy;
 import org.apache.cxf.binding.soap.interceptor.SoapHeaderInterceptor;
 import org.apache.cxf.configuration.security.AuthorizationPolicy;
 import org.apache.cxf.endpoint.Endpoint;
@@ -8,8 +13,8 @@ import org.apache.cxf.message.Exchange;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.transport.Conduit;
 import org.apache.cxf.ws.addressing.EndpointReferenceType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.log4j.Logger;
+
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -19,7 +24,7 @@ import java.util.Map;
 
 public class OscarsHttpBasicAuthNInInterceptor extends SoapHeaderInterceptor {
 
-    protected static final Logger log = LoggerFactory.getLogger(OscarsHttpBasicAuthNInInterceptor.class);
+    protected static final Logger log = Logger.getLogger(OscarsHttpBasicAuthNInInterceptor.class);
     private static OscarsHttpBasicAuthNInInterceptor instance;
     private OscarsHttpBasicAuthNInInterceptor() {}
     public static OscarsHttpBasicAuthNInInterceptor getInstance() {
@@ -27,8 +32,11 @@ public class OscarsHttpBasicAuthNInInterceptor extends SoapHeaderInterceptor {
         return instance;
     }
 
+
+
     @Override
     public void handleMessage(Message message) throws Fault {
+        OscarsSecurityContext.getInstance().setSubjectAttributes(null);
         // This is set by CXF
         AuthorizationPolicy policy = message.get(AuthorizationPolicy.class);
         // If the policy is not set, the user did not specify
@@ -49,7 +57,25 @@ public class OscarsHttpBasicAuthNInInterceptor extends SoapHeaderInterceptor {
 
 
     private boolean checkLogin(String username, String password) {
-        log.debug("http basic: u:"+username+" p: "+password);
+        OscarsStubConfig oscarsStubConfig = SpringContext.getInstance().getContext().getBean("oscarsStubConfig", OscarsStubConfig.class);
+        if (oscarsStubConfig.isStub()) {
+            return true;
+        }
+
+        try {
+            MessagePropertiesType mp = OscarsProxy.getInstance().makeMessageProps();
+            SubjectAttributes attrs = OscarsProxy.getInstance().sendAuthNLoginRequest(mp, username, password);
+            if (attrs == null || attrs.getSubjectAttribute() == null || attrs.getSubjectAttribute().isEmpty()) {
+                log.info("no user attributes found");
+                return false;
+            }
+            OscarsSecurityContext.getInstance().setSubjectAttributes(attrs);
+
+        } catch (Exception ex) {
+            log.error(ex.getMessage(), ex);
+            return false;
+        }
+
         return true;
     }
 
@@ -97,4 +123,5 @@ public class OscarsHttpBasicAuthNInInterceptor extends SoapHeaderInterceptor {
         os.flush();
         os.close();
     }
+
 }

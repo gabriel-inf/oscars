@@ -1,6 +1,7 @@
 package net.es.oscars.nsibridge.prov;
 
 import net.es.oscars.api.soap.gen.v06.*;
+import net.es.oscars.common.soap.gen.SubjectAttributes;
 import net.es.oscars.nsibridge.beans.ResvRequest;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.beans.db.ResvRecord;
@@ -176,10 +177,10 @@ public class NSI_OSCARS_Translation {
         String dstNetworkId = evts.getDestSTP().getNetworkId();
 
         if (srcNetworkId == null || !srcNetworkId.equals(localNetworkId())) {
-            throw new TranslationException("Invalid source networkId!");
+            log.error("Invalid source networkId!");
         }
         if (dstNetworkId == null || !dstNetworkId.equals(localNetworkId())) {
-            throw new TranslationException("Invalid dest networkId!");
+            log.error("Invalid dest networkId!");
         }
 
         String srcStp = evts.getSourceSTP().getLocalId();
@@ -330,7 +331,15 @@ public class NSI_OSCARS_Translation {
         //Set details of reservation based on query
         try {
             QueryResContent qc = NSI_OSCARS_Translation.makeOscarsQuery(cr.getOscarsGri());
-            QueryResReply reply = OscarsProxy.getInstance().sendQuery(qc, cr.getSubjectDN(), cr.getIssuerDN());
+            SubjectAttributes attrs = null;
+            try {
+                attrs = DB_Util.getAttributes(cr.getOscarsAttributes());
+            } catch (JAXBException ex) {
+                log.error(ex.getMessage(), ex);
+                throw new TranslationException(ex.getMessage());
+            }
+
+            QueryResReply reply = OscarsProxy.getInstance().sendQuery(qc, attrs);
             if(reply == null || reply.getReservationDetails() == null){
                 throw new TranslationException("No matching OSCARS reservation found with oscars GRI " + cr.getOscarsGri());
             }

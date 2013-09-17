@@ -6,6 +6,7 @@ public class HttpConfig {
     protected String bus;
     protected String sslBus;
     protected String trustedSSLProxy;
+    protected boolean basicAuth;
 
     public String getTrustedSSLProxy() {
         return trustedSSLProxy;
@@ -37,5 +38,13 @@ public class HttpConfig {
 
     public void setSslBus(String sslBus) {
         this.sslBus = sslBus;
+    }
+
+    public boolean isBasicAuth() {
+        return basicAuth;
+    }
+
+    public void setBasicAuth(boolean basicAuth) {
+        this.basicAuth = basicAuth;
     }
 }

@@ -1,9 +1,7 @@
 package net.es.oscars.nsibridge.oscars;
 
 import net.es.oscars.api.soap.gen.v06.*;
-import net.es.oscars.authN.soap.gen.DNType;
-import net.es.oscars.authN.soap.gen.VerifyDNReqType;
-import net.es.oscars.authN.soap.gen.VerifyReply;
+import net.es.oscars.authN.soap.gen.*;
 import net.es.oscars.common.soap.gen.MessagePropertiesType;
 import net.es.oscars.common.soap.gen.SubjectAttributes;
 import net.es.oscars.nsibridge.config.OscarsStubConfig;
@@ -67,12 +65,11 @@ public class OscarsProxy {
         this.initCoordClient();
     }
 
-    public ModifyResReply sendModify(ModifyResContent modifyReservation, String subjectDN, String issuerDN) throws OSCARSServiceException {
+    public ModifyResReply sendModify(ModifyResContent modifyReservation, SubjectAttributes subjectAttributes) throws OSCARSServiceException {
         MessagePropertiesType msgProps = modifyReservation.getMessageProperties();
         if (msgProps == null) {
             msgProps = this.makeMessageProps();
         }
-        SubjectAttributes subjectAttributes = this.sendAuthNRequest(msgProps, subjectDN, issuerDN);
         msgProps = updateMessageProperties(msgProps, subjectAttributes);
         modifyReservation.setMessageProperties(msgProps);
 
@@ -102,12 +99,11 @@ public class OscarsProxy {
         }
     }
 
-    public CancelResReply sendCancel(CancelResContent cancelReservation, String subjectDN, String issuerDN) throws OSCARSServiceException {
+    public CancelResReply sendCancel(CancelResContent cancelReservation, SubjectAttributes subjectAttributes) throws OSCARSServiceException {
         MessagePropertiesType msgProps = cancelReservation.getMessageProperties();
         if (msgProps == null) {
             msgProps = this.makeMessageProps();
         }
-        SubjectAttributes subjectAttributes = this.sendAuthNRequest(msgProps, subjectDN, issuerDN);
         msgProps = updateMessageProperties(msgProps, subjectAttributes);
         cancelReservation.setMessageProperties(msgProps);
 
@@ -135,13 +131,12 @@ public class OscarsProxy {
         }
     }
 
-    public CreateReply sendCreate(ResCreateContent createReservation, String subjectDN, String issuerDN) throws OSCARSServiceException {
+    public CreateReply sendCreate(ResCreateContent createReservation, SubjectAttributes subjectAttributes) throws OSCARSServiceException {
         MessagePropertiesType msgProps = createReservation.getMessageProperties();
         if (msgProps == null) {
             msgProps = this.makeMessageProps();
         }
 
-        SubjectAttributes subjectAttributes = this.sendAuthNRequest(msgProps, subjectDN, issuerDN);
         msgProps = updateMessageProperties(msgProps, subjectAttributes);
         createReservation.setMessageProperties(msgProps);
 
@@ -178,13 +173,12 @@ public class OscarsProxy {
     }
 
 
-    public TeardownPathResponseContent sendTeardown(TeardownPathContent tp, String subjectDN, String issuerDN) throws OSCARSServiceException {
+    public TeardownPathResponseContent sendTeardown(TeardownPathContent tp, SubjectAttributes subjectAttributes) throws OSCARSServiceException {
         MessagePropertiesType msgProps = tp.getMessageProperties();
         if (msgProps == null) {
             msgProps = this.makeMessageProps();
         }
 
-        SubjectAttributes subjectAttributes = this.sendAuthNRequest(msgProps, subjectDN, issuerDN);
         msgProps = updateMessageProperties(msgProps, subjectAttributes);
         tp.setMessageProperties(msgProps);
 
@@ -215,13 +209,12 @@ public class OscarsProxy {
 
 
 
-    public CreatePathResponseContent sendSetup(CreatePathContent cp, String subjectDN, String issuerDN) throws OSCARSServiceException {
+    public CreatePathResponseContent sendSetup(CreatePathContent cp, SubjectAttributes subjectAttributes) throws OSCARSServiceException {
         MessagePropertiesType msgProps = cp.getMessageProperties();
         if (msgProps == null) {
             msgProps = this.makeMessageProps();
         }
 
-        SubjectAttributes subjectAttributes = this.sendAuthNRequest(msgProps, subjectDN, issuerDN);
         msgProps = updateMessageProperties(msgProps, subjectAttributes);
         cp.setMessageProperties(msgProps);
 
@@ -250,13 +243,12 @@ public class OscarsProxy {
     }
 
 
-    public QueryResReply sendQuery(QueryResContent qc, String subjectDN, String issuerDN) throws OSCARSServiceException {
+    public QueryResReply sendQuery(QueryResContent qc,SubjectAttributes subjectAttributes) throws OSCARSServiceException {
         MessagePropertiesType msgProps = qc.getMessageProperties();
         if (msgProps == null) {
             msgProps = this.makeMessageProps();
         }
 
-        SubjectAttributes subjectAttributes = this.sendAuthNRequest(msgProps, subjectDN, issuerDN);
         msgProps = updateMessageProperties(msgProps, subjectAttributes);
         qc.setMessageProperties(msgProps);
 
@@ -374,7 +366,7 @@ public class OscarsProxy {
     }
 
 
-    public SubjectAttributes sendAuthNRequest (MessagePropertiesType msgProps, String subjectDN, String issuerDN)
+    public SubjectAttributes sendAuthNverifyDNRequest(MessagePropertiesType msgProps, String subjectDN, String issuerDN)
             throws OSCARSServiceException {
 
         VerifyDNReqType verifyDNReq = new VerifyDNReqType();
@@ -386,7 +378,7 @@ public class OscarsProxy {
         Object[] req = new Object[]{verifyDNReq};
         SubjectAttributes subjectAttrs;
         if (oscarsStubConfig.isStub()) {
-            // log.info("stub mode for sendAuthNRequest");
+            // log.info("stub mode for sendAuthNverifyDNRequest");
             try {
                 long delay = oscarsStubConfig.getAuthDelayMillis();
                 // log.info("sleeping for " + delay + "ms");
@@ -416,6 +408,46 @@ public class OscarsProxy {
     }
 
 
+    public SubjectAttributes sendAuthNLoginRequest (MessagePropertiesType msgProps, String username, String password)
+            throws OSCARSServiceException {
+        VerifyLoginReqType verifyLoginReqType = new VerifyLoginReqType();
+        LoginId loginId = new LoginId();
+        loginId.setLoginName(username);
+        loginId.setPassword(password);
+        verifyLoginReqType.setLoginId(loginId);
+        verifyLoginReqType.setTransactionId(msgProps.getGlobalTransactionId());
+
+        Object[] req = new Object[]{verifyLoginReqType};
+        SubjectAttributes subjectAttrs;
+        if (oscarsStubConfig.isStub()) {
+            // log.info("stub mode for sendAuthNLoginRequest");
+            try {
+                long delay = oscarsStubConfig.getAuthDelayMillis();
+                // log.info("sleeping for " + delay + "ms");
+                Thread.sleep(delay);
+            } catch (InterruptedException ex) {
+                log.error(ex.getMessage(), ex);
+            }
+
+            subjectAttrs = new SubjectAttributes();
+            AttributeType at = new AttributeType();
+            at.setName("stub_attr_name");
+            at.getAttributeValue().add("stub_attr_value");
+            subjectAttrs.getSubjectAttribute().add(at);
+        } else {
+            Object[] res = authNClient.invoke("verifyLogin",req);
+            VerifyReply reply = (VerifyReply)res[0];
+            subjectAttrs = reply.getSubjectAttributes();
+            if (subjectAttrs == null || subjectAttrs.getSubjectAttribute().isEmpty()){
+                ErrorReport errRep = new ErrorReport (ErrorCodes.ACCESS_DENIED,
+                        "no attributes for user " + username,
+                        ErrorReport.USER);
+                throw new OSCARSServiceException(errRep);
+            }
+        }
+        return subjectAttrs;
+
+    }
 
     private MessagePropertiesType updateMessageProperties (MessagePropertiesType msgProps, SubjectAttributes subjectAttributes) {
         SubjectAttributes originator;

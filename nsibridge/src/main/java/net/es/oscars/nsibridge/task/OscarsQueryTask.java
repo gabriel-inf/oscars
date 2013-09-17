@@ -3,6 +3,7 @@ package net.es.oscars.nsibridge.task;
 
 import net.es.oscars.api.soap.gen.v06.QueryResContent;
 import net.es.oscars.api.soap.gen.v06.QueryResReply;
+import net.es.oscars.common.soap.gen.SubjectAttributes;
 import net.es.oscars.nsibridge.beans.QueryRequest;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.beans.db.OscarsStatusRecord;
@@ -43,6 +44,7 @@ public class OscarsQueryTask extends Task  {
 
 
             ConnectionRecord cr = DB_Util.getConnectionRecord(connId);
+            SubjectAttributes attrs = DB_Util.getAttributes(cr.getOscarsAttributes());
 
             NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
 
@@ -61,7 +63,7 @@ public class OscarsQueryTask extends Task  {
             }
             if (qc != null) {
                 try {
-                    QueryResReply reply = OscarsProxy.getInstance().sendQuery(qc, cr.getSubjectDN(), cr.getIssuerDN());
+                    QueryResReply reply = OscarsProxy.getInstance().sendQuery(qc, attrs);
 
                     log.debug("connId: "+connId+"gri: "+reply.getReservationDetails().getGlobalReservationId());
 

@@ -1,6 +1,7 @@
 package net.es.oscars.nsibridge.oscars;
 
 import net.es.oscars.api.soap.gen.v06.*;
+import net.es.oscars.common.soap.gen.SubjectAttributes;
 import net.es.oscars.nsibridge.beans.ResvRequest;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.beans.db.OscarsStatusRecord;
@@ -17,6 +18,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import javax.persistence.EntityManager;
+import javax.xml.bind.JAXBException;
 import java.util.*;
 
 public class OscarsUtil {
@@ -42,9 +44,16 @@ public class OscarsUtil {
             addOscarsRecord(cr, null, new Date(), "FAILED");
             throw new TranslationException("null result in translation");
         }
+        SubjectAttributes attrs = null;
+        try {
+            attrs = DB_Util.getAttributes(cr.getOscarsAttributes());
+        } catch (JAXBException ex) {
+            log.error(ex.getMessage(), ex);
+            throw new TranslationException(ex.getMessage());
+        }
 
         try {
-            CreateReply reply = OscarsProxy.getInstance().sendCreate(rc, cr.getSubjectDN(), cr.getIssuerDN());
+            CreateReply reply = OscarsProxy.getInstance().sendCreate(rc, attrs);
             log.debug("connId: "+connId+" gri: "+reply.getGlobalReservationId());
             addOscarsRecord(cr, reply.getGlobalReservationId(), new Date(), reply.getStatus());
         } catch (OSCARSServiceException ex) {
@@ -65,9 +74,17 @@ public class OscarsUtil {
             log.debug("could not translate NSI request");
 
         }
+
+        SubjectAttributes attrs = null;
+        try {
+            attrs = DB_Util.getAttributes(cr.getOscarsAttributes());
+        } catch (JAXBException ex) {
+            log.error(ex.getMessage(), ex);
+            throw new ServiceException(ex.getMessage());
+        }
         if (cp != null) {
             try {
-                CreatePathResponseContent reply = OscarsProxy.getInstance().sendSetup(cp, cr.getSubjectDN(), cr.getIssuerDN());
+                CreatePathResponseContent reply = OscarsProxy.getInstance().sendSetup(cp, attrs);
             } catch (OSCARSServiceException ex) {
                 addOscarsRecord(cr, cr.getOscarsGri(), new Date(), "FAILED");
                 log.error(ex.getMessage(), ex);
@@ -88,9 +105,16 @@ public class OscarsUtil {
             log.error("could not translate NSI request", ex);
 
         }
+        SubjectAttributes attrs = null;
+        try {
+            attrs = DB_Util.getAttributes(cr.getOscarsAttributes());
+        } catch (JAXBException ex) {
+            log.error(ex.getMessage(), ex);
+            throw new ServiceException(ex.getMessage());
+        }
         if (cp != null) {
             try {
-                TeardownPathResponseContent reply = OscarsProxy.getInstance().sendTeardown(cp, cr.getSubjectDN(), cr.getIssuerDN());
+                TeardownPathResponseContent reply = OscarsProxy.getInstance().sendTeardown(cp, attrs);
             } catch (OSCARSServiceException ex) {
                 addOscarsRecord(cr, cr.getOscarsGri(), new Date(), "FAILED");
                 log.error(ex.getMessage(), ex);
@@ -107,10 +131,16 @@ public class OscarsUtil {
         log.debug("submitCancel start");
         String oscarsGri = cr.getOscarsGri();
 
-
+        SubjectAttributes attrs = null;
+        try {
+            attrs = DB_Util.getAttributes(cr.getOscarsAttributes());
+        } catch (JAXBException ex) {
+            log.error(ex.getMessage(), ex);
+            throw new ServiceException(ex.getMessage());
+        }
         CancelResContent rc = NSI_OSCARS_Translation.makeOscarsCancel(oscarsGri);
         try {
-            CancelResReply reply = OscarsProxy.getInstance().sendCancel(rc, cr.getSubjectDN(), cr.getIssuerDN());
+            CancelResReply reply = OscarsProxy.getInstance().sendCancel(rc, attrs);
         } catch (OSCARSServiceException ex) {
             addOscarsRecord(cr, null, new Date(), "FAILED");
             log.error(ex.getMessage(), ex);
@@ -125,10 +155,16 @@ public class OscarsUtil {
             throw new TranslationException("could not find OSCARS GRI for connId: "+cr.getConnectionId());
         }
         QueryResContent qc = NSI_OSCARS_Translation.makeOscarsQuery(oscarsGri);
-
+        SubjectAttributes attrs = null;
+        try {
+            attrs = DB_Util.getAttributes(cr.getOscarsAttributes());
+        } catch (JAXBException ex) {
+            log.error(ex.getMessage(), ex);
+            throw new TranslationException(ex.getMessage());
+        }
         if (qc != null) {
             try {
-                QueryResReply reply = OscarsProxy.getInstance().sendQuery(qc, cr.getSubjectDN(), cr.getIssuerDN());
+                QueryResReply reply = OscarsProxy.getInstance().sendQuery(qc, attrs);
                 String oscStatus =  reply.getReservationDetails().getStatus();
 
                 log.debug("query result for connId: "+cr.getConnectionId()+" gri: "+oscarsGri+" status: "+oscStatus);
@@ -148,7 +184,13 @@ public class OscarsUtil {
         log.debug("submitModify start");
         String connId = resvRequest.getReserveType().getConnectionId();
         ConnectionRecord cr = DB_Util.getConnectionRecord(connId);
-
+        SubjectAttributes attrs = null;
+        try {
+            attrs = DB_Util.getAttributes(cr.getOscarsAttributes());
+        } catch (JAXBException ex) {
+            log.error(ex.getMessage(), ex);
+            throw new TranslationException(ex.getMessage());
+        }
         ModifyResContent mc = null;
         try {
             mc = NSI_OSCARS_Translation.makeOscarsModify(resvRequest, cr.getOscarsGri());
@@ -167,7 +209,7 @@ public class OscarsUtil {
         }
 
         try {
-            ModifyResReply reply = OscarsProxy.getInstance().sendModify(mc, cr.getSubjectDN(), cr.getIssuerDN());
+            ModifyResReply reply = OscarsProxy.getInstance().sendModify(mc, attrs);
             log.debug("connId: "+connId+" gri: "+reply.getGlobalReservationId());
             addOscarsRecord(cr, cr.getOscarsGri(), new Date(), reply.getStatus());
         } catch (OSCARSServiceException ex) {
@@ -181,7 +223,13 @@ public class OscarsUtil {
     public static void submitRollback(ConnectionRecord cr) throws TranslationException, ServiceException  {
         log.debug("submitRollback start");
         ResvRecord rr = ConnectionRecord.getCommittedResvRecord(cr);
-
+        SubjectAttributes attrs = null;
+        try {
+            attrs = DB_Util.getAttributes(cr.getOscarsAttributes());
+        } catch (JAXBException ex) {
+            log.error(ex.getMessage(), ex);
+            throw new TranslationException(ex.getMessage());
+        }
         ModifyResContent mc = null;
         try {
             mc = NSI_OSCARS_Translation.makeOscarsRollback(rr, cr.getOscarsGri());
@@ -200,7 +248,7 @@ public class OscarsUtil {
         }
 
         try {
-            ModifyResReply reply = OscarsProxy.getInstance().sendModify(mc, cr.getSubjectDN(), cr.getIssuerDN());
+            ModifyResReply reply = OscarsProxy.getInstance().sendModify(mc, attrs);
             log.debug("connId: "+cr.getConnectionId()+" gri: "+reply.getGlobalReservationId());
             addOscarsRecord(cr, cr.getOscarsGri(), new Date(), reply.getStatus());
         } catch (OSCARSServiceException ex) {

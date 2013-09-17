@@ -1,6 +1,7 @@
 package net.es.oscars.nsibridge.soap.impl;
 
 import net.es.oscars.nsibridge.config.HttpConfig;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.provider.ConnectionProviderPort;
 import org.apache.cxf.bus.spring.SpringBusFactory;
 import org.apache.cxf.feature.Feature;
@@ -32,6 +33,7 @@ public class ProviderServer {
         String url = conf.getUrl();
         String sslBusConfigFile = conf.getSslBus();
         String busConfigFile = conf.getBus();
+        boolean httpBasic = conf.isBasicAuth();
 
 
 
@@ -68,9 +70,30 @@ public class ProviderServer {
             factory.createBus(busConfigFile);
         }
 
+        if (!useSSL && !httpBasic) {
+            throw new ServiceException("No authentication mechanism specified.");
+        }
+
+        if (useSSL && httpBasic) {
+            System.out.println("Both HTTPS and HTTP-Basic enabled. ");
+        }
+
         if (useSSL) {
+            System.out.println("HTTPS client certificates will be used for authentication.");
             OscarsCertInInterceptor certInt = OscarsCertInInterceptor.getInstance();
+            if (httpBasic) {
+                System.out.println("HTTPS client certificate authentication will fail over to HTTP-Basic.");
+                certInt.setHttpBasicFailover(true);
+            }
             sf.getInInterceptors().add(certInt);
+        }
+
+        if (httpBasic) {
+            if (!useSSL) {
+                System.out.println("HTTP-Basic will be used for authentication.");
+            }
+            OscarsHttpBasicAuthNInInterceptor authInt = OscarsHttpBasicAuthNInInterceptor.getInstance();
+            sf.getInInterceptors().add(authInt);
         }
 
 

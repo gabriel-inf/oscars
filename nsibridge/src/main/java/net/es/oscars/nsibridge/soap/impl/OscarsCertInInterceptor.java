@@ -38,19 +38,19 @@ public class OscarsCertInInterceptor extends AbstractPhaseInterceptor<Message> {
         super(Phase.PRE_STREAM);
         OscarsStubConfig oscarsStubConfig = SpringContext.getInstance().getContext().getBean("oscarsStubConfig", OscarsStubConfig.class);
         if (oscarsStubConfig.isStub()) {
-            subjectDN = oscarsStubConfig.getSecConfig().getUserDN();
-            issuerDN = oscarsStubConfig.getSecConfig().getIssuerDN();
+            OscarsSecurityContext.getInstance().setSubjectAttributes(new SubjectAttributes());
         }
     }
 
-    private String subjectDN;
-    private String issuerDN;
+    private boolean httpBasicFailover = false;
 
     private final String idnHeader = "SSL_CLIENT_I_DN";
     private final String sdnHeader = "SSL_CLIENT_S_DN";
 
 
     public void handleMessage(Message message) throws Fault {
+        OscarsSecurityContext.getInstance().setSubjectAttributes(null);
+
         HttpConfig config = SpringContext.getInstance().getContext().getBean("httpConfig", HttpConfig.class);
         String trustedProxy = config.getTrustedSSLProxy();
         if (trustedProxy  != null && !trustedProxy.isEmpty() ) {
@@ -58,11 +58,9 @@ public class OscarsCertInInterceptor extends AbstractPhaseInterceptor<Message> {
             trustedProxy = trustedProxy.toLowerCase().trim();
 
 
-
             HttpServletRequest httpRequest = (HttpServletRequest) message.get(AbstractHTTPDestination.HTTP_REQUEST);
             String remoteHost = httpRequest.getRemoteHost().toLowerCase().trim();
             log.debug("remote: "+remoteHost+" trusted: "+trustedProxy);
-
 
             if (!remoteHost.equals(trustedProxy)) {
                 UntrustedURLConnectionIOException ex = new UntrustedURLConnectionIOException("incoming request not from trusted SSL proxy");
@@ -72,8 +70,12 @@ public class OscarsCertInInterceptor extends AbstractPhaseInterceptor<Message> {
             String issuerDN = httpRequest.getHeader(idnHeader);
             String subjectDN = httpRequest.getHeader(sdnHeader);
             if (!verifyDNs(subjectDN, issuerDN)) {
-                UntrustedURLConnectionIOException ex = new UntrustedURLConnectionIOException("untrusted subject / issuer DN headers set by SSL proxy");
-                 throw new Fault(ex);
+                if (!httpBasicFailover) {
+                    UntrustedURLConnectionIOException ex = new UntrustedURLConnectionIOException("untrusted subject / issuer DN headers set by SSL proxy");
+                    throw new Fault(ex);
+                } else {
+                    log.debug("Client cert auth failed, failing over to HTTP-Basic");
+                }
             }
 
         } else {
@@ -82,19 +84,20 @@ public class OscarsCertInInterceptor extends AbstractPhaseInterceptor<Message> {
                 TLSSessionInfo tlsInfo = message.get(TLSSessionInfo.class);
                 final Certificate[] certs = tlsInfo.getPeerCertificates();
                 if (certs == null || certs.length == 0) {
-                    throw new UntrustedURLConnectionIOException(
-                            "No client certificates were found"
-                    );
+                    throw new UntrustedURLConnectionIOException("No client certificates were found");
                 } else {
                     X509Certificate[] x509Certs = (X509Certificate[])certs;
                     if (!verifyCert(x509Certs[0])) {
                         throw new UntrustedURLConnectionIOException(
-                                "The client certificate does not match the defined cert constraints"
-                        );
+                            "The client certificate does not match the defined cert constraints");
                     }
                 }
             } catch (UntrustedURLConnectionIOException ex) {
-                throw new Fault(ex);
+                if (!httpBasicFailover) {
+                    throw new Fault(ex);
+                } else {
+                    log.debug("Client cert auth failed, failing over to HTTP-Basic");
+                }
             }
         }
 
@@ -115,13 +118,12 @@ public class OscarsCertInInterceptor extends AbstractPhaseInterceptor<Message> {
 
         try {
             MessagePropertiesType mp = OscarsProxy.getInstance().makeMessageProps();
-            SubjectAttributes attrs = OscarsProxy.getInstance().sendAuthNRequest(mp, certSubjectDN, certIssuerDN);
+            SubjectAttributes attrs = OscarsProxy.getInstance().sendAuthNverifyDNRequest(mp, certSubjectDN, certIssuerDN);
             if (attrs == null || attrs.getSubjectAttribute() == null || attrs.getSubjectAttribute().isEmpty()) {
                 log.info("no user attributes found");
                 return false;
             }
-            subjectDN = certSubjectDN;
-            issuerDN = certIssuerDN;
+            OscarsSecurityContext.getInstance().setSubjectAttributes(attrs);
 
         } catch (Exception ex) {
             log.error(ex);
@@ -142,13 +144,12 @@ public class OscarsCertInInterceptor extends AbstractPhaseInterceptor<Message> {
 
         try {
             MessagePropertiesType mp = OscarsProxy.getInstance().makeMessageProps();
-            SubjectAttributes attrs = OscarsProxy.getInstance().sendAuthNRequest(mp, subjectDN, issuerDN);
+            SubjectAttributes attrs = OscarsProxy.getInstance().sendAuthNverifyDNRequest(mp, subjectDN, issuerDN);
             if (attrs == null || attrs.getSubjectAttribute() == null || attrs.getSubjectAttribute().isEmpty()) {
                 log.info("no user attributes found");
                 return false;
             }
-            this.subjectDN = subjectDN;
-            this.issuerDN = issuerDN;
+            OscarsSecurityContext.getInstance().setSubjectAttributes(attrs);
 
         } catch (Exception ex) {
             log.error(ex);
@@ -158,19 +159,15 @@ public class OscarsCertInInterceptor extends AbstractPhaseInterceptor<Message> {
     }
 
 
-    public String getSubjectDN() {
-        return subjectDN;
+
+
+    public boolean isHttpBasicFailover() {
+        return httpBasicFailover;
     }
 
-    public void setSubjectDN(String subjectDN) {
-        this.subjectDN = subjectDN;
+    public void setHttpBasicFailover(boolean httpBasicFailover) {
+        this.httpBasicFailover = httpBasicFailover;
     }
 
-    public String getIssuerDN() {
-        return issuerDN;
-    }
 
-    public void setIssuerDN(String issuerDN) {
-        this.issuerDN = issuerDN;
-    }
 }

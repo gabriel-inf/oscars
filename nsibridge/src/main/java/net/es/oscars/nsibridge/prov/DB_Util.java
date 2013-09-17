@@ -1,5 +1,7 @@
 package net.es.oscars.nsibridge.prov;
 
+import com.sun.xml.bind.api.ClassResolver;
+import net.es.oscars.common.soap.gen.SubjectAttributes;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.beans.db.ExceptionRecord;
 import net.es.oscars.nsibridge.beans.db.NotificationRecord;
@@ -27,7 +29,14 @@ import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 
 import javax.persistence.EntityManager;
-import javax.xml.bind.JAXBElement;
+import javax.xml.bind.*;
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import javax.xml.transform.stream.StreamSource;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -264,24 +273,56 @@ public class DB_Util {
 
 
 
-    public static void createConnectionRecordIfNeeded(String connId, String requesterNSA, String nsiGlobalGri, String notifyUrl, String subjectDN, String issuerDN) throws ServiceException {
+    public static void createConnectionRecordIfNeeded(String connId, String requesterNSA, String nsiGlobalGri, String notifyUrl, SubjectAttributes attrs) throws ServiceException {
         ConnectionRecord cr = getConnectionRecord(connId);
         if (cr != null) {
             log.info("connection record was found while starting reserve() for connectionId: " + connId);
         } else {
             EntityManager em = PersistenceHolder.getEntityManager();
             log.info("creating new connection record for connectionId: " + connId+ " reqNSA: "+requesterNSA);
-            em.getTransaction().begin();
             cr = new ConnectionRecord();
             cr.setConnectionId(connId);
             cr.setNsiGlobalGri(nsiGlobalGri);
             cr.setRequesterNSA(requesterNSA);
             cr.setNotifyUrl(notifyUrl);
-            cr.setSubjectDN(subjectDN);
-            cr.setIssuerDN(issuerDN);
+            try {
+                cr.setOscarsAttributes(makeAttrString(attrs));
+            } catch (JAXBException ex) {
+                log.error(ex.getMessage(), ex);
+                throw new ServiceException(ex.getMessage());
+            }
+
+
+            em.getTransaction().begin();
             em.persist(cr);
             em.getTransaction().commit();
         }
+    }
+    public static String makeAttrString(SubjectAttributes attrs) throws JAXBException {
+        StringWriter writer = new StringWriter();
+        JAXBContext context = JAXBContext.newInstance(SubjectAttributes.class);
+        JAXBElement<SubjectAttributes> jaxb = new JAXBElement(new QName(SubjectAttributes.class.getSimpleName()), SubjectAttributes.class, attrs);
+
+        Marshaller m = context.createMarshaller();
+        // m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+
+        m.marshal(jaxb, writer);
+        // System.out.println(writer.toString());
+        return writer.toString();
+    }
+
+    public static SubjectAttributes getAttributes(String attrString) throws JAXBException, XMLStreamException {
+        JAXBContext context = JAXBContext.newInstance(SubjectAttributes.class);
+        Unmarshaller m = context.createUnmarshaller();
+        XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+
+        XMLStreamReader reader = inputFactory.createXMLStreamReader(new StringReader(attrString));
+
+        JAXBElement<SubjectAttributes> userElement = m.unmarshal(reader, SubjectAttributes.class);
+        SubjectAttributes attrs = userElement.getValue();
+
+        return attrs;
+
     }
 
 
@@ -410,4 +451,6 @@ public class DB_Util {
 
         return recordList;
     }
+
+
 }

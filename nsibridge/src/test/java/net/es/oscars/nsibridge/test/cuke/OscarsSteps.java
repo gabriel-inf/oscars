@@ -6,6 +6,7 @@ import net.es.oscars.api.soap.gen.v06.CreateReply;
 import net.es.oscars.api.soap.gen.v06.QueryResContent;
 import net.es.oscars.api.soap.gen.v06.QueryResReply;
 import net.es.oscars.api.soap.gen.v06.ResCreateContent;
+import net.es.oscars.common.soap.gen.SubjectAttributes;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.beans.db.OscarsStatusRecord;
 import net.es.oscars.nsibridge.common.PersistenceHolder;
@@ -35,7 +36,7 @@ public class OscarsSteps {
     public void submit_a_new_OSCARS_reserve_request() throws Throwable {
         OscarsProxy op = OscarsProxy.getInstance();
         ResCreateContent rcc = new ResCreateContent();
-        CreateReply cr = op.sendCreate(rcc, "foo", "bar");
+        CreateReply cr = op.sendCreate(rcc, new SubjectAttributes());
         gri = cr.getGlobalReservationId();
     }
 
@@ -69,7 +70,7 @@ public class OscarsSteps {
         QueryResContent qc = NSI_OSCARS_Translation.makeOscarsQuery(connGri);
 
         // FIXME
-        QueryResReply reply = OscarsProxy.getInstance().sendQuery(qc, "foo", "bar");
+        QueryResReply reply = OscarsProxy.getInstance().sendQuery(qc, new SubjectAttributes());
         EntityManager em = PersistenceHolder.getEntityManager();
 
         OscarsStatusRecord or = new OscarsStatusRecord();

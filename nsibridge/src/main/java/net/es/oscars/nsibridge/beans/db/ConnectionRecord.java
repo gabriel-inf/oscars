@@ -19,8 +19,7 @@ public class ConnectionRecord {
     protected String requesterNSA;
     protected String notifyUrl;
     protected String nsiGlobalGri;
-    protected String subjectDN;
-    protected String issuerDN;
+    protected String oscarsAttributes;
 
 
 
@@ -192,19 +191,11 @@ public class ConnectionRecord {
         return results;
     }
 
-    public String getSubjectDN() {
-        return subjectDN;
+    public String getOscarsAttributes() {
+        return oscarsAttributes;
     }
 
-    public void setSubjectDN(String subjectDN) {
-        this.subjectDN = subjectDN;
-    }
-
-    public String getIssuerDN() {
-        return issuerDN;
-    }
-
-    public void setIssuerDN(String issuerDN) {
-        this.issuerDN = issuerDN;
+    public void setOscarsAttributes(String oscarsAttributes) {
+        this.oscarsAttributes = oscarsAttributes;
     }
 }

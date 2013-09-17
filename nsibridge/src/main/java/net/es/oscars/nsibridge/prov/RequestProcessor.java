@@ -1,6 +1,7 @@
 package net.es.oscars.nsibridge.prov;
 
 
+import net.es.oscars.common.soap.gen.SubjectAttributes;
 import net.es.oscars.nsibridge.beans.*;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.ifces.StateException;
@@ -9,6 +10,7 @@ import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceE
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.*;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
 import net.es.oscars.nsibridge.soap.impl.OscarsCertInInterceptor;
+import net.es.oscars.nsibridge.soap.impl.OscarsSecurityContext;
 import net.es.oscars.nsibridge.state.life.NSI_Life_Event;
 import net.es.oscars.nsibridge.state.life.NSI_Life_SM;
 import net.es.oscars.nsibridge.state.life.NSI_Life_State;
@@ -43,12 +45,19 @@ public class RequestProcessor {
     public void startReserve(ResvRequest request) throws ServiceException {
         String connId = request.getReserveType().getConnectionId();
         String corrId = request.getInHeader().getCorrelationId();
-        String subjectDN = OscarsCertInInterceptor.getInstance().getSubjectDN();
-        String issuerDN = OscarsCertInInterceptor.getInstance().getIssuerDN();
+
+        SubjectAttributes attrs = OscarsSecurityContext.getInstance().getSubjectAttributes();
+        if (attrs == null) {
+            String msg = "no OSCARS user attributes!";
+            log.error(msg);
+            throw new ServiceException(msg);
+        }
+
+
 
         log.debug("startReserve for connId: "+connId+" corrId:"+corrId);
 
-        DB_Util.createConnectionRecordIfNeeded(connId, request.getInHeader().getRequesterNSA(), request.getReserveType().getGlobalReservationId(), request.getInHeader().getReplyTo(), subjectDN, issuerDN);
+        DB_Util.createConnectionRecordIfNeeded(connId, request.getInHeader().getRequesterNSA(), request.getReserveType().getGlobalReservationId(), request.getInHeader().getReplyTo(), attrs);
 
         if (!DB_Util.restoreStateMachines(connId)) {
             NSI_Util.makeNewStateMachines(connId);
