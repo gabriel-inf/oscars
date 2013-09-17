@@ -20,7 +20,7 @@ public class ConnectionRecord {
     protected String notifyUrl;
     protected String nsiGlobalGri;
 
-    @Lob
+
     protected String oscarsAttributes;
 
 
@@ -193,6 +193,8 @@ public class ConnectionRecord {
         return results;
     }
 
+    @Lob
+    @Column(length=65535)
     public String getOscarsAttributes() {
         return oscarsAttributes;
     }
