@@ -19,6 +19,7 @@ public class ConnectionRecord {
     protected String requesterNSA;
     protected String notifyUrl;
     protected String nsiGlobalGri;
+    @Column(length = 50000)
     protected String oscarsAttributes;
 
 
@@ -191,7 +192,6 @@ public class ConnectionRecord {
         return results;
     }
 
-    @Column(length = 50000)
     public String getOscarsAttributes() {
         return oscarsAttributes;
     }

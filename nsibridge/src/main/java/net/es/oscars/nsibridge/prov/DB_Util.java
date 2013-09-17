@@ -307,7 +307,7 @@ public class DB_Util {
         // m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
 
         m.marshal(jaxb, writer);
-        // System.out.println(writer.toString());
+        log.debug(writer.toString());
         return writer.toString();
     }
 
