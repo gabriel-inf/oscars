@@ -19,7 +19,8 @@ public class ConnectionRecord {
     protected String requesterNSA;
     protected String notifyUrl;
     protected String nsiGlobalGri;
-    @Column(length = 50000)
+
+    @Lob
     protected String oscarsAttributes;
 
 
