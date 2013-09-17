@@ -60,6 +60,8 @@ public class OscarsHttpBasicAuthNInInterceptor extends SoapHeaderInterceptor {
         log.debug("checking login for "+username);
         OscarsStubConfig oscarsStubConfig = SpringContext.getInstance().getContext().getBean("oscarsStubConfig", OscarsStubConfig.class);
         if (oscarsStubConfig.isStub()) {
+            OscarsSecurityContext.getInstance().setSubjectAttributes(new SubjectAttributes());
+
             return true;
         }
 
