@@ -8,11 +8,20 @@ public class NsaConfig {
     private String nsaId = "";
     private String protocolVersion = "";
     private String serviceType = "";
+    private String networkId = "";
     private List<StpConfig> stps = new ArrayList<StpConfig>();
 
     public NsaConfig() {
 
     };
+
+    public String getNetworkId() {
+        return networkId;
+    }
+
+    public void setNetworkId(String networkId) {
+        this.networkId = networkId;
+    }
 
     public String getServiceType() {
         return serviceType;

@@ -171,6 +171,17 @@ public class NSI_OSCARS_Translation {
         urc.setBandwidth(bandwidth);
         urc.setStartTime(crit.getSchedule().getStartTime().toGregorianCalendar().getTimeInMillis() / 1000);
         urc.setEndTime(crit.getSchedule().getEndTime().toGregorianCalendar().getTimeInMillis() / 1000);
+
+        String srcNetworkId = evts.getSourceSTP().getNetworkId();
+        String dstNetworkId = evts.getDestSTP().getNetworkId();
+
+        if (srcNetworkId == null || !srcNetworkId.equals(localNetworkId())) {
+            throw new TranslationException("Invalid source networkId!");
+        }
+        if (dstNetworkId == null || !dstNetworkId.equals(localNetworkId())) {
+            throw new TranslationException("Invalid dest networkId!");
+        }
+
         String srcStp = evts.getSourceSTP().getLocalId();
         String dstStp = evts.getDestSTP().getLocalId();
 
@@ -391,8 +402,8 @@ public class NSI_OSCARS_Translation {
         
         String nsaId = findNsaId();
         if(nsaId != null){
-            sourceStp.setNetworkId(nsaId);
-            destStp.setNetworkId(nsaId);
+            sourceStp.setNetworkId(localNetworkId());
+            destStp.setNetworkId(localNetworkId());
         }
         if(pathInfo.getPath() != null &&  pathInfo.getPath().getHop() != null && pathInfo.getPath().getHop().size() >= 2){
             List<CtrlPlaneHopContent> hops = pathInfo.getPath().getHop();
@@ -415,7 +426,7 @@ public class NSI_OSCARS_Translation {
                 OrderedStpType ordStp = new OrderedStpType();
                 StpType hopStp = new StpType();
                 if(nsaId != null){
-                    hopStp.setNetworkId(nsaId);
+                    hopStp.setNetworkId(localNetworkId());
                 }
                 hopStp.setLocalId(findStpByOSCARSId(NMWGParserUtil.getURN(hops.get(i))).getStpId());
                 ordStp.setOrder(i);
@@ -505,6 +516,14 @@ public class NSI_OSCARS_Translation {
         NsaConfig nc = np.getConfig("local");
         
         return nc.getServiceType();
+    }
+
+    public static String localNetworkId() {
+        SpringContext sc = SpringContext.getInstance();
+        ApplicationContext ax = sc.getContext();
+        NsaConfigProvider np = ax.getBean("nsaConfigProvider", NsaConfigProvider.class);
+        NsaConfig nc = np.getConfig("local");
+        return nc.getNetworkId();
     }
 
     public static List<QueryRecursiveResultType> querySummToRecursive(
