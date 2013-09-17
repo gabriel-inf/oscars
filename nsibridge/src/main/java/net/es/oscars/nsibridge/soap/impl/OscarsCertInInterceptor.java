@@ -106,8 +106,13 @@ public class OscarsCertInInterceptor extends AbstractPhaseInterceptor<Message> {
     }
 
     private boolean verifyCert(X509Certificate cert) {
-        String certSubjectDN = cert.getSubjectDN().toString();
-        String certIssuerDN = cert.getIssuerDN().toString();
+        String certSubjectDN = cert.getSubjectDN().toString().trim().toLowerCase();
+        String certIssuerDN = cert.getIssuerDN().toString().trim().toLowerCase();
+
+        if (certSubjectDN == null || certSubjectDN.equals("(null)") || certIssuerDN == null || certIssuerDN.equals("(null)")) {
+            log.debug("null subject / issuer DN");
+            return false;
+        }
 
         log.debug("s: "+certSubjectDN+" i: "+certIssuerDN);
         certSubjectDN  = OscarsUtil.normalizeDN(certSubjectDN);
@@ -126,7 +131,7 @@ public class OscarsCertInInterceptor extends AbstractPhaseInterceptor<Message> {
             OscarsSecurityContext.getInstance().setSubjectAttributes(attrs);
 
         } catch (Exception ex) {
-            log.error(ex);
+            log.error(ex.getMessage(), ex);
             return false;
         }
         return true;
@@ -135,6 +140,13 @@ public class OscarsCertInInterceptor extends AbstractPhaseInterceptor<Message> {
 
 
     private boolean verifyDNs(String subjectDN, String issuerDN) {
+
+        if (subjectDN == null || subjectDN.equals("(null)") || issuerDN == null || issuerDN.equals("(null)")) {
+            log.debug("null subject / issuer DN");
+            return false;
+        }
+
+
         log.debug("s: "+subjectDN+" i: "+issuerDN);
         issuerDN  = OscarsUtil.normalizeDN(issuerDN);
         subjectDN = OscarsUtil.normalizeDN(subjectDN);

@@ -368,7 +368,7 @@ public class OscarsProxy {
 
     public SubjectAttributes sendAuthNverifyDNRequest(MessagePropertiesType msgProps, String subjectDN, String issuerDN)
             throws OSCARSServiceException {
-
+        log.debug("sendAuthNverifyDNRequest for s:"+subjectDN+" i: "+issuerDN);
         VerifyDNReqType verifyDNReq = new VerifyDNReqType();
         DNType DN = new DNType();
         DN.setSubjectDN(subjectDN);
@@ -410,6 +410,8 @@ public class OscarsProxy {
 
     public SubjectAttributes sendAuthNLoginRequest (MessagePropertiesType msgProps, String username, String password)
             throws OSCARSServiceException {
+        log.debug("sendAuthNLoginRequest for u:"+username);
+
         VerifyLoginReqType verifyLoginReqType = new VerifyLoginReqType();
         LoginId loginId = new LoginId();
         loginId.setLoginName(username);
