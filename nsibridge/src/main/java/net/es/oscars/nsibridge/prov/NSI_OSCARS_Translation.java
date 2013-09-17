@@ -49,6 +49,7 @@ import java.util.List;
 import javax.xml.bind.*;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
+import javax.xml.stream.XMLStreamException;
 
 
 public class NSI_OSCARS_Translation {
@@ -334,6 +335,9 @@ public class NSI_OSCARS_Translation {
             SubjectAttributes attrs = null;
             try {
                 attrs = DB_Util.getAttributes(cr.getOscarsAttributes());
+            } catch (XMLStreamException ex) {
+                log.error(ex.getMessage(), ex);
+                throw new TranslationException(ex.getMessage());
             } catch (JAXBException ex) {
                 log.error(ex.getMessage(), ex);
                 throw new TranslationException(ex.getMessage());
