@@ -106,10 +106,10 @@ public class OscarsCertInInterceptor extends AbstractPhaseInterceptor<Message> {
     }
 
     private boolean verifyCert(X509Certificate cert) {
-        String certSubjectDN = cert.getSubjectDN().toString().trim().toLowerCase();
-        String certIssuerDN = cert.getIssuerDN().toString().trim().toLowerCase();
+        String certSubjectDN = cert.getSubjectDN().toString().trim();
+        String certIssuerDN = cert.getIssuerDN().toString().trim();
 
-        if (certSubjectDN == null || certSubjectDN.equals("(null)") || certIssuerDN == null || certIssuerDN.equals("(null)")) {
+        if (certSubjectDN == null || certSubjectDN.toLowerCase().equals("(null)") || certIssuerDN == null || certIssuerDN.toLowerCase().equals("(null)")) {
             log.debug("null subject / issuer DN");
             return false;
         }
