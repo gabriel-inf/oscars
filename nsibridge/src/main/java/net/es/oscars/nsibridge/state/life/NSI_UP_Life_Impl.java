@@ -6,9 +6,12 @@ import net.es.oscars.nsibridge.config.TimingConfig;
 import net.es.oscars.nsibridge.ifces.CallbackMessages;
 import net.es.oscars.nsibridge.ifces.NsiLifeMdl;
 import net.es.oscars.nsibridge.ifces.StateMachineType;
+import net.es.oscars.nsibridge.oscars.OscarsOps;
 import net.es.oscars.nsibridge.prov.DB_Util;
+import net.es.oscars.nsibridge.prov.NSI_SM_Holder;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.EventEnumType;
+import net.es.oscars.nsibridge.task.OscarsCancelOrModifyTask;
 import net.es.oscars.nsibridge.task.SMTransitionTask;
 import net.es.oscars.nsibridge.task.SendNSIMessageTask;
 import net.es.oscars.utils.task.TaskException;
@@ -53,27 +56,33 @@ public class NSI_UP_Life_Impl implements NsiLifeMdl {
         } catch (TaskException e) {
             e.printStackTrace();
         }
+        return taskId;
 
-        /*
-        NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
-        NSI_Life_SM lsm = smh.findNsiLifeSM(connectionId);
+    }
 
-        OscarsCancelTask ost = new OscarsCancelTask();
+    public UUID localCancel(String correlationId) {
+        log.debug("localCancel start");
+        UUID taskId = null;
+
+        long now = new Date().getTime();
+
+        TimingConfig tc = SpringContext.getInstance().getContext().getBean("timingConfig", TimingConfig.class);
+        Workflow wf = Workflow.getInstance();
+
+
+        OscarsCancelOrModifyTask ost = new OscarsCancelOrModifyTask();
         ost.setCorrelationId(correlationId);
+        ost.setConnectionId(connectionId);
         ost.setOscarsOp(OscarsOps.CANCEL);
-        ost.setStateMachine(lsm);
-        ost.setSuccessEvent(NSI_Life_Event.LOCAL_TERM_CONFIRMED);
-        ost.setFailEvent(NSI_Life_Event.LOCAL_TERM_FAILED);
-
 
         Double d = (tc.getTaskInterval() * 1000);
         Long when = now + d.longValue();
+
         try {
             taskId = wf.schedule(ost , when);
         } catch (TaskException e) {
             e.printStackTrace();
         }
-        */
 
         return taskId;
     }

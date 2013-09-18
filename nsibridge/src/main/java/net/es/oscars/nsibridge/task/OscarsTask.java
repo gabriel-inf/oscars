@@ -16,7 +16,7 @@ import org.apache.log4j.Logger;
 public abstract class OscarsTask extends SMTask {
     private static final Logger log = Logger.getLogger(OscarsTask.class);
 
-    protected OscarsOps oscarsOp;
+    protected OscarsOps oscarsOp = null;
 
     public OscarsOps getOscarsOp() {
         return oscarsOp;

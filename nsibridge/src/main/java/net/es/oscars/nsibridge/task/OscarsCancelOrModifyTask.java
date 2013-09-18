@@ -55,17 +55,18 @@ public class OscarsCancelOrModifyTask extends OscarsTask  {
             }
 
 
-
-            // default action is to cancel
             OscarsOps theOp = OscarsOps.CANCEL;
-
-            // but, if there was a previous committed reservation record, we need to modify
-            // the OSCARS reservation back to it
-            ResvRecord rr = ConnectionRecord.getCommittedResvRecord(cr);
-            if (rr != null) {
-                theOp = OscarsOps.MODIFY;
+            if (this.getOscarsOp() != null) {
+                theOp = this.getOscarsOp();
+            } else {
+                // default action is to cancel
+                // but, if there was a previous committed reservation record, we need to modify
+                // the OSCARS reservation back to it
+                ResvRecord rr = ConnectionRecord.getCommittedResvRecord(cr);
+                if (rr != null) {
+                    theOp = OscarsOps.MODIFY;
+                }
             }
-
 
 
             OscarsLogicAction action;

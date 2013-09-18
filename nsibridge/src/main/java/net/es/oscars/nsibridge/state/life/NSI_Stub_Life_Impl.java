@@ -21,6 +21,11 @@ public class NSI_Stub_Life_Impl implements NsiLifeMdl {
     }
 
     @Override
+    public UUID localCancel(String correlationId) {
+        return null;
+    }
+
+    @Override
     public UUID sendTermCF(String correlationId) {
         return null;
     }
