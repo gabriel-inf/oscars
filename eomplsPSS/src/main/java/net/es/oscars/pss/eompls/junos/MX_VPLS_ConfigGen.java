@@ -202,7 +202,7 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         Long policerBandwidthLimit;
         String statsFilterName;
         String policingFilterName;
-        boolean softPolice = false;
+        boolean softPolice = true;
 
         
         /* *********************** */

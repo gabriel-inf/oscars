@@ -319,7 +319,7 @@ public class SR_VPLS_ConfigGen implements DeviceConfigGenerator, PostCommitConfi
 
 
         String gri = res.getGlobalReservationId();
-        boolean softPolice = false;
+        boolean softPolice = true;
 
         String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
         String dstDeviceId = EoMPLSUtils.getDeviceId(res, true);
