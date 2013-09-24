@@ -82,7 +82,13 @@ top
 edit firewall policer ${policer.name}
 set if-exceeding bandwidth-limit ${policer.bandwidth_limit?string.computer}
 set if-exceeding burst-size-limit ${policer.burst_size_limit?string.computer}
+
+<#assign softpolice = policer.soft >
+<#if softpolice>
 set then forwarding-class scavenger
+<#else>
+set then discard
+</#if>
 
 # vpls
 top

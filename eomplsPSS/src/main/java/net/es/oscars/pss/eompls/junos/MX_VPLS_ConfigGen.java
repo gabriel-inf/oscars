@@ -1,6 +1,7 @@
 package net.es.oscars.pss.eompls.junos;
 
 
+import net.es.oscars.api.soap.gen.v06.OptionalConstraintType;
 import net.es.oscars.api.soap.gen.v06.PathInfo;
 import net.es.oscars.api.soap.gen.v06.ResDetails;
 import net.es.oscars.api.soap.gen.v06.ReservedConstraintType;
@@ -201,6 +202,7 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         Long policerBandwidthLimit;
         String statsFilterName;
         String policingFilterName;
+        boolean softPolice = false;
 
         
         /* *********************** */
@@ -242,8 +244,6 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         EoMPLSDeviceAddressResolver dar = ecf.getEomplsDeviceAddressResolver();
 
 
-    
-
         policingFilterName      = ng.getFilterName(gri, "policing", description);
         statsFilterName         = ng.getFilterName(gri, "stats", description);
         communityName           = ng.getCommunityName(gri, description);
@@ -265,6 +265,13 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         
         communityMembers    = "65000:"+oscarsCommunity+":"+vplsId;
 
+        for (OptionalConstraintType oct : res.getOptionalConstraint()) {
+            if (oct.getCategory().equals("policing")) {
+                if (oct.getValue().getStringValue().equals("hard")) {
+                    softPolice = false;
+                }
+            }
+        }
 
 
         /*
@@ -289,6 +296,7 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         policer.put("name", policerName);
         policer.put("bandwidth_limit", policerBandwidthLimit);
         policer.put("burst_size_limit", policerBurstSizeLimit);
+        policer.put("soft", softPolice);
         vpls.put("name", vplsName);
         vpls.put("id", vplsId);
 

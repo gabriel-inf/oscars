@@ -1,6 +1,7 @@
 package net.es.oscars.pss.eompls.alu;
 
 
+import net.es.oscars.api.soap.gen.v06.OptionalConstraintType;
 import net.es.oscars.api.soap.gen.v06.PathInfo;
 import net.es.oscars.api.soap.gen.v06.ResDetails;
 import net.es.oscars.api.soap.gen.v06.ReservedConstraintType;
@@ -318,6 +319,7 @@ public class SR_VPLS_ConfigGen implements DeviceConfigGenerator, PostCommitConfi
 
 
         String gri = res.getGlobalReservationId();
+        boolean softPolice = false;
 
         String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
         String dstDeviceId = EoMPLSUtils.getDeviceId(res, true);
@@ -360,6 +362,13 @@ public class SR_VPLS_ConfigGen implements DeviceConfigGenerator, PostCommitConfi
         EoMPLSIfceAddressResolver iar = ecf.getEomplsIfceAddressResolver();
         EoMPLSDeviceAddressResolver dar = ecf.getEomplsDeviceAddressResolver();
 
+        for (OptionalConstraintType oct : res.getOptionalConstraint()) {
+            if (oct.getCategory().equals("policing")) {
+                if (oct.getValue().getStringValue().equals("hard")) {
+                    softPolice = false;
+                }
+            }
+        }
 
 
 
@@ -455,6 +464,7 @@ public class SR_VPLS_ConfigGen implements DeviceConfigGenerator, PostCommitConfi
         ingqos.put("id", qosId);
         ingqos.put("description", gri);
         ingqos.put("bandwidth", ingQosBandwidth);
+        ingqos.put("soft", softPolice);
 
 
         HashMap<String, ArrayList<SRIfceInfo>> allIfceInfos = this.getDeviceIfceInfo(res);

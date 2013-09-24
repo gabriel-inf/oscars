@@ -120,6 +120,7 @@ public class VPLSTest {
         params.getIngqos().put("id", ingQosId);
         params.getIngqos().put("description", gri);
         params.getIngqos().put("bandwidth", bandwidth);
+        params.getIngqos().put("soft", false);
 
 
         HashMap ifceA = new HashMap();
@@ -243,6 +244,7 @@ public class VPLSTest {
         params.getPolicer().put("name", "test_policer");
         params.getPolicer().put("bandwidth_limit", 500);
         params.getPolicer().put("burst_size_limit", 50);
+        params.getPolicer().put("soft", false);
 
         params.getVpls().put("name", "test_vpls");
         params.getVpls().put("id", VPLS_DomainIdentifiers.reserve("aa-13132").toString());
