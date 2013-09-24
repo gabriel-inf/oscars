@@ -245,6 +245,13 @@ public class NSI_OSCARS_Translation {
         pathHops.add(srcHop);
         pathHops.add(dstHop);
 
+        OptionalConstraintType oct = new OptionalConstraintType();
+        oct.setCategory("policing");
+        OptionalConstraintValue ocv = new OptionalConstraintValue();
+        ocv.setStringValue("hard");
+        oct.setValue(ocv);
+
+        rc.getOptionalConstraint().add(oct);
 
 
 
