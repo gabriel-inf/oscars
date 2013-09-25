@@ -625,7 +625,13 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
             if (subjectAttributes != null  && resDetails == null){
                 // Call came from OSCARSService, check authorization and query for details
                 authDecision = checkAuthorization(method, transId, gri, subjectAttributes, AuthZConstants.SIGNAL);
-
+                
+                //Always make sure we can view internal hops because PSS requires them
+                AuthConditionType internalHopCond = new AuthConditionType();
+                internalHopCond.setName(AuthZConstants.INT_HOPS_ALLOWED);
+                internalHopCond.getConditionValue().add("true");
+                authDecision.getConditions().getAuthCondition().add(internalHopCond);
+                
                 QueryResContent queryReq = new QueryResContent();
                 queryReq.setMessageProperties(createPathReq.getMessageProperties());
                 queryReq.setGlobalReservationId(gri);
