@@ -4,7 +4,6 @@ package net.es.oscars.nsibridge.task;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.beans.db.ResvRecord;
 import net.es.oscars.nsibridge.config.TimingConfig;
-import net.es.oscars.nsibridge.ifces.StateException;
 import net.es.oscars.nsibridge.oscars.*;
 import net.es.oscars.nsibridge.prov.DB_Util;
 import net.es.oscars.nsibridge.prov.TranslationException;
@@ -125,6 +124,9 @@ public class OscarsCancelOrModifyTask extends OscarsTask  {
                 this.onFail();
                 return;
             }
+
+            DB_Util.updateDataplaneRecord(cr, os);
+
 
             switch (theOp) {
                 case MODIFY:

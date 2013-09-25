@@ -291,7 +291,7 @@ public class NSI_OSCARS_Translation {
         resultType.setConnectionId(cr.getConnectionId());
         resultType.setRequesterNSA(cr.getRequesterNSA());
         resultType.setGlobalReservationId(cr.getNsiGlobalGri());
-        
+
         //Set connection states
         ConnectionStatesType cst = new ConnectionStatesType();
         NSI_Resv_SM rsm = smh.findNsiResvSM(cr.getConnectionId());
@@ -411,6 +411,7 @@ public class NSI_OSCARS_Translation {
         } catch (DatatypeConfigurationException e) {
             throw new TranslationException("Unable to convert OSCARS time fields to NSI schedule: " + e.getMessage());
         }
+        criteriaType.setSchedule(scheduleType);
         
         //Set P2P fields
         EthernetVlanType evtsType = new EthernetVlanType();

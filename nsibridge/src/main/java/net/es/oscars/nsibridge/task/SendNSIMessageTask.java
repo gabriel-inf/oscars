@@ -167,7 +167,11 @@ public class SendNSIMessageTask extends Task  {
                     ReservationConfirmCriteriaType rcct = new ReservationConfirmCriteriaType();
                     rcct.setSchedule(rrct.getSchedule());
                     rcct.setServiceType(rrct.getServiceType());
-                    rcct.setVersion(rrct.getVersion());
+                    if (rrct.getVersion() == null) {
+                        rcct.setVersion(0);
+                    } else {
+                        rcct.setVersion(rrct.getVersion());
+                    }
                     rcct.getAny().addAll(rrct.getAny());
                     rcct.getOtherAttributes().putAll(rrct.getOtherAttributes());
 

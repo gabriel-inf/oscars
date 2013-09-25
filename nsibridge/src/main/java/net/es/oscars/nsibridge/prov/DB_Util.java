@@ -2,14 +2,12 @@ package net.es.oscars.nsibridge.prov;
 
 import com.sun.xml.bind.api.ClassResolver;
 import net.es.oscars.common.soap.gen.SubjectAttributes;
-import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
-import net.es.oscars.nsibridge.beans.db.ExceptionRecord;
-import net.es.oscars.nsibridge.beans.db.NotificationRecord;
-import net.es.oscars.nsibridge.beans.db.ResvRecord;
+import net.es.oscars.nsibridge.beans.db.*;
 import net.es.oscars.nsibridge.common.PersistenceHolder;
 import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.config.TimingConfig;
 import net.es.oscars.nsibridge.ifces.CallbackMessages;
+import net.es.oscars.nsibridge.oscars.OscarsStates;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.*;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.point2point.EthernetVlanType;
@@ -46,6 +44,34 @@ public class DB_Util {
     private static final Logger log = Logger.getLogger(DB_Util.class);
     private static HashMap<String, ConnectionRecord> connectionRecords = new HashMap<String, ConnectionRecord>();
 
+    public static void updateDataplaneRecord(ConnectionRecord cr, OscarsStates os) throws ServiceException {
+        ResvRecord rr = ConnectionRecord.getCommittedResvRecord(cr);
+        if (rr == null) {
+            return;
+        }
+        DataplaneStatusRecord dsr = null;
+        for (DataplaneStatusRecord d : cr.getDataplaneStatusRecords()) {
+            if (d.getVersion() == rr.getVersion()) {
+                dsr = d;
+            }
+        }
+        if (dsr == null) {
+            dsr = new DataplaneStatusRecord();
+            cr.getDataplaneStatusRecords().add(dsr);
+        }
+        if (os.equals(OscarsStates.ACTIVE)) {
+            dsr.setActive(true);
+        } else {
+            dsr.setActive(false);
+        }
+        dsr.setVersion(rr.getVersion());
+        EntityManager em = PersistenceHolder.getEntityManager();
+        em.getTransaction().begin();
+        em.persist(cr);
+        em.getTransaction().commit();
+
+
+    }
 
     public static void createResvRecord(String connId, ReserveType rt) throws ServiceException {
         ConnectionRecord cr = getConnectionRecord(connId);
@@ -81,7 +107,7 @@ public class DB_Util {
         }
 
         if (evts == null) {
-            throw new ServiceException("no evts element!");
+            throw new ServiceException("Missing EthernetVlanType element!");
         }
 
         Long capacity = evts.getCapacity();

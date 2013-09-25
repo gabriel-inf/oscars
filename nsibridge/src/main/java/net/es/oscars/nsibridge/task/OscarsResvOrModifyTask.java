@@ -165,6 +165,7 @@ public class OscarsResvOrModifyTask extends OscarsTask  {
 
             try {
                 OscarsStates os = OscarsUtil.pollUntilResvStable(cr);
+                DB_Util.updateDataplaneRecord(cr, os);
                 if (os.equals(OscarsStates.RESERVED) || os.equals(OscarsStates.ACTIVE)) {
                     this.getStateMachine().process(this.successEvent, this.correlationId);
                     this.onSuccess();
