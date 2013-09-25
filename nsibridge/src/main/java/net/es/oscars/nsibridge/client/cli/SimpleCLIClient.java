@@ -3,15 +3,13 @@ package net.es.oscars.nsibridge.client.cli;
 import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
-import net.es.oscars.nsibridge.beans.SimpleRequest;
 import net.es.oscars.nsibridge.beans.SimpleRequestType;
 import net.es.oscars.nsibridge.client.ClientUtil;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.QuerySummarySyncFailed;
+import net.es.oscars.nsibridge.client.cli.handlers.SimpleOpHandler;
+import net.es.oscars.nsibridge.client.cli.output.SimpleOpOutputter;
+import net.es.oscars.nsibridge.client.cli.output.SimpleOpPrettyOutputter;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.provider.ConnectionProviderPort;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.QuerySummaryConfirmedType;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.QuerySummaryResultType;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.QueryType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
 
 import javax.xml.ws.Holder;
@@ -20,13 +18,17 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 
-
+/**
+ * Client to perform simple operations
+ */
 public class SimpleCLIClient {
     public static void main(String[] args){
         //initialize input variables
-        String url = "https://localhost:8500/nsi-v2/ConnectionServiceProvider";
+        String url = ClientUtil.DEFAULT_URL;
+        String clientBusFile = null;
         String connectionId = null;
-
+        CLIListener listener = null;
+        SimpleOpOutputter outputter = new SimpleOpPrettyOutputter();
 
         //parse options
         OptionParser parser = new OptionParser(){
@@ -37,6 +39,8 @@ public class SimpleCLIClient {
                 acceptsAll(Arrays.asList("o", "operation"), "the operation (required) - one of RESERVE_COMMIT, RESERVE_ABORT, PROVISION, RELEASE, TERMINATE").withRequiredArg().ofType(String.class);
                 acceptsAll(Arrays.asList("n", "nsa-requester"), "set the NSA requester").withRequiredArg().ofType(String.class);
                 acceptsAll(Arrays.asList("r", "reply-url"), "the URL to which the provider should reply").withRequiredArg().ofType(String.class);
+                acceptsAll(Arrays.asList("l", "listener"), "Starts listener at reply-url. Should be given location of the bus configuration file.").withRequiredArg().ofType(String.class);
+                acceptsAll(Arrays.asList("f", "bus-file"), "bus file that describes charateristics of HTTP(S) connections").withRequiredArg().ofType(String.class);
             }
         };
         SimpleRequestType srt = null;
@@ -62,6 +66,18 @@ public class SimpleCLIClient {
                 header.setReplyTo(replyTo);
             }
             
+            if(opts.has("l")){
+                if(!opts.has("r")){
+                    System.err.println("Cannot specify -l without -r");
+                    System.exit(0);
+                }
+                listener = new CLIListener(header.getReplyTo(), (String)opts.valueOf("l"), new SimpleOpHandler(outputter));
+            }
+            
+            if(opts.has("f")){
+                clientBusFile = (String)opts.valueOf("f");
+            }
+            
             if(opts.has("i")){
                 connectionId = ((String) opts.valueOf("i"));
             } else {
@@ -74,10 +90,13 @@ public class SimpleCLIClient {
             }
 
             if (opts.has("o")) {
-                srt = SimpleRequestType.valueOf((String) opts.valueOf("o"));
+                try{
+                    srt = SimpleRequestType.valueOf((String) opts.valueOf("o"));
+                }catch(Exception e){
+                    System.err.println("Unrecognized operation " + opts.valueOf("o"));
+                    System.exit(1);
+                }
             }
-
-
         } catch (OptionException e) {
             System.err.println(e.getMessage());
             try{
@@ -95,8 +114,11 @@ public class SimpleCLIClient {
             System.err.println("Undefined operation");
             System.exit(1);
         }
-
-        ConnectionProviderPort client = ClientUtil.createProviderClient(url);
+        
+        if(listener != null){
+            listener.start();
+        }
+        ConnectionProviderPort client = ClientUtil.createProviderClient(url, clientBusFile);
         try {
             switch (srt) {
                 case PROVISION:

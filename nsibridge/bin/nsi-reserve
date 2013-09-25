@@ -1,8 +1,9 @@
 #!/bin/bash
 
 vers="1.0"
-log4j="-Dlog4j.configuration=file:./config/client.log4j.properties"
-javaFlags="-Djava.net.preferIPv4Stack=true -Dnsibridge.beans=file:./config/beans.xml"
+BINDIR=`dirname $0`
+log4j="-Dlog4j.configuration=file:${BINDIR}/../config/client.log4j.properties"
+javaFlags="-Djava.net.preferIPv4Stack=true -Dnsibridge.beans=file:${BINDIR}/../config/beans.xml"
 jar="-jar $OSCARS_DIST/nsibridge/target/nsibridge-$vers.one-jar.jar"
 
 mainClass="-Done-jar.main.class=net.es.oscars.nsibridge.client.cli.ReserveCLIClient"

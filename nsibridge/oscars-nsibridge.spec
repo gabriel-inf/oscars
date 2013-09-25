@@ -55,7 +55,6 @@ install -m 755 %{package_name}/scripts/oscars-%{package_name} %{buildroot}/etc/i
 install -m 755 %{package_name}/config/rpm_defaults/* %{buildroot}/%{oscars_home}/%{service_name}/conf/
 perl -e 's/^vers=/#vers=/g' -pi $(find %{buildroot}/%{install_base}/bin -type f)
 perl -e 's/%{package_name}-\$vers/%{package_name}/g' -pi $(find %{buildroot}/%{install_base}/bin -type f)
-perl -e 's/file:\.\/config/file:\/etc\/oscars\/%{service_name}\/conf/g' -pi $(find %{buildroot}/%{install_base}/bin -type f)
 
 %post
 mkdir -p %{run_dir}
