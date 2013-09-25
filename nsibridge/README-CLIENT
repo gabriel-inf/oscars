@@ -1,0 +1,118 @@
+=================================
+Summary
+=================================
+The OSCARS nsibridge includes a set of command-line clients that can be used to send NSI protocol messages to any Provider Agent. The package includes three clients:
+    1. nsi-query: Client capable of sending querySummary, querySummarySync, and queryRecursive requests
+    2. nsi-reserve: Client capable of sending reserve requests (including those that create a new reservation or modify an existing reservation)
+    3. nsi-simple: Client capable of sending reserveCommit, reserveAbort, provision, release, terminate requests
+
+=================================
+Quickstart
+=================================
+1. Create a keystore and import the SSL certificates of the providers you wish to contact. See the 'keytool' command from the JDK for directions on how to do this
+2. Open config client-bus-ssl.xml and change the keystore file and password to that of the keystore you just created. Also add your HTTP BASIC username and password if required.
+3. Perform a simple query(replace https://url-to-provider with the URL to you the provider you wish to contact):
+    ./bin/nsi-query -f config/client-bus-ssl.xml -u https://url-to-provider
+4. Run through the connection lifecycle (replace parameters to match something valid for your environment):
+    ./bin/nsi-reserve-u https://url-to-provider -f config/client-bus-ssl.xml -r https://my-listener:8600/nsi-listener -l config/client-listener-bus-ssl.xml -c 100 -p test --src-net urn:ogf:network:testdomain-1:2013 --src-local urn:ogf:network:testdomain-1:2013:stp1 --src-vlan 1784 --dst-net urn:ogf:network:testdomain-1:2013 --dst-local urn:ogf:network:testdomain-1:2013:stp2 --dst-vlan 1784
+    ./bin/nsi-simple -u https://url-to-provider -f config/client-bus-ssl.xml -r https://my-listener:8600/nsi-listener -l config/client-listener-bus-ssl.xml -o RESERVE_COMMIT -i aaaa-bbbb-ccccc-dddd 
+    ./bin/nsi-simple -u https://url-to-provider -f config/client-bus-ssl.xml -r https://my-listener:8600/nsi-listener -l config/client-listener-bus-ssl.xml -o PROVISION -i aaaa-bbbb-ccccc-dddd 
+    ./bin/nsi-simple -u https://url-to-provider -f config/client-bus-ssl.xml -r https://my-listener:8600/nsi-listener -l config/client-listener-bus-ssl.xml -o RELEASE -i aaaa-bbbb-ccccc-dddd 
+    ./bin/nsi-simple -u https://url-to-provider -f config/client-bus-ssl.xml -r https://my-listener:8600/nsi-listener -l config/client-listener-bus-ssl.xml -o TERMINATE -i aaaa-bbbb-ccccc-dddd 
+    
+=================================
+Configuration Files
+=================================
+Under the "config" directory there are a few important configuration files:
+    1. beans.xml: This file contains default settings for the client and may save you from passing the "-f" option to the client every time they run. The only portion of this file relevant to the client is the portion with bean id "clientConfig". The rest can be ignored and is not relevant to the CLI clients. It will look something like the following:
+    <bean id="clientConfig"
+          class="net.es.oscars.nsibridge.config.ClientConfig"
+          scope="singleton">
+        <property name="bus" value="config/client-bus.xml"/>
+        <property name="sslBus" value="config/client-bus-ssl.xml"/>
+    </bean>
+    The "bus" and "sslBus" properties point to a default configuration file for HTTP connections and HTTPS connections respectively. More about these files later. You should set these to an absolute path on your filesystem of possible. You do NOT need to set these if you plan to use the -f option with your clients.
+
+    2. client-bus.xml: The HTTP (i.e. not https) configuration file for the client. You can set HTTP BASIC parameters and other fields here for your client if it is using plain HTTP.
+    
+    3. client-bus-ssl.xml: The HTTPS configuration file for your client. You can set keystores and passwords for use when interacting with a provider that runs https. You can also set HTTP BASIC parameters for use by your client here. See the provided file for examples.
+    
+    4. client-listener-bus.xml: If you have the clients start a listener with the -l option, this is an example of a file for listening using a plan HTTP connection on port 8600. Update this file if you want to use a different port or change any other HTTP settings.
+    
+    5. client-listener-bus-ssl.xml: If you have the clients start a listener with the -l option, this is an example of a file for listening using a plan HTTPS connection on port 8600. You can change the port, keys, and keystores used by the listener to accept replies from the provider.
+    
+    6. client.log4j.properties: Logging settings for the clients. By default it will log all XML messages sent be teh client. You may want to change the log location to an absolute path.
+    
+=================================
+Command-Line Help
+=================================
+All clients have a '-h' option that will print information about all available options. NOT ALL OPTIONS ARE COVERED IN THIS README FILE. If you have a question about a particular option this option can be a useful resource.
+
+=================================
+nsi-query Examples
+=================================
+
+Command: ./bin/nsi-query
+Description:
+Sends a querySummarySync message to the default provider URL https://localhost:8500/nsi-v2/ConnectionServiceProvider and the SSL bus file defined in config/beans.xml. The results will be printed to the stdout when they are received.
+
+Command: ./bin/nsi-query -i aaaa-bbbb-ccccc-dddd
+Description:
+Sends a querySummarySync message for the details of the connection with ID aaaa-bbbb-ccccc-dddd to the default provider URL and using the SSL bus file defined in config/beans.xml. The results will be printed to the stdout when they are received.
+
+Description:
+Sends a querySummary message (asynchronous) to the the default provider URL and using the client SSL bus file defined in beans.xml. Replies will be sent to https://my-listener:8600/nsi-listener. The listener will be created using the SSL settings defined in client-listener-bus-ssl.xml. Results will be printed to stdout when the asynchronous message is received and will exit once a message arrives.
+
+Command: ./bin/nsi-query -f config/client-bus-ssl.xml -u https://url-to-provider
+Description:
+Sends a querySummarySync message to the provider at -u https://url-to-provider and the SSL bus file defined by the -f option config/client-bus-ssl.xml. The results will be printed to the stdout when they are received.
+
+Command: ./bin/nsi-query -r https://my-listener:8600/nsi-listener
+Description:
+Sends a querySummary message (asynchronous) to the the default provider URL and using the client SSL bus file defined in beans.xml. Replies will be sent to https://my-listener:8600/nsi-listener. The listener will NOT be created by the client in this example.
+
+Command: ./bin/nsi-query -r https://my-listener:8600/nsi-listener -l config/client-listener-bus-ssl.xml
+Description:
+Sends a querySummary message (asynchronous) to the the default provider URL and using the client SSL bus file defined in beans.xml. Replies will be sent to https://my-listener:8600/nsi-listener. The listener will be created using the SSL settings defined in client-listener-bus-ssl.xml. Results will be printed to stdout when the asynchronous message is received and will exit once a message arrives.
+
+Command: ./bin/nsi-query -R -r https://my-listener:8600/nsi-listener -l config/client-listener-bus-ssl.xml
+Description:
+Sends a queryRecursive message to the the default provider URL and uses the client SSL bus file defined in beans.xml. Replies will be sent to https://my-listener:8600/nsi-listener. The listener will be created using the SSL settings defined in client-listener-bus-ssl.xml. Results will be printed to stdout when the asynchronous message is received and will exit once a message arrives.
+
+=================================
+nsi-reserve Examples
+=================================
+Command: ./bin/nsi-reserve -u https://url-to-provider -c 100 -p test --src-net urn:ogf:network:testdomain-1:2013 --src-local urn:ogf:network:testdomain-1:2013:stp1 --src-vlan 1784 --dst-net urn:ogf:network:testdomain-1:2013 --dst-local urn:ogf:network:testdomain-1:2013:stp2 --dst-vlan 1784 -b 1380119728 -e 1380120628
+Description: 
+Sends an nsi-reserve request to the provider at https://url-to-provider. No reply-to address is given so the provider will not respond with a confirmed message. The request is between urn:ogf:network:testdomain-1:2013:stp1 and urn:ogf:network:testdomain-1:2013:stp2 with VLAN 1784 on each end. The capacity is 100Mbps and the description is 'test'. the reservation begins at the time represented by Unix timestamp 1380119728 and ends at 1380120628.
+
+Command: ./bin/nsi-reserve -r https://my-listener:8600/nsi-listener -l config/client-listener-bus-ssl.xml -u https://url-to-provider -c 100 -p test --src-net urn:ogf:network:testdomain-1:2013 --src-local urn:ogf:network:testdomain-1:2013:stp1 --src-vlan 1784 --dst-net urn:ogf:network:testdomain-1:2013 --dst-local urn:ogf:network:testdomain-1:2013:stp2 --dst-vlan 1784 -b 1380119728 -e 1380120628
+Description: 
+Same as previous example except a reply-to address is given and a listener is started at https://my-listener:8600/nsi-listener using the provided SSL configuration.
+
+Command: ./bin/nsi-reserve -i aaaa-bbbb-ccccc-dddd -v 2 -r https://my-listener:8600/nsi-listener -l config/client-listener-bus-ssl.xml -u https://url-to-provider -c 200 -p test --src-net urn:ogf:network:testdomain-1:2013 --src-local urn:ogf:network:testdomain-1:2013:stp1 --src-vlan 1784 --dst-net urn:ogf:network:testdomain-1:2013 --dst-local urn:ogf:network:testdomain-1:2013:stp2 --dst-vlan 1784 -b 1380119728 -e 1380120628
+Description: 
+Modifies previous example to 200Mbps given connection ID aaaa-bbbb-ccccc-dddd and sets the version to 2.
+
+=================================
+nsi-simple Examples
+=================================
+Command: ./bin/nsi-simple -u https://url-to-provider -o RESERVE_COMMIT -i aaaa-bbbb-ccccc-dddd 
+Description:
+Commits connection aaaa-bbbb-ccccc-dddd at provider https://url-to-provider
+
+Command: ./bin/nsi-simple -u https://url-to-provider -o RESERVE_ABORT -i aaaa-bbbb-ccccc-dddd 
+Description:
+Cancels connection reservation identified by aaaa-bbbb-ccccc-dddd at provider https://url-to-provider
+
+Command: ./bin/nsi-simple -u https://url-to-provider -o PROVISION -i aaaa-bbbb-ccccc-dddd 
+Description:
+Provisions connection aaaa-bbbb-ccccc-dddd at provider https://url-to-provider
+
+Command: ./bin/nsi-simple -u https://url-to-provider -o RELEASE -i aaaa-bbbb-ccccc-dddd 
+Description:
+Releases connection aaaa-bbbb-ccccc-dddd at provider https://url-to-provider
+
+Command: ./bin/nsi-simple -u https://url-to-provider -o TERMINATE -i aaaa-bbbb-ccccc-dddd 
+Description:
+Terminates connection aaaa-bbbb-ccccc-dddd at provider https://url-to-provider
