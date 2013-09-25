@@ -45,6 +45,15 @@
 
 
   <http:conduit name="*.http-conduit">
+    <!-- Uncomment below for HTTP BASIC authentication -->
+    <!-- 
+    <http:authorization>
+        <sec:UserName>myuser</sec:UserName>
+        <sec:Password>mypassword</sec:Password>
+        <sec:AuthorizationType>Basic</sec:AuthorizationType>
+    </http:authorization> 
+    -->
+  
     <http:tlsClientParameters disableCNCheck="true"  secureSocketProtocol="SSL">
 
         <sec:trustManagers>
@@ -55,10 +64,6 @@
             <sec:keyStore type="JKS" password="client-keystore"
                           file="config/client-oscars-keystore.jks"/>
         </sec:keyManagers>
-
-
-
-
 
       <sec:cipherSuitesFilter>
         <!-- these filters ensure that a ciphersuite with
