@@ -99,6 +99,3 @@ exit all
 </#if>
 
 configure service vpls ${vpls.id} no shutdown
-
-admin rollback save
-admin save

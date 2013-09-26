@@ -37,8 +37,3 @@ configure router mpls no path "${path.name}"
 
 configure qos no sap-ingress ${ingqos.id}
 
-admin rollback save
-admin save
-
-
-
