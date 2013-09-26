@@ -34,16 +34,13 @@ public class RequesterCommands implements CommandMarker {
     public boolean listenerStartable() {
         RequesterProfile currentProfile = NsiCliState.getInstance().getRequesterProfile();
         if (currentProfile == null) {
-            log.debug("no profile");
             return false;
         }
         if (NsiCliState.getInstance().isListenerStarted()) {
-            log.debug("already started");
             return false;
         }
 
         if (! NsiCliState.getInstance().isListenerStartable()) {
-            log.debug("not startable");
             return false;
         }
         return true;

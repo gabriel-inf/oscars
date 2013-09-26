@@ -32,6 +32,7 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.ws.Holder;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.UUID;
 
@@ -68,6 +69,16 @@ public class NsiCommands implements CommandMarker {
         if (override) return true;
         if (!haveProfiles()) return false;
         if (!haveListener()) return false;
+        return (NsiCliState.getInstance().isNsiAvailable());
+    }
+
+    @CliAvailabilityIndicator({"nsi wait"})
+    public boolean canWait() {
+        if (override) return true;
+        if (!haveProfiles()) return false;
+        if (!haveListener()) return false;
+        if (!haveConnectionId()) return false;
+
         return (NsiCliState.getInstance().isNsiAvailable());
     }
 
@@ -126,6 +137,62 @@ public class NsiCommands implements CommandMarker {
         return true;
     }
 
+
+
+    @CliCommand(value = "nsi wait ", help = "wait until a callback message has arrived")
+    public String nsi_wait(
+            @CliOption(key = { "m" }, mandatory = true, help = "the callback message type") final NsiCallback callback) {
+        String out = "";
+        boolean timeout = false;
+        Long nowMillis = (new Date()).getTime();
+        Long until = nowMillis + 120*1000;
+        Long sleepTime = 100L;
+        String connId = NsiCliState.getInstance().getConnectionId();
+
+        while (!gotCallback(connId, callback) && !timeout) {
+            try {
+                Thread.sleep(sleepTime);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                return e.getMessage();
+            }
+            nowMillis = (new Date()).getTime();
+            if (nowMillis > until) {
+                timeout = true;
+            }
+        }
+        if (timeout || !gotCallback(connId, callback)) {
+            out += "received callback "+callback+" for connectionId: "+connId;
+
+        } else {
+            out += "never got callback "+callback+" for connectionId: "+connId;
+        }
+
+
+        return out;
+    }
+    private boolean gotCallback(String connectionId, NsiCallback callback) {
+        switch (callback) {
+
+            case COMMIT_CONFIRMED:
+                if (NsiCliState.getInstance().isCommitted(connectionId)) {
+                    return true;
+                }
+                break;
+            case RESERVE_CONFIRMED:
+                if (NsiCliState.getInstance().isConfirmed(connectionId)) {
+                    return true;
+                }
+                break;
+            case PROVISION_CONFIRMED:
+                if (NsiCliState.getInstance().isProvisioned(connectionId)) {
+                    return true;
+                }
+                break;
+        }
+        return false;
+
+    }
 
     @CliCommand(value = "nsi help", help = "display help")
     public String nsi_help() {
