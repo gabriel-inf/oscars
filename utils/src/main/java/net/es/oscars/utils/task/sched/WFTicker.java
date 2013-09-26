@@ -15,6 +15,11 @@ public class WFTicker implements Job {
     public void execute(JobExecutionContext arg0) throws JobExecutionException {
         Workflow wf = net.es.oscars.utils.task.sched.Workflow.getInstance();
         long now = new Date().getTime();
+        Long sec = now / 1000;
+        if (sec % 5 == 0) {
+            log.debug("WFTicker alive");
+        }
+
         try {
             Task task = wf.nextRunnable(now);
             if (task != null) {
