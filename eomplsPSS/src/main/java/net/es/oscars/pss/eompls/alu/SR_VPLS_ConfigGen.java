@@ -215,6 +215,17 @@ public class SR_VPLS_ConfigGen implements DeviceConfigGenerator, PostCommitConfi
     private SR_VPLS_TemplateParams getModifyTemplateParams(ResDetails res, SR_VPLS_DeviceIdentifiers ids) throws PSSException  {
         SR_VPLS_TemplateParams params = new SR_VPLS_TemplateParams();
 
+        boolean softPolice = true;
+        for (OptionalConstraintType oct : res.getOptionalConstraint()) {
+            if (oct.getCategory().equals("policing")) {
+                if (oct.getValue().getStringValue().equals("hard")) {
+                    softPolice = false;
+                }
+            }
+        }
+
+
+
         ReservedConstraintType rc = res.getReservedConstraint();
         Integer bw = rc.getBandwidth();
         Long ingQosBandwidth = 1L*bw;
@@ -222,6 +233,7 @@ public class SR_VPLS_ConfigGen implements DeviceConfigGenerator, PostCommitConfi
         HashMap ingqos = new HashMap();
         ingqos.put("id", ids.getQosId().toString());
         ingqos.put("bandwidth", ingQosBandwidth);
+        ingqos.put("soft", softPolice);
 
 
         params.setIngqos(ingqos);
