@@ -120,7 +120,7 @@ public class OscarsCancelOrModifyTask extends OscarsTask  {
             OscarsStates os;
             try {
                 os = OscarsUtil.pollUntilResvStable(cr);
-            } catch (ServiceException ex) {
+            } catch (Exception ex) {
                 this.onFail();
                 return;
             }

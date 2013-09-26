@@ -7,6 +7,9 @@ public enum OscarsStates {
     ACTIVE,
     FAILED,
     UNKNOWN,
+    COMMITTED,
+    MODCOMMITTED,
+    FINISHED,
 
     CREATED,
     ACCEPTED,
@@ -15,4 +18,6 @@ public enum OscarsStates {
     INCOMMIT,
     INTEARDOWN,
     INSETUP,
+    INCANCEL
+    
 }
