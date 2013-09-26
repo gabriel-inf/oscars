@@ -69,7 +69,7 @@ public class Schedule {
             // look at the queue every second
             SimpleTrigger inspectorTrigger = new SimpleTrigger("WFTicker", "WFTicker");
             inspectorTrigger.setRepeatCount(SimpleTrigger.REPEAT_INDEFINITELY);
-            inspectorTrigger.setRepeatInterval(500);
+            inspectorTrigger.setRepeatInterval(1000);
             JobDetail inspectorJobDetail = new JobDetail("WFTicker", "WFTicker", WFTicker.class);
             this.scheduler.scheduleJob(inspectorJobDetail, inspectorTrigger);
             taskRunnerStarted = true;
