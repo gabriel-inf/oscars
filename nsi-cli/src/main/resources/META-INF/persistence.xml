@@ -1,0 +1,18 @@
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
+             version="2.0">
+    <persistence-unit name="net.es.nsi.cli">
+        <provider>org.hibernate.ejb.HibernatePersistence</provider>
+        <class>net.es.nsi.cli.config.ResvProfile</class>
+        <class>net.es.nsi.cli.config.DefaultProfiles</class>
+        <class>net.es.nsi.cli.config.ProviderProfile</class>
+        <class>net.es.nsi.cli.config.RequesterProfile</class>
+        <class>net.es.nsi.cli.config.NsiAuth</class>
+        <class>net.es.nsi.cli.config.ProviderServer</class>
+        <properties>
+            <property name="hibernate.ejb.cfgfile" value="hibernate.xml"/>
+        </properties>
+    </persistence-unit>
+
+</persistence>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+
+    <bean id="defaultProvider" class="net.es.nsi.cli.config.ProviderProfile" scope="singleton">
+        <property name="name" value="default" />
+        <property name="serviceType" value="http://services.ogf.org/nsi/2013/07/descriptions/EVTS.A-GOLE"/>
+        <property name="providerServer" ref="defaultUPA" />
+    </bean>
+
+    <bean id="defaultResv" class="net.es.nsi.cli.config.ResvProfile" scope="singleton">
+        <property name="name" value="default" />
+        <property name="srcNet" value="urn:ogf:network:somenetwork" />
+        <property name="dstNet" value="urn:ogf:network:othernetwork" />
+        <property name="srcStp" value="urn:ogf:network:somenetwork:somestp" />
+        <property name="dstStp" value="urn:ogf:network:othernetwork:otherstp" />
+        <property name="srcVlan" value="333" />
+        <property name="dstVlan" value="333" />
+        <property name="bandwidth" value="1" />
+    </bean>
+
+
+    <bean id="defaultRequester" class="net.es.nsi.cli.config.RequesterProfile" scope="singleton">
+        <property name="name" value="default" />
+        <property name="requesterId" value="NsiCliRequesterNSA" />
+        <property name="busConfig" value="config/server-bus.xml"/>
+        <property name="url" value="http://*:8900/Requester" />
+    </bean>
+
+
+    <bean id="defaultUPA" class="net.es.nsi.cli.config.ProviderServer" scope="singleton">
+        <property name="busConfig" value="config/client-bus.xml"/>
+        <property name="auth" ref="noAuth" />
+        <property name="url" value="http://changeit.hostname.org/ConnectionService" />
+    </bean>
+
+
+    <bean id="sslAuth" class="net.es.nsi.cli.config.NsiAuth" scope="singleton">
+        <property name="authType" value="SSL" />
+    </bean>
+
+    <bean id="noAuth" class="net.es.nsi.cli.config.NsiAuth" scope="singleton">
+        <property name="authType" value="NONE" />
+    </bean>
+
+
+    <bean id="basicAuth" class="net.es.nsi.cli.config.NsiAuth" scope="singleton">
+        <property name="authType" value="BASIC" />
+        <property name="username" value="USERNAME" />
+        <property name="password" value="CHANGEIT" />
+    </bean>
+
+
+</beans>
