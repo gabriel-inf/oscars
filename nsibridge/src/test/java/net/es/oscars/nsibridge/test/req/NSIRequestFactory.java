@@ -100,7 +100,7 @@ public class NSIRequestFactory {
         CommonHeaderType inHeader = new CommonHeaderType();
         inHeader.setProtocolVersion("http://schemas.ogf.org/nsi/2012/03/connection");
         if (corrId == null || corrId.equals("")) {
-            inHeader.setCorrelationId("urn:" + UUID.randomUUID().toString());
+            inHeader.setCorrelationId("urn:uuid:" + UUID.randomUUID().toString());
         } else {
             inHeader.setCorrelationId(corrId);
         }

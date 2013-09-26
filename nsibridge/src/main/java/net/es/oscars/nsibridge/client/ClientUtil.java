@@ -171,7 +171,7 @@ public class ClientUtil {
     public static  Holder<CommonHeaderType> makeClientHeader(){
         CommonHeaderType hd = new CommonHeaderType();
         hd.setRequesterNSA(DEFAULT_REQUESTER);
-        hd.setCorrelationId(UUID.randomUUID().toString());
+        hd.setCorrelationId("urn:uuid:"+UUID.randomUUID().toString());
         Holder<CommonHeaderType> header = new Holder<CommonHeaderType>();
         header.value = hd;
         

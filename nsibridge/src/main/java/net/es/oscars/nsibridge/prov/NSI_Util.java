@@ -76,7 +76,7 @@ public class NSI_Util {
         NsaConfig cfg = ax.getBean("nsaConfigProvider", JsonNsaConfigProvider.class).getConfig("local");
 
 
-        ht.setCorrelationId(UUID.randomUUID().toString());
+        ht.setCorrelationId("urn:uuid:"+UUID.randomUUID().toString());
         ht.setProtocolVersion(cfg.getProtocolVersion());
         ht.setProviderNSA(cfg.getNsaId());
         ht.setRequesterNSA(requesterNsa);
