@@ -35,14 +35,14 @@
 
         <httpj:engine-factory bus="cxf">
 
-            <httpj:engine port="8500">
+            <httpj:engine port="8900">
                 <httpj:tlsServerParameters>
                     <sec:trustManagers>
-                        <sec:keyStore type="JKS" password="server-trust"
+                        <sec:keyStore type="JKS" password="CHANGEIT"
                                       file="config/server-truststore.jks"/>
                     </sec:trustManagers>
-                    <sec:keyManagers keyPassword="server-key">
-                        <sec:keyStore type="JKS" password="server-keystore"
+                    <sec:keyManagers keyPassword="CHANGEIT">
+                        <sec:keyStore type="JKS" password="CHANGEIT"
                                       file="config/server-keystore.jks"/>
                     </sec:keyManagers>
 

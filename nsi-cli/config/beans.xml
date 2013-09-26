@@ -5,6 +5,8 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
     http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
+    <!-- just defaults here -->
+    <!-- you may empty this file if you want -->
 
     <bean id="defaultProvider" class="net.es.nsi.cli.config.ProviderProfile" scope="singleton">
         <property name="name" value="default" />
@@ -28,7 +30,7 @@
         <property name="name" value="default" />
         <property name="requesterId" value="NsiCliRequesterNSA" />
         <property name="busConfig" value="config/server-bus.xml"/>
-        <property name="url" value="http://*:8900/Requester" />
+        <property name="url" value="http://localhost:8900/Requester" />
     </bean>
 
 

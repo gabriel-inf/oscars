@@ -169,7 +169,12 @@ public class DefaultsCommands implements CommandMarker {
     public String defaults_save() {
         DefaultProfiles defs = NsiCliState.getInstance().getDefs();
         if (defs != null) {
-            DB_Util.save(defs);
+            try {
+                DB_Util.save(defs);
+            } catch (Exception ex) {
+                log.error(ex.getMessage(), ex);
+                return ex.getMessage();
+            }
             String out = defs.toString();
             return out;
         }

@@ -15,6 +15,7 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
@@ -33,16 +34,17 @@ public class ProviderCommands implements CommandMarker {
     @CliCommand(value = "prov help", help = "display help")
     public String prov_help() {
         String help = "";
-        help += "Provider Settings:\n";
+        help += "Provider Profiles:\n";
         help += "==================\n";
-        help += "use 'prov load' to load and use a provider profile\n";
-        help += "use 'prov all' to show all available profiles\n";
-        help += "use 'prov show' to show the profile settings\n";
-        help += "use 'prov set' to change settings in the current profile\n";
-        help += "use 'prov copy' to make a copy of the current profile \n";
-        help += "use 'prov save' to save the current profile\n";
-        help += "use 'prov delete' to delete a profile\n";
-        help += "use 'prov new' to create a new empty profile\n";
+        help += "'prov all' shows all available profiles\n";
+        help += "'prov copy' makes a copy of the current profile (*)\n";
+        help += "'prov delete' deletes a profile\n";
+        help += "'prov load' loads a profile for use\n";
+        help += "'prov new' creates a new empty profile\n";
+        help += "'prov save' saves the current profile (*)\n";
+        help += "'prov set' changes settings in the current profile (*)\n";
+        help += "'prov show' shows the profile settings\n";
+        help += "   (*) : operation only available if a current profile exists.\n";
         return help;
     }
 
@@ -162,13 +164,13 @@ public class ProviderCommands implements CommandMarker {
     @CliCommand(value = "prov set", help = "set current provider profile parameters")
     public String prov_set(
             @CliOption(key = { "n" }, mandatory = false, help = "profile name") final String name,
-            @CliOption(key = { "st" }, mandatory = false, help = "profile name") final String serviceType,
-            @CliOption(key = { "u" }, mandatory = false, help = "profile name") final String url,
-            @CliOption(key = { "bc" }, mandatory = false, help = "profile name") final String busConfig,
-            @CliOption(key = { "au" }, mandatory = false, help = "profile name") final AuthType auth,
-            @CliOption(key = { "u" }, mandatory = false, help = "profile name") final String username,
-            @CliOption(key = { "p" }, mandatory = false, help = "profile name") final String password,
-            @CliOption(key = { "o" }, mandatory = false, help = "profile name") final String oauth
+            @CliOption(key = { "st" }, mandatory = false, help = "service type") final String serviceType,
+            @CliOption(key = { "url" }, mandatory = false, help = "url") final String url,
+            @CliOption(key = { "bus" }, mandatory = false, help = "busConfig") final File busConfig,
+            @CliOption(key = { "auth" }, mandatory = false, help = "auth type") final AuthType auth,
+            @CliOption(key = { "u" }, mandatory = false, help = "http-basic username") final String username,
+            @CliOption(key = { "p" }, mandatory = false, help = "http-basic password") final String password,
+            @CliOption(key = { "o" }, mandatory = false, help = "oauth token") final String oauth
     )
     {
         ProviderProfile currentProfile = NsiCliState.getInstance().getProvProfile();
@@ -176,7 +178,7 @@ public class ProviderCommands implements CommandMarker {
         if (name != null)           currentProfile.setName(name);
         if (serviceType != null)    currentProfile.setServiceType(serviceType);
         if (url != null)            currentProfile.getProviderServer().setUrl(url);
-        if (busConfig != null)      currentProfile.getProviderServer().setBusConfig(busConfig);
+        if (busConfig != null)      currentProfile.getProviderServer().setBusConfig(busConfig.getAbsolutePath());
         if (auth != null)           currentProfile.getProviderServer().getAuth().setAuthType(auth);
         if (username != null)       currentProfile.getProviderServer().getAuth().setUsername(username);
         if (password != null)       currentProfile.getProviderServer().getAuth().setPassword(password);

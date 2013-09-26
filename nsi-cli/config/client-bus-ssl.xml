@@ -1,16 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  ** This is the CXF runtime configuration file. It currently only includes
-  ** JETTY subsytem. Note that Spring is used only for the purpose of this 
-  ** configuration.
- -->
+
 
 <beans xmlns="http://www.springframework.org/schema/beans"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns:cxf="http://cxf.apache.org/core"
   xmlns:sec="http://cxf.apache.org/configuration/security"
   xmlns:http="http://cxf.apache.org/transports/http/configuration"
-  xmlns:jaxws="http://java.sun.com/xml/ns/jaxws"
   xsi:schemaLocation="
            http://cxf.apache.org/core
            http://cxf.apache.org/schemas/core.xsd
@@ -47,24 +42,13 @@
   <http:conduit name="*.http-conduit">
     <http:tlsClientParameters disableCNCheck="true"  secureSocketProtocol="SSL">
         <sec:trustManagers>
-            <sec:keyStore type="JKS" password="keypass"
-                          file="config/client-oscars-keystore.jks"/>
+            <sec:keyStore type="JKS" password="CHANGEIT"
+                          file="config/client-keystore.jks"/>
         </sec:trustManagers>
-        <sec:keyManagers keyPassword="keypass">
-            <sec:keyStore type="JKS" password="keypass"
-                          file="config/client-oscars-keystore.jks"/>
+        <sec:keyManagers keyPassword="CHANGEIT">
+            <sec:keyStore type="JKS" password="CHANGEIT"
+                          file="config/client-keystore.jks"/>
         </sec:keyManagers>
-<!--
-        <sec:trustManagers>
-            <sec:keyStore type="JKS" password="client-trust"
-                          file="config/client-oscars-keystore.jks"/>
-        </sec:trustManagers>
-        <sec:keyManagers keyPassword="client-key">
-            <sec:keyStore type="JKS" password="client-keystore"
-                          file="config/client-oscars-keystore.jks"/>
-        </sec:keyManagers>
--->
-
 
 
 

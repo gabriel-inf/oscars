@@ -30,15 +30,16 @@ public class ResvCommands implements CommandMarker {
     public String resv_help() {
         String help = "";
         help += "Reservation Profiles:\n";
-        help += "==================\n";
-        help += "use 'resv load' to load and use a reservation profile\n";
-        help += "use 'resv all' to show all available profiles\n";
-        help += "use 'resv show' to show the profile settings\n";
-        help += "use 'resv set' to change settings in the current profile\n";
-        help += "use 'resv copy' to make a copy of the current profile \n";
-        help += "use 'resv save' to save the current profile\n";
-        help += "use 'resv delete' to delete a profile\n";
-        help += "use 'resv new' to create a new empty profile\n";
+        help += "=====================\n";
+        help += "'resv all' shows all available profiles\n";
+        help += "'resv copy' makes a copy of the current profile (*)\n";
+        help += "'resv delete' deletes a profile\n";
+        help += "'resv load' loads a profile for use\n";
+        help += "'resv new' creates a new empty profile\n";
+        help += "'resv save' saves the current profile (*)\n";
+        help += "'resv set' changes settings in the current profile (*)\n";
+        help += "'resv show' shows the profile settings\n";
+        help += "   (*) : operation only available if a current profile exists.\n";
         return help;
     }
 
@@ -179,6 +180,9 @@ public class ResvCommands implements CommandMarker {
         if (bw != null)         currentProfile.setBandwidth(bw);
         if (gri != null)        currentProfile.setGri(gri);
         if (description!= null) currentProfile.setDescription(description);
+
+        if (version != null)    currentProfile.setVersion(version);
+
 
         if (srcVlan != null)    currentProfile.setSrcVlan(srcVlan);
         if (srcNet != null)     currentProfile.setSrcNet(srcNet);

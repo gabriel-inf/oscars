@@ -78,7 +78,7 @@ public class CliNsiHandler implements ConnectionRequesterPort {
                                  @WebParam(name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) CommonHeaderType header,
                                  @WebParam(mode = WebParam.Mode.OUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> header1)
             throws ServiceException {
-        System.out.println("\nReceived reserveConfirmed for connectionId: "+connectionId+" (was set as current)\n");
+        System.out.println("\nReceived reserveConfirmed for connectionId: "+connectionId+" (set as current)\n");
         NsiCliState.getInstance().setConnectionId(connectionId);
         NsiCliState.getInstance().setConfirmed(connectionId, true);
     }
@@ -99,9 +99,13 @@ public class CliNsiHandler implements ConnectionRequesterPort {
 
     @Override
     public void reserveCommitConfirmed(@WebParam(name = "connectionId", targetNamespace = "") String connectionId, @WebParam(name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) CommonHeaderType header, @WebParam(mode = WebParam.Mode.OUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> header1) throws ServiceException {
-        System.out.println("\nReceived reserveCommitConfirmed for connectionId: "+connectionId+" (was set as current)\n");
+        System.out.println("\nReceived reserveCommitConfirmed for connectionId: "+connectionId+" (set as current).\n");
         NsiCliState.getInstance().setConnectionId(connectionId);
         NsiCliState.getInstance().setCommitted(connectionId, true);
+        int oldV = NsiCliState.getInstance().getResvProfile().getVersion();
+        int newV = oldV++;
+        NsiCliState.getInstance().getResvProfile().setVersion(newV);
+        System.out.println("\nNext reserve with this profile will have version: "+newV+"\n");
     }
 
     @Override

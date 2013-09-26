@@ -1,0 +1,38 @@
+prov load --n default
+prov copy --n esnet
+prov set --url "https://oscars.es.net/ConnectionService"
+prov set --auth BASIC
+prov set --u nsibridge
+prov set --p CHANGEIT
+prov set --bus samples/client-bus-oscars-ssl.xml
+prov save
+
+
+req load --n default
+req copy --n jupiter
+req set --url "http://jupiter.es.net:8500/Requester"
+req save
+
+
+resv load --n default
+resv copy --n myresv
+resv set --st "30 sec"
+resv set --et "30 min"
+resv set --d "my description"
+resv set --sn "urn:ogf:network:es.net:2013:"
+resv set --ss "urn:ogf:network:es.net:2013:singaren:star:1"
+resv set --sv 1785
+resv set --dn "urn:ogf:network:es.net:2013:"
+resv set --ds "urn:ogf:network:es.net:2013:ps:sunn:1"
+resv set --dv 1785
+resv save
+
+
+defaults prov --n esnet
+defaults req --n jupiter
+defaults resv --n myresv
+
+defaults save
+
+
+listener start

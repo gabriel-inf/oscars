@@ -7,6 +7,7 @@ import net.es.nsi.cli.core.CliInternalException;
 import net.es.nsi.cli.db.DB_Util;
 import net.es.oscars.nsibridge.client.cli.CLIListener;
 import net.es.oscars.nsibridge.config.SpringContext;
+import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
@@ -14,6 +15,7 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
@@ -22,7 +24,7 @@ import java.util.Map;
 
 @Component
 public class RequesterCommands implements CommandMarker {
-
+    private static final Logger log = Logger.getLogger(RequesterCommands.class);
     @CliAvailabilityIndicator({"listener stop"})
     public boolean listenerStarted() {
         return NsiCliState.getInstance().isListenerStarted();
@@ -31,29 +33,51 @@ public class RequesterCommands implements CommandMarker {
     @CliAvailabilityIndicator({"listener start"})
     public boolean listenerStartable() {
         RequesterProfile currentProfile = NsiCliState.getInstance().getRequesterProfile();
-        if (currentProfile == null) return false;
-        if (NsiCliState.getInstance().isListenerStarted()) return false;
+        if (currentProfile == null) {
+            log.debug("no profile");
+            return false;
+        }
+        if (NsiCliState.getInstance().isListenerStarted()) {
+            log.debug("already started");
+            return false;
+        }
 
-        return NsiCliState.getInstance().isListenerStartable();
+        if (! NsiCliState.getInstance().isListenerStartable()) {
+            log.debug("not startable");
+            return false;
+        }
+        return true;
     }
 
+    @CliCommand(value = "listener help", help = "display help")
+    public String listener_help() {
+        String help = "";
+        help += "Callback Listener:\n";
+        help += "==================\n";
+        help += "'listener start' starts the callback listener\n";
+        help += "     (available only if a requester profile is loaded (see 'req help')\n" +
+                "      and the listener is stopped)\n";
+        help += "'listener stop'  stops the listener\n";
+        help += "     (available only if the listener is started)\n";
+        return help;
+    }
 
 
     @CliCommand(value = "req help", help = "display help")
     public String requester_help() {
         String help = "";
-        help += "requester Profiles:\n";
-        help += "==================\n";
-        help += "use 'req load' to load a requester profile\n";
-        help += "use 'req all' to show all available profiles\n";
-        help += "use 'req show' to show the profile settings\n";
-        help += "use 'req set' to change settings in the current profile\n";
-        help += "use 'req copy' to make a copy of the current profile \n";
-        help += "use 'req save' to save the current profile\n";
-        help += "use 'req delete' to delete a profile\n";
-        help += "use 'req new' to create a new empty profile\n";
-        help += "use 'listener start' to start the callback listener\n";
-        help += "use 'listener stop' to stop the listener\n";
+        help += "Requester Profiles:\n";
+        help += "===================\n";
+        help += "'req all' shows all available profiles\n";
+        help += "'req copy' makes a copy of the current profile (*)\n";
+        help += "'req delete' deletes a profile\n";
+        help += "'req load' loads a profile for use\n";
+        help += "'req new' creates a new empty profile\n";
+        help += "'req save' saves the current profile (*)\n";
+        help += "'req set' changes settings in the current profile (*)\n";
+        help += "'req show' shows the profile settings\n";
+        help += "   (*) : operation only available if a current profile exists.\n";
+
         return help;
     }
 
@@ -105,6 +129,7 @@ public class RequesterCommands implements CommandMarker {
         String out;
         out = "profile loaded: [" + inProfile.getName() + "]\n";
         out += inProfile.toString();
+        NsiCliState.getInstance().setListenerStartable(true);
         return out;
     }
 
@@ -180,16 +205,16 @@ public class RequesterCommands implements CommandMarker {
     @CliCommand(value = "req set", help = "set current requester profile parameters")
     public String requester_set(
             @CliOption(key = { "n" }, mandatory = false, help = "profile name") final String name,
-            @CliOption(key = { "u" }, mandatory = false, help = "URL") final String url,
+            @CliOption(key = { "url" }, mandatory = false, help = "URL") final String url,
             @CliOption(key = { "r" }, mandatory = false, help = "requester id") final String requesterId,
-            @CliOption(key = { "bc" }, mandatory = false, help = "bus config filename") final String busConfig
+            @CliOption(key = { "bus" }, mandatory = false, help = "bus config filename") final File busConfig
     )
     {
         RequesterProfile currentProfile = NsiCliState.getInstance().getRequesterProfile();
 
         if (name != null)           currentProfile.setName(name);
         if (requesterId != null)    currentProfile.setRequesterId(requesterId);
-        if (busConfig != null)      currentProfile.setBusConfig(busConfig);
+        if (busConfig != null)      currentProfile.setBusConfig(busConfig.getAbsolutePath());
         if (url != null)            currentProfile.setUrl(url);
 
 
