@@ -28,6 +28,7 @@ public class NsiCliState {
     protected boolean listenerStarted = false;
     protected boolean listenerStartable = false;
     protected boolean nsiAvailable = false;
+    protected boolean verbose = true;
 
     protected HashMap<String, Boolean> nsiConfirmed = new HashMap<String, Boolean>();
     protected HashMap<String, Boolean> nsiCommitted  = new HashMap<String, Boolean>();
@@ -121,5 +122,13 @@ public class NsiCliState {
 
     public void setDefs(DefaultProfiles defs) {
         this.defs = defs;
+    }
+
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }

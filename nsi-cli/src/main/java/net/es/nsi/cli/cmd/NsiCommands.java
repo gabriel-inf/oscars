@@ -10,6 +10,7 @@ import net.es.nsi.cli.config.ResvProfile;
 import net.es.oscars.nsibridge.client.ClientUtil;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.provider.ConnectionProviderPort;
+import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.QueryType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ReservationRequestCriteriaType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ScheduleType;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
@@ -74,10 +75,10 @@ public class NsiCommands implements CommandMarker {
 
     @CliAvailabilityIndicator({"nsi wait"})
     public boolean canWait() {
-        if (override) return true;
         if (!haveProfiles()) return false;
         if (!haveListener()) return false;
         if (!haveConnectionId()) return false;
+        if (override) return true;
 
         return (NsiCliState.getInstance().isNsiAvailable());
     }
@@ -127,8 +128,8 @@ public class NsiCommands implements CommandMarker {
         return true;
     }
 
-    @CliAvailabilityIndicator({"nsi terminate", "nsi query"})
-    public boolean canOther() {
+    @CliAvailabilityIndicator({"nsi terminate"})
+    public boolean canTerminate() {
         if (!haveProfiles()) return false;
         if (!haveListener()) return false;
         if (!haveConnectionId()) return false;
@@ -137,15 +138,29 @@ public class NsiCommands implements CommandMarker {
         return true;
     }
 
+    @CliAvailabilityIndicator({"nsi query"})
+    public boolean canQuery() {
+        if (!haveProfiles()) return false;
+        if (!haveListener()) return false;
+        if (override) return true;
+        if (!NsiCliState.getInstance().isNsiAvailable()) return false;
+        return true;
+    }
 
-
-    @CliCommand(value = "nsi wait ", help = "wait until a callback message has arrived")
+    @CliCommand(value = "nsi wait", help = "wait until a callback message has arrived")
     public String nsi_wait(
-            @CliOption(key = { "m" }, mandatory = true, help = "the callback message type") final NsiCallback callback) {
+            @CliOption(key = { "type" }, mandatory = true, help = "the callback message type") final NsiCallbackMessageEnum callback,
+            @CliOption(key = { "maxwait" }, mandatory = false, help = "max sec to wait (default: 120 sec)") final Integer maxWait
+            ) {
         String out = "";
         boolean timeout = false;
         Long nowMillis = (new Date()).getTime();
+
         Long until = nowMillis + 120*1000;
+        if (maxWait != null) {
+            until = nowMillis + maxWait*1000;
+        }
+
         Long sleepTime = 100L;
         String connId = NsiCliState.getInstance().getConnectionId();
 
@@ -171,7 +186,7 @@ public class NsiCommands implements CommandMarker {
 
         return out;
     }
-    private boolean gotCallback(String connectionId, NsiCallback callback) {
+    private boolean gotCallback(String connectionId, NsiCallbackMessageEnum callback) {
         switch (callback) {
 
             case COMMIT_CONFIRMED:
@@ -498,11 +513,51 @@ public class NsiCommands implements CommandMarker {
         return out;
     }
 
-    @CliCommand(value = "nsi query", help = "query a reservation")
+    @CliCommand(value = "nsi query", help = "query ")
     public String query(
-            @CliOption(key = { "c" }, mandatory = false, help = "the connectionId") final String connectionId) {
+            @CliOption(key = { "c" }, mandatory = false, help = "connectionId") final String inConnId,
+            @CliOption(key = { "g" }, mandatory = false, help = "gri") final String inGri,
+            @CliOption(key = { "mode" }, mandatory = true, help = "the query mode") final NsiQueryModeEnum queryMode) {
+        String out = "";
+        String connectionId = inConnId;
+        if (connectionId == null || connectionId.isEmpty()) {
+            connectionId = NsiCliState.getInstance().getConnectionId();
+        }
+        if (connectionId == null || connectionId.isEmpty()) {
+            if (inGri == null || inGri.isEmpty()) {
+                return "must specify connection id or gri";
+            }
+        }
+        QueryType queryReq = new QueryType();
+        out += "query params: ";
+        if (connectionId != null && !connectionId.isEmpty()) {
+            out += "connectionId: ["+connectionId+"] ";
+            queryReq.getConnectionId().add(connectionId);
+        }
+        if (inGri != null && !inGri.isEmpty()) {
+            out += "gri: ["+inGri+"] ";
+            queryReq.getGlobalReservationId().add(inGri);
+        }
+        out += "\n";
 
-        return "Unimplemented";
+
+        ConnectionProviderPort port = getPort();
+        Holder<CommonHeaderType> outHolder = ClientUtil.makeClientHeader();
+
+        try {
+            switch (queryMode) {
+                case RECURSIVE:
+                    port.queryRecursive(queryReq, outHolder);
+                    break;
+                case SUMMARY:
+                    port.querySummary(queryReq, outHolder);
+                    break;
+            }
+        } catch (ServiceException ex) {
+            ex.printStackTrace();
+        }
+
+        return out;
     }
 
 

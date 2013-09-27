@@ -215,7 +215,11 @@ public class RequesterCommands implements CommandMarker {
         if (url != null)            currentProfile.setUrl(url);
 
 
-        return currentProfile.toString();
+        if (NsiCliState.getInstance().isVerbose()) {
+            return currentProfile.toString();
+        } else {
+            return "";
+        }
     }
 
     @CliCommand(value = "listener start", help = "start listener")

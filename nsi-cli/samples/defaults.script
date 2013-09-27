@@ -1,7 +1,8 @@
+verbose off
+
 prov load --n default
 prov copy --n esnet
-prov set --url "https://oscars.es.net/ConnectionService"
-prov set --auth BASIC
+prov set --url "https://oscars.es.net/ConnectionService"  --auth BASIC
 prov set --u nsibridge
 prov set --p CHANGEIT
 prov set --bus samples/client-bus-oscars-ssl.xml
@@ -10,7 +11,7 @@ prov save
 
 req load --n default
 req copy --n jupiter
-req set --url "http://jupiter.es.net:8500/Requester"
+req set --url "http://localhost:8600/Requester"
 req save
 
 
@@ -34,5 +35,6 @@ defaults resv --n myresv
 
 defaults save
 
-
 listener start
+
+verbose on

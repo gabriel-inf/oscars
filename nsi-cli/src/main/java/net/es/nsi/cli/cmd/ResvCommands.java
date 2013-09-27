@@ -195,7 +195,11 @@ public class ResvCommands implements CommandMarker {
         if (startTime != null)  currentProfile.setStartTime(startTime);
         if (endTime != null)    currentProfile.setEndTime(endTime);
 
-        return currentProfile.toString();
+        if (NsiCliState.getInstance().isVerbose()) {
+            return currentProfile.toString();
+        } else {
+            return "";
+        }
     }
 
 

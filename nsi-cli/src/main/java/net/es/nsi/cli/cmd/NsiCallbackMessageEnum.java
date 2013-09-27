@@ -1,13 +1,13 @@
 package net.es.nsi.cli.cmd;
 
-public enum NsiCallback {
+public enum NsiCallbackMessageEnum {
     RESERVE_CONFIRMED("RESERVE_CONFIRMED"),
     COMMIT_CONFIRMED("COMMIT_CONFIRMED"),
     PROVISION_CONFIRMED("PROVISION_CONFIRMED");
 
     private String type;
 
-    private NsiCallback(String type){
+    private NsiCallbackMessageEnum(String type){
         this.type = type;
     }
 

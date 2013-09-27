@@ -184,8 +184,11 @@ public class ProviderCommands implements CommandMarker {
         if (password != null)       currentProfile.getProviderServer().getAuth().setPassword(password);
         if (oauth != null)          currentProfile.getProviderServer().getAuth().setOauth(oauth);
 
-
-        return currentProfile.toString();
+        if (NsiCliState.getInstance().isVerbose()) {
+            return currentProfile.toString();
+        } else {
+            return "";
+        }
     }
 
 
