@@ -17,31 +17,31 @@ import java.util.List;
 @Component
 public class ProviderCommands implements CommandMarker {
 
-    @CliAvailabilityIndicator({"prov save", "prov set", "prov copy"})
+    @CliAvailabilityIndicator({"admin prov save", "admin prov set", "admin prov copy"})
     public boolean haveProfile() {
         ProviderProfile currentProfile = NsiCliState.getInstance().getProvProfile();
         return (!(currentProfile == null));
     }
 
-    @CliCommand(value = "prov help", help = "display help")
+    @CliCommand(value = "admin prov help", help = "display help")
     public String prov_help() {
         String help = "";
         help += "Provider Profiles:\n";
         help += "==================\n";
-        help += "'prov all' shows all available profiles\n";
-        help += "'prov copy' makes a copy of the current profile (*)\n";
-        help += "'prov delete' deletes a profile\n";
-        help += "'prov load' loads a profile for use\n";
-        help += "'prov new' creates a new empty profile\n";
-        help += "'prov save' saves the current profile (*)\n";
-        help += "'prov set' changes settings in the current profile (*)\n";
-        help += "'prov show' shows the profile settings\n";
+        help += "'admin prov all' shows all available profiles\n";
+        help += "'admin prov copy' makes a copy of the current profile (*)\n";
+        help += "'admin prov delete' deletes a profile\n";
+        help += "'admin prov load' loads a profile for use\n";
+        help += "'admin prov new' creates a new empty profile\n";
+        help += "'admin prov save' saves the current profile (*)\n";
+        help += "'admin prov set' changes settings in the current profile (*)\n";
+        help += "'admin prov show' shows the profile settings\n";
         help += "   (*) : operation only available if a current profile exists.\n";
         return help;
     }
 
 
-    @CliCommand(value = "prov all", help = "list all provider profiles")
+    @CliCommand(value = "admin prov all", help = "list all provider profiles")
     public String prov_all() {
         String out = "";
         try {
@@ -57,7 +57,7 @@ public class ProviderCommands implements CommandMarker {
         }
     }
 
-    @CliCommand(value = "prov new", help = "create a new provider profile")
+    @CliCommand(value = "admin prov new", help = "create a new provider profile")
     public String prov_new(
             @CliOption(key = { "name" }, mandatory = true, help = "a provider profile name") final String name) {
         ProviderProfile providerProfile = new ProviderProfile();
@@ -67,7 +67,7 @@ public class ProviderCommands implements CommandMarker {
         return "provider profile created: [" + providerProfile.getName() + "]";
     }
 
-    @CliCommand(value = "prov load", help = "load a provider profile")
+    @CliCommand(value = "admin prov load", help = "load a provider profile")
     public String prov_load(
             @CliOption(key = { "name" }, mandatory = true, help = "a provider profile name") final ProviderProfile inProfile) {
         NsiCliState.getInstance().setProvProfile(inProfile);
@@ -79,7 +79,7 @@ public class ProviderCommands implements CommandMarker {
         return out;
     }
 
-    @CliCommand(value = "prov delete", help = "delete a named provider profile")
+    @CliCommand(value = "admin prov delete", help = "delete a named provider profile")
     public String prov_delete(
             @CliOption(key = { "name" }, mandatory = true, help = "a provider profile name") final ProviderProfile inProfile) {
         String name = inProfile.getName();
@@ -94,7 +94,7 @@ public class ProviderCommands implements CommandMarker {
     }
 
 
-    @CliCommand(value = "prov show", help = "show current or named provider profile")
+    @CliCommand(value = "admin prov show", help = "show current or named provider profile")
     public String prov_show(
             @CliOption(key = { "name" }, mandatory = false, help = "a provider profile name") final ProviderProfile inProfile) {
         ProviderProfile currentProfile = NsiCliState.getInstance().getProvProfile();
@@ -111,7 +111,7 @@ public class ProviderCommands implements CommandMarker {
     }
 
 
-    @CliCommand(value = "prov save", help = "save the current providerProfile")
+    @CliCommand(value = "admin prov save", help = "save the current providerProfile")
     public String prov_save() {
         ProviderProfile currentProfile = NsiCliState.getInstance().getProvProfile();
         if (currentProfile != null) {
@@ -126,7 +126,7 @@ public class ProviderCommands implements CommandMarker {
     }
 
 
-    @CliCommand(value = "prov copy", help = "make a copy of the current provider profile with a new name and set it as current")
+    @CliCommand(value = "admin prov copy", help = "make a copy of the current provider profile with a new name and set it as current")
     public String prov_copy(
             @CliOption(key = { "name" }, mandatory = true, help = "a provider profile name") final String name) {
         ProviderProfile currentProfile = NsiCliState.getInstance().getProvProfile();
@@ -151,7 +151,7 @@ public class ProviderCommands implements CommandMarker {
 
 
 
-    @CliCommand(value = "prov set", help = "set current provider profile parameters")
+    @CliCommand(value = "admin prov set", help = "set current provider profile parameters")
     public String prov_set(
             @CliOption(key = { "name" }, mandatory = false, help = "profile name") final String name,
             @CliOption(key = { "st" }, mandatory = false, help = "service type") final String serviceType,

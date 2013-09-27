@@ -16,33 +16,33 @@ import java.util.List;
 @Component
 public class ResvCommands implements CommandMarker {
 
-    @CliAvailabilityIndicator({"resv save", "resv set", "resv copy"})
+    @CliAvailabilityIndicator({"admin resv save", "admin resv set", "admin resv copy"})
     public boolean haveProfile() {
         ResvProfile currentProfile = NsiCliState.getInstance().getResvProfile();
 
         return (!(currentProfile == null));
     }
 
-    @CliCommand(value = "resv help", help = "display help")
+    @CliCommand(value = "admin resv help", help = "display help")
     public String resv_help() {
         String help = "";
         help += "Reservation Profiles:\n";
         help += "=====================\n";
-        help += "'resv all' shows all available profiles\n";
-        help += "'resv copy' makes a copy of the current profile (*)\n";
-        help += "'resv delete' deletes a profile\n";
-        help += "'resv load' loads a profile for use\n";
-        help += "'resv new' creates a new empty profile\n";
-        help += "'resv save' saves the current profile (*)\n";
-        help += "'resv set' changes settings in the current profile (*)\n";
-        help += "'resv show' shows the profile settings\n";
+        help += "'admin resv all' shows all available profiles\n";
+        help += "'admin resv copy' makes a copy of the current profile (*)\n";
+        help += "'admin resv delete' deletes a profile\n";
+        help += "'admin resv load' loads a profile for use\n";
+        help += "'admin resv new' creates a new empty profile\n";
+        help += "'admin resv save' saves the current profile (*)\n";
+        help += "'admin resv set' changes settings in the current profile (*)\n";
+        help += "'admin resv show' shows the profile settings\n";
         help += "   (*) : operation only available if a current profile exists.\n";
         return help;
     }
 
 
 
-    @CliCommand(value = "resv new", help = "create a new reservation profile")
+    @CliCommand(value = "admin resv new", help = "create a new reservation profile")
     public String resv_new(
             @CliOption(key = { "name" }, mandatory = true, help = "a reservation profile name") final String name) {
         ResvProfile resvProfile = new ResvProfile();
@@ -51,7 +51,7 @@ public class ResvCommands implements CommandMarker {
         return "reservation profile created: [" + resvProfile.getName() + "]";
     }
 
-    @CliCommand(value = "resv all", help = "list all reservation profiles")
+    @CliCommand(value = "admin resv all", help = "list all reservation profiles")
     public String resv_all() {
         String out = "";
         try {
@@ -67,7 +67,7 @@ public class ResvCommands implements CommandMarker {
         }
     }
 
-    @CliCommand(value = "resv load", help = "load a named reservation profile")
+    @CliCommand(value = "admin resv load", help = "load a named reservation profile")
     public String resv_load(
             @CliOption(key = { "name" }, mandatory = true, help = "a reservation profile name") final ResvProfile inProfile) {
         NsiCliState.getInstance().setResvProfile(inProfile);
@@ -83,7 +83,7 @@ public class ResvCommands implements CommandMarker {
 
 
 
-    @CliCommand(value = "resv delete", help = "delete a named reservation profile")
+    @CliCommand(value = "admin resv delete", help = "delete a named reservation profile")
     public String resv_delete(
             @CliOption(key = { "name" }, mandatory = true, help = "a reservation profile name") final ResvProfile inProfile) {
         DB_Util.delete(inProfile);
@@ -97,7 +97,7 @@ public class ResvCommands implements CommandMarker {
     }
 
 
-    @CliCommand(value = "resv show", help = "show current or named reservation profile")
+    @CliCommand(value = "admin resv show", help = "show current or named reservation profile")
     public String resv_show(
             @CliOption(key = { "name" }, mandatory = false, help = "a reservation profile name") final ResvProfile inProfile) {
         ResvProfile currentProfile = NsiCliState.getInstance().getResvProfile();
@@ -112,7 +112,7 @@ public class ResvCommands implements CommandMarker {
         }
     }
 
-    @CliCommand(value = "resv save", help = "save the current reservation profile")
+    @CliCommand(value = "admin resv save", help = "save the current reservation profile")
     public String resv_save() {
         ResvProfile currentProfile = NsiCliState.getInstance().getResvProfile();
         if (currentProfile != null) {
@@ -128,7 +128,7 @@ public class ResvCommands implements CommandMarker {
 
 
 
-    @CliCommand(value = "resv copy", help = "make a copy of the current reservation profile with a new name and set it as current")
+    @CliCommand(value = "admin resv copy", help = "make a copy of the current reservation profile with a new name and set it as current")
     public String resv_copy(
             @CliOption(key = { "name" }, mandatory = true, help = "a reservation profile name") final String name) {
         ResvProfile currentProfile = NsiCliState.getInstance().getResvProfile();
@@ -151,7 +151,7 @@ public class ResvCommands implements CommandMarker {
     }
 
 
-    @CliCommand(value = "resv set", help = "set current reservation profile parameters")
+    @CliCommand(value = "admin resv set", help = "set current reservation profile parameters")
     public String resv_set(
             @CliOption(key = { "name" },  mandatory = false, help = "profile name") final String name,
             @CliOption(key = { "b", "bw", "bandwidth" },  mandatory = false, help = "bandwidth (mbps)") final Integer bw,

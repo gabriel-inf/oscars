@@ -57,32 +57,32 @@ public class RequesterCommands implements CommandMarker {
     }
 
 
-    @CliCommand(value = "req help", help = "display help")
+    @CliCommand(value = "admin req help", help = "display help")
     public String requester_help() {
         String help = "";
         help += "Requester Profiles:\n";
         help += "===================\n";
-        help += "'req all' shows all available profiles\n";
-        help += "'req copy' makes a copy of the current profile (*)\n";
-        help += "'req delete' deletes a profile\n";
-        help += "'req load' loads a profile for use\n";
-        help += "'req new' creates a new empty profile\n";
-        help += "'req save' saves the current profile (*)\n";
-        help += "'req set' changes settings in the current profile (*)\n";
-        help += "'req show' shows the profile settings\n";
+        help += "'admin req all' shows all available profiles\n";
+        help += "'admin req copy' makes a copy of the current profile (*)\n";
+        help += "'admin req delete' deletes a profile\n";
+        help += "'admin req load' loads a profile for use\n";
+        help += "'admin req new' creates a new empty profile\n";
+        help += "'admin req save' saves the current profile (*)\n";
+        help += "'admin req set' changes settings in the current profile (*)\n";
+        help += "'admin req show' shows the profile settings\n";
         help += "   (*) : operation only available if a current profile exists.\n";
 
         return help;
     }
 
 
-    @CliAvailabilityIndicator({"req save", "req set", "req copy"})
+    @CliAvailabilityIndicator({"admin req save", "admin req set", "admin req copy"})
     public boolean haveProfile() {
         RequesterProfile currentProfile = NsiCliState.getInstance().getRequesterProfile();
         return (!(currentProfile == null));
     }
 
-    @CliCommand(value = "req all", help = "list all requester profiles")
+    @CliCommand(value = "admin req all", help = "list all requester profiles")
     public String requester_all() {
         String out = "";
         try {
@@ -99,7 +99,7 @@ public class RequesterCommands implements CommandMarker {
     }
 
 
-    @CliCommand(value = "req new", help = "create a new requester profile")
+    @CliCommand(value = "admin req new", help = "create a new requester profile")
     public String requester_new(
             @CliOption(key = { "name" }, mandatory = true, help = "a requester profile name") final String name) {
         RequesterProfile profile = new RequesterProfile();
@@ -109,7 +109,7 @@ public class RequesterCommands implements CommandMarker {
         return "requester profile created: [" + profile.getName() + "]";
     }
 
-    @CliCommand(value = "req load", help = "load a requester profile")
+    @CliCommand(value = "admin req load", help = "load a requester profile")
     public String requester_load(
             @CliOption(key = { "name" }, mandatory = true, help = "a requester profile name") final RequesterProfile inProfile) {
         NsiCliState.getInstance().setRequesterProfile(inProfile);
@@ -122,7 +122,7 @@ public class RequesterCommands implements CommandMarker {
         return out;
     }
 
-    @CliCommand(value = "req delete", help = "delete a named requester profile")
+    @CliCommand(value = "admin req delete", help = "delete a named requester profile")
     public String requester_delete(
             @CliOption(key = { "name" }, mandatory = true, help = "a requester profile name") final RequesterProfile inProfile) {
         String name = inProfile.getName();
@@ -137,7 +137,7 @@ public class RequesterCommands implements CommandMarker {
     }
 
 
-    @CliCommand(value = "req show", help = "show current or named requester profile")
+    @CliCommand(value = "admin req show", help = "show current or named requester profile")
     public String requester_show(
             @CliOption(key = { "name" }, mandatory = false, help = "a requester profile name") final RequesterProfile inProfile) {
         RequesterProfile currentProfile = NsiCliState.getInstance().getRequesterProfile();
@@ -154,7 +154,7 @@ public class RequesterCommands implements CommandMarker {
     }
 
 
-    @CliCommand(value = "req save", help = "save the current requester profile")
+    @CliCommand(value = "admin req save", help = "save the current requester profile")
     public String requester_save() {
         RequesterProfile currentProfile = NsiCliState.getInstance().getRequesterProfile();
         if (currentProfile != null) {
@@ -169,7 +169,7 @@ public class RequesterCommands implements CommandMarker {
     }
 
 
-    @CliCommand(value = "req copy", help = "make a copy of the current requester profile with a new name and set it as current")
+    @CliCommand(value = "admin req copy", help = "make a copy of the current requester profile with a new name and set it as current")
     public String requester_copy(
             @CliOption(key = { "name" }, mandatory = true, help = "a requester profile name") final String name) {
         RequesterProfile currentProfile = NsiCliState.getInstance().getRequesterProfile();
@@ -194,7 +194,7 @@ public class RequesterCommands implements CommandMarker {
 
 
 
-    @CliCommand(value = "req set", help = "set current requester profile parameters")
+    @CliCommand(value = "admin req set", help = "set current requester profile parameters")
     public String requester_set(
             @CliOption(key = { "name" }, mandatory = false, help = "profile name") final String name,
             @CliOption(key = { "url" }, mandatory = false, help = "URL") final String url,

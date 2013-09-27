@@ -21,21 +21,21 @@ import java.util.Map;
 public class DefaultsCommands implements CommandMarker {
     private static final Logger log = Logger.getLogger(DefaultsCommands.class);
 
-    @CliCommand(value = "defaults help", help = "display help")
+    @CliCommand(value = "admin defaults help", help = "display help")
     public String defaults_help() {
         String help = "";
         help += "Setting defaults:\n";
         help += "==================\n";
-        help += "use 'defaults resv' to set the reservation profile default\n";
-        help += "use 'defaults prov' to set the provider profile default\n";
-        help += "use 'defaults req' to set the requester profile default\n";
-        help += "use 'defaults show' to show the defaults\n";
-        help += "use 'defaults save' to save defaults\n";
-        help += "use 'defaults load' to load defaults\n";
+        help += "use 'admin defaults resv' to set the reservation profile default\n";
+        help += "use 'admin defaults prov' to set the provider profile default\n";
+        help += "use 'admin defaults req' to set the requester profile default\n";
+        help += "use 'admin defaults show' to show the defaults\n";
+        help += "use 'admin defaults save' to save defaults\n";
+        help += "use 'admin defaults load' to load defaults\n";
         return help;
     }
 
-    @CliCommand(value = "defaults show", help = "show all defaults")
+    @CliCommand(value = "admin defaults show", help = "show all defaults")
     public String defaults_show() {
         String out = "";
         ApplicationContext ax = SpringContext.getInstance().getContext();
@@ -114,7 +114,7 @@ public class DefaultsCommands implements CommandMarker {
 
 
 
-    @CliCommand(value = "defaults resv", help = "set the default reservation profile name")
+    @CliCommand(value = "admin defaults resv", help = "set the default reservation profile name")
     public String defaults_resv(
             @CliOption(key = { "name" }, mandatory = true, help = "a reservation profile name") final ResvProfile inProfile) {
         String out = "";
@@ -132,7 +132,7 @@ public class DefaultsCommands implements CommandMarker {
         return out;
 
     }
-    @CliCommand(value = "defaults prov", help = "set the default provider profile name")
+    @CliCommand(value = "admin defaults prov", help = "set the default provider profile name")
     public String defaults_prov(
             @CliOption(key = { "name" }, mandatory = true, help = "a provider profile name") final ProviderProfile inProfile) {
         String out = "";
@@ -148,7 +148,7 @@ public class DefaultsCommands implements CommandMarker {
     }
 
 
-    @CliCommand(value = "defaults req", help = "set the default requester profile name")
+    @CliCommand(value = "admin defaults req", help = "set the default requester profile name")
     public String defaults_req(
             @CliOption(key = { "name" }, mandatory = true, help = "a requester  profile name") final RequesterProfile inProfile) {
         String out = "";
@@ -165,7 +165,7 @@ public class DefaultsCommands implements CommandMarker {
     }
 
 
-    @CliCommand(value = "defaults save", help = "save the defaults")
+    @CliCommand(value = "admin defaults save", help = "save the defaults")
     public String defaults_save() {
         DefaultProfiles defs = NsiCliState.getInstance().getDefs();
         if (defs != null) {
@@ -182,7 +182,7 @@ public class DefaultsCommands implements CommandMarker {
     }
 
 
-    @CliCommand(value = "defaults load", help = "load defaults")
+    @CliCommand(value = "admin defaults load", help = "load defaults")
     public String defaults_load() {
         try {
             DefaultProfiles defs = DB_Util.getDefaults();

@@ -1,5 +1,5 @@
-resv load --n myresv
-resv set --st "30 sec" --et "30 min"
+admin resv load --n myresv
+admin resv set --st "30 sec" --et "30 min"
 
 nsi reserve
 nsi wait --m "RESERVE_CONFIRMED"
@@ -9,7 +9,7 @@ nsi provision
 nsi wait --m "PROVISION_CONFIRMED"
 
 
-resv set --b 2
+admin resv set --b 2
 nsi reserve
 nsi wait --m "RESERVE_CONFIRMED"
 nsi commit
