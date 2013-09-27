@@ -1,7 +1,7 @@
 package net.es.oscars.utils.task.sched;
 
+import net.es.oscars.utils.task.Outcome;
 import net.es.oscars.utils.task.Task;
-import net.es.oscars.utils.task.TaskException;
 import org.apache.log4j.Logger;
 import org.quartz.JobExecutionException;
 
@@ -30,18 +30,31 @@ public class WFTicker extends Thread {
         if (sec % 5 == 0) {
             log.debug("WFTicker alive");
         }
-
+        
+        Task task = null;
         try {
-            Task task = wf.nextRunnable(now);
+            task = wf.nextRunnable(now);
             if (task != null) {
                 task.onRun();
                 wf.finishRunning(task);
             }
-
-        } catch (TaskException ex) {
+        }catch (Exception ex) {
             log.error(ex);
+            ex.printStackTrace();
+            if(task != null && !Outcome.FAIL.equals(task.getOutcome())){
+                this.failTaskOnUnhandledException(task);
+            }
         }
 
+    }
+    
+    public void failTaskOnUnhandledException(Task task){
+        try {
+            task.onFail();
+        } catch (Exception e) {
+            log.error("Error failing task: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
 }
