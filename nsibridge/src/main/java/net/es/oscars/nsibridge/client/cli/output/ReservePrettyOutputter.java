@@ -20,4 +20,9 @@ public class ReservePrettyOutputter implements ReserveOutputter{
     public void outputFailed(String connectionId) {
         System.err.println("Reservation failed" + (connectionId == null ? "" : " (Connection ID: " + connectionId + ")"));
     }
+
+    @Override
+    public void outputResponse(String connectionId) {
+        System.out.println("Connection created with ID " + connectionId);
+    }
 }

@@ -35,7 +35,7 @@ public class ReserveCLIClient {
         String url = ClientUtil.DEFAULT_URL;
         String clientBusFile = null;
         CLIListener listener = null;
-        Holder<String> connectionId = null;
+        Holder<String> connectionId = new Holder<String>();
         String globalReservationId = null;
         String description = null;
         Holder<CommonHeaderType> header = ClientUtil.makeClientHeader();
@@ -116,7 +116,6 @@ public class ReserveCLIClient {
             }
             
             if(opts.has("i")){
-                connectionId = new Holder<String>();
                 connectionId.value = (String)opts.valueOf("i");
             }
             
@@ -245,9 +244,7 @@ public class ReserveCLIClient {
             
             //Send request
             client.reserve(connectionId, globalReservationId, description, criteria, header.value, new Holder<CommonHeaderType>());
-            if(listener == null){
-                System.out.println("Reserve message sent");
-            }
+            outputter.outputResponse(connectionId.value);
         } catch (OptionException e) {
             System.err.println(e.getMessage());
             try{
