@@ -8,12 +8,12 @@ nsi wait --type "COMMIT_CONFIRMED"
 nsi provision
 nsi wait --type "PROVISION_CONFIRMED"
 
-sleep 1
+sleep --sec 20
 
 // modify
 resv set --b 2
 nsi reserve
 nsi wait --type "RESERVE_CONFIRMED"
 
-sleep 1
+sleep --sec 20
 nsi terminate
