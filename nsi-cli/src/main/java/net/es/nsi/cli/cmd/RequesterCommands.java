@@ -195,7 +195,7 @@ public class RequesterCommands implements CommandMarker {
 
 
 
-    @CliCommand(value = "admin req set", help = "set current requester profile parameters")
+    @CliCommand(value = "req set", help = "set current requester profile parameters")
     public String requester_set(
             @CliOption(key = { "name" }, mandatory = false, help = "profile name") final String name,
             @CliOption(key = { "url" }, mandatory = false, help = "URL") final String url,
