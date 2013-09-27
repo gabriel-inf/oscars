@@ -7,6 +7,7 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 import org.springframework.stereotype.Component;
 
+import java.util.Date;
 import java.util.Map;
 
 
@@ -34,5 +35,20 @@ public class MiscCommands implements CommandMarker {
         NsiCliState.getInstance().setVerbose(true);
         return "";
     }
+    @CliCommand(value = "sleep", help = "sleep")
+    public String sleep(
+            @CliOption(key = { "sec" }, mandatory = true, help = "sec to sleep (default: 5 sec)") final Integer maxWait) {
+        String out = "";
 
+        Long sleepTime = maxWait * 1000L;
+        try {
+            Thread.sleep(sleepTime);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            return e.getMessage();
+        }
+        out += "slept for: "+maxWait+" seconds";
+        return out;
+
+    }
 }

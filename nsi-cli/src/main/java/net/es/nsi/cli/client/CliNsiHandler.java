@@ -182,8 +182,8 @@ public class CliNsiHandler implements ConnectionRequesterPort {
         System.out.println("\nReceived reserveCommitConfirmed for connectionId: "+connectionId+" (set as current).\n");
         NsiCliState.getInstance().setConnectionId(connectionId);
         NsiCliState.getInstance().setCommitted(connectionId, true);
-        int oldV = NsiCliState.getInstance().getResvProfile().getVersion();
-        int newV = oldV++;
+        Integer oldV = NsiCliState.getInstance().getResvProfile().getVersion();
+        Integer newV = oldV + 1;
         NsiCliState.getInstance().getResvProfile().setVersion(newV);
         System.out.println("\nNext reserve with this profile will have version: "+newV+"\n");
     }

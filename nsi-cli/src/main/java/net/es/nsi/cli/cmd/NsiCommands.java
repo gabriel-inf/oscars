@@ -177,10 +177,10 @@ public class NsiCommands implements CommandMarker {
             }
         }
         if (timeout || !gotCallback(connId, callback)) {
-            out += "received callback "+callback+" for connectionId: "+connId;
+            out += "never got received callback "+callback+" for connectionId: "+connId;
 
         } else {
-            out += "never got callback "+callback+" for connectionId: "+connId;
+            out += "received callback "+callback+" for connectionId: "+connId;
         }
 
 

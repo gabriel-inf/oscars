@@ -1,10 +1,13 @@
 package net.es.nsi.cli.cmd;
 
+import org.apache.commons.io.FileUtils;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.shell.plugin.support.DefaultBannerProvider;
-import org.springframework.shell.support.util.OsUtils;
+
+import java.io.File;
+import java.io.IOException;
 
 
 @Component
@@ -12,14 +15,15 @@ import org.springframework.shell.support.util.OsUtils;
 public class NsiBannerProvider extends DefaultBannerProvider {
 
     public String getBanner() {
-        StringBuffer buf = new StringBuffer();
-        buf.append("=======================================" + OsUtils.LINE_SEPARATOR);
-        buf.append("*                                     *"+ OsUtils.LINE_SEPARATOR);
-        buf.append("*            ESnet NSI CLI            *" +OsUtils.LINE_SEPARATOR);
-        buf.append("*                                     *"+ OsUtils.LINE_SEPARATOR);
-        buf.append("=======================================" + OsUtils.LINE_SEPARATOR);
-        buf.append("Version:" + this.getVersion());
-        return buf.toString();
+        File f = new File("config/banner.txt");
+        String out = null;
+        try {
+            out = FileUtils.readFileToString(f);
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+        return out;
     }
 
     public String getVersion() {
@@ -27,7 +31,7 @@ public class NsiBannerProvider extends DefaultBannerProvider {
     }
 
     public String getWelcomeMessage() {
-        return "Welcome to the ESnet NSI CLI";
+        return "";
     }
 
     @Override

@@ -62,21 +62,22 @@ public class RequesterCommands implements CommandMarker {
         String help = "";
         help += "Requester Profiles:\n";
         help += "===================\n";
+        help += "'req load' loads a profile for use\n";
+        help += "'req set' changes settings in the current profile (*)\n";
+        help += "'req show' shows the profile settings\n";
+
         help += "'admin req all' shows all available profiles\n";
         help += "'admin req copy' makes a copy of the current profile (*)\n";
         help += "'admin req delete' deletes a profile\n";
-        help += "'admin req load' loads a profile for use\n";
         help += "'admin req new' creates a new empty profile\n";
         help += "'admin req save' saves the current profile (*)\n";
-        help += "'admin req set' changes settings in the current profile (*)\n";
-        help += "'admin req show' shows the profile settings\n";
         help += "   (*) : operation only available if a current profile exists.\n";
 
         return help;
     }
 
 
-    @CliAvailabilityIndicator({"admin req save", "admin req set", "admin req copy"})
+    @CliAvailabilityIndicator({"admin req save", "req set", "admin req copy"})
     public boolean haveProfile() {
         RequesterProfile currentProfile = NsiCliState.getInstance().getRequesterProfile();
         return (!(currentProfile == null));
@@ -109,7 +110,7 @@ public class RequesterCommands implements CommandMarker {
         return "requester profile created: [" + profile.getName() + "]";
     }
 
-    @CliCommand(value = "admin req load", help = "load a requester profile")
+    @CliCommand(value = "req load", help = "load a requester profile")
     public String requester_load(
             @CliOption(key = { "name" }, mandatory = true, help = "a requester profile name") final RequesterProfile inProfile) {
         NsiCliState.getInstance().setRequesterProfile(inProfile);
@@ -137,7 +138,7 @@ public class RequesterCommands implements CommandMarker {
     }
 
 
-    @CliCommand(value = "admin req show", help = "show current or named requester profile")
+    @CliCommand(value = "req show", help = "show current or named requester profile")
     public String requester_show(
             @CliOption(key = { "name" }, mandatory = false, help = "a requester profile name") final RequesterProfile inProfile) {
         RequesterProfile currentProfile = NsiCliState.getInstance().getRequesterProfile();
