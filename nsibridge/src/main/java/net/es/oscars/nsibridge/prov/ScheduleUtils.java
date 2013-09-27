@@ -11,40 +11,29 @@ public class ScheduleUtils {
 
     private static boolean isProvMonitorRunning = false;
     private static boolean isResvTimeoutMonitorRunning = false;
-
-    public static void scheduleProvMonitor() throws SchedulerException {
+    private static ProvMonitor provMonitor = null;
+    private static ResvTimeoutMonitor resvMonitor = null;
+    
+    synchronized public static void scheduleProvMonitor() throws SchedulerException {
         if (isProvMonitorRunning) return;
 
-        Schedule ts = Schedule.getInstance();
-
-        SimpleTrigger trigger = new SimpleTrigger("ProvTicker", "ProvTicker");
-        trigger.setRepeatCount(SimpleTrigger.REPEAT_INDEFINITELY);
-        trigger.setRepeatInterval(1000);
-        JobDetail jobDetail = new JobDetail("ProvTicker", "ProvTicker", ProvMonitor.class);
-        ts.getScheduler().scheduleJob(jobDetail, trigger);
+        provMonitor = new ProvMonitor();
+        provMonitor.start();
         isProvMonitorRunning = true;
     }
+    
     public static void stopProvMonitor() throws SchedulerException {
         if (!isProvMonitorRunning) return;
-        Schedule ts = Schedule.getInstance();
-        ts.getScheduler().pauseTrigger("ProvTicker", "ProvTicker");
-
-
+        provMonitor.interrupt();
         isProvMonitorRunning = false;
     }
 
 
-    public static void scheduleResvTimeoutMonitor() throws SchedulerException {
+    synchronized public static void scheduleResvTimeoutMonitor() throws SchedulerException {
         if (isResvTimeoutMonitorRunning) return;
-
-        Schedule ts = Schedule.getInstance();
-
-        SimpleTrigger trigger = new SimpleTrigger("ResvMonitorTicker", "ResvMonitorTicker");
-        trigger.setRepeatCount(SimpleTrigger.REPEAT_INDEFINITELY);
-        trigger.setRepeatInterval(1000);
-        JobDetail jobDetail = new JobDetail("ResvMonitorTicker", "ResvMonitorTicker", ResvTimeoutMonitor.class);
-        ts.getScheduler().scheduleJob(jobDetail, trigger);
-        isProvMonitorRunning = true;
+        resvMonitor = new ResvTimeoutMonitor();
+        resvMonitor.start();
+        isResvTimeoutMonitorRunning = true;
     }
     public static void stopResvTimeoutMonitor() throws SchedulerException {
         if (!isResvTimeoutMonitorRunning) return;

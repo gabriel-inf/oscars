@@ -24,12 +24,24 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-public class ResvTimeoutMonitor implements Job {
+public class ResvTimeoutMonitor extends Thread {
 
     private static final Logger log = Logger.getLogger(ResvTimeoutMonitor.class);
 
-
-    public void execute(JobExecutionContext arg0) throws JobExecutionException {
+    public void run(){
+        while(true){
+            try{
+                this.execute();
+                Thread.sleep(1000);
+            }catch (InterruptedException e) {
+                break;
+            }catch(Exception e){
+                log.error("Error in ResvTimeoutMonitor: " + e.getMessage());
+            }
+        }
+    }
+    
+    public void execute() {
         Date now = new Date();
         Long millis = now.getTime();
         Long sec = millis / 1000;

@@ -20,7 +20,8 @@ public class Schedule {
     private boolean started;
     private boolean quartzStarted;
     private boolean taskRunnerStarted;
-
+    private WFTicker wfTicker;
+    
     public static Schedule getInstance() {
         if (instance == null) {
             instance = new Schedule();
@@ -66,14 +67,10 @@ public class Schedule {
     public void startTaskRunner() throws TaskException {
         if (taskRunnerStarted) return;
         try {
-            // look at the queue every second
-            SimpleTrigger inspectorTrigger = new SimpleTrigger("WFTicker", "WFTicker");
-            inspectorTrigger.setRepeatCount(SimpleTrigger.REPEAT_INDEFINITELY);
-            inspectorTrigger.setRepeatInterval(1000);
-            JobDetail inspectorJobDetail = new JobDetail("WFTicker", "WFTicker", WFTicker.class);
-            this.scheduler.scheduleJob(inspectorJobDetail, inspectorTrigger);
+            wfTicker = new WFTicker();
+            wfTicker.start();
             taskRunnerStarted = true;
-        } catch (SchedulerException ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
             throw new TaskException(ex.getMessage());
         }
@@ -83,9 +80,9 @@ public class Schedule {
     public void stopTaskRunner() throws TaskException {
         if (!taskRunnerStarted) return;
         try {
-            this.scheduler.pauseTrigger("WFTicker", "WFTicker");
+            wfTicker.interrupt();
             taskRunnerStarted = false;
-        } catch (SchedulerException ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
             throw new TaskException(ex.getMessage());
         }

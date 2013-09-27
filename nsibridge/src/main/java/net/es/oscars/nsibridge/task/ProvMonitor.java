@@ -10,19 +10,28 @@ import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceE
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.LifecycleStateEnumType;
 import net.es.oscars.utils.task.TaskException;
 import org.apache.log4j.Logger;
-import org.quartz.Job;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
 
 import java.util.Date;
 import java.util.List;
 
-public class ProvMonitor implements Job {
+public class ProvMonitor extends Thread {
 
     private static final Logger log = Logger.getLogger(ProvMonitor.class);
+    
+    public void run(){
+        while(true){
+            try{
+                this.execute();
+                Thread.sleep(1000);
+            }catch (InterruptedException e) {
+                break;
+            }catch(Exception e){
+                log.error("Error in ProvMonitor: " + e.getMessage());
+            }
+        }
+    }
 
-
-    public void execute(JobExecutionContext arg0) throws JobExecutionException {
+    public void execute() {
         Date now = new Date();
 
         Long millis = now.getTime();
@@ -34,7 +43,6 @@ public class ProvMonitor implements Job {
         List<ConnectionRecord> recordList;
         try {
              recordList = DB_Util.getConnectionRecords();
-
         } catch (ServiceException ex) {
             log.error(ex);
             return;
@@ -88,12 +96,7 @@ public class ProvMonitor implements Job {
             } catch (TaskException ex) {
                 log.error(ex);
             }
-
-
-
         }
-
-
     }
 
 
