@@ -1,14 +1,9 @@
 package net.es.nsi.cli.cmd;
 
 import net.es.nsi.cli.config.AuthType;
-import net.es.nsi.cli.config.NsiAuth;
 import net.es.nsi.cli.config.ProviderProfile;
 import net.es.nsi.cli.core.CliInternalException;
 import net.es.nsi.cli.db.DB_Util;
-import net.es.oscars.nsibridge.config.SpringContext;
-import net.es.oscars.nsibridge.prov.RequesterPortHolder;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.requester.ConnectionRequesterPort;
-import org.springframework.context.ApplicationContext;
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
@@ -16,10 +11,7 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.List;
-import java.util.Map;
 
 
 @Component
@@ -58,13 +50,6 @@ public class ProviderCommands implements CommandMarker {
             for (ProviderProfile profile : profiles) {
                 out += profile.toString();
             }
-            out += "\n\nConfigured profiles:\n";
-            ApplicationContext ax = SpringContext.getInstance().getContext();
-            Map<String, ProviderProfile> beans = ax.getBeansOfType(ProviderProfile.class);
-
-            for (ProviderProfile profile : beans.values()) {
-                out += profile.toString();
-            }
             return out;
         } catch (CliInternalException ex) {
             ex.printStackTrace();
@@ -74,7 +59,7 @@ public class ProviderCommands implements CommandMarker {
 
     @CliCommand(value = "prov new", help = "create a new provider profile")
     public String prov_new(
-            @CliOption(key = { "", "n" }, mandatory = true, help = "a provider profile name") final String name) {
+            @CliOption(key = { "name" }, mandatory = true, help = "a provider profile name") final String name) {
         ProviderProfile providerProfile = new ProviderProfile();
         providerProfile.setName(name);
 
@@ -84,17 +69,19 @@ public class ProviderCommands implements CommandMarker {
 
     @CliCommand(value = "prov load", help = "load a provider profile")
     public String prov_load(
-            @CliOption(key = { "", "n" }, mandatory = true, help = "a provider profile name") final ProviderProfile inProfile) {
+            @CliOption(key = { "name" }, mandatory = true, help = "a provider profile name") final ProviderProfile inProfile) {
         NsiCliState.getInstance().setProvProfile(inProfile);
         String out;
         out = "profile loaded: [" + inProfile.getName() + "]\n";
-        out += inProfile.toString();
+        if (NsiCliState.getInstance().isVerbose()) {
+            out += inProfile.toString();
+        }
         return out;
     }
 
     @CliCommand(value = "prov delete", help = "delete a named provider profile")
     public String prov_delete(
-            @CliOption(key = { "", "n" }, mandatory = true, help = "a provider profile name") final ProviderProfile inProfile) {
+            @CliOption(key = { "name" }, mandatory = true, help = "a provider profile name") final ProviderProfile inProfile) {
         String name = inProfile.getName();
         DB_Util.delete(inProfile);
         ProviderProfile currentProfile = NsiCliState.getInstance().getProvProfile();
@@ -109,7 +96,7 @@ public class ProviderCommands implements CommandMarker {
 
     @CliCommand(value = "prov show", help = "show current or named provider profile")
     public String prov_show(
-            @CliOption(key = { "", "n" }, mandatory = false, help = "a provider profile name") final ProviderProfile inProfile) {
+            @CliOption(key = { "name" }, mandatory = false, help = "a provider profile name") final ProviderProfile inProfile) {
         ProviderProfile currentProfile = NsiCliState.getInstance().getProvProfile();
 
         if (inProfile != null) {
@@ -129,7 +116,10 @@ public class ProviderCommands implements CommandMarker {
         ProviderProfile currentProfile = NsiCliState.getInstance().getProvProfile();
         if (currentProfile != null) {
             DB_Util.save(currentProfile);
-            String out = currentProfile.toString();
+            String out = "";
+            if (NsiCliState.getInstance().isVerbose()) {
+                out += currentProfile.toString();
+            }
             return out;
         }
         return "could not save provider profile";
@@ -138,7 +128,7 @@ public class ProviderCommands implements CommandMarker {
 
     @CliCommand(value = "prov copy", help = "make a copy of the current provider profile with a new name and set it as current")
     public String prov_copy(
-            @CliOption(key = { "", "n" }, mandatory = true, help = "a provider profile name") final String name) {
+            @CliOption(key = { "name" }, mandatory = true, help = "a provider profile name") final String name) {
         ProviderProfile currentProfile = NsiCliState.getInstance().getProvProfile();
 
         if (currentProfile == null) {
@@ -163,7 +153,7 @@ public class ProviderCommands implements CommandMarker {
 
     @CliCommand(value = "prov set", help = "set current provider profile parameters")
     public String prov_set(
-            @CliOption(key = { "n" }, mandatory = false, help = "profile name") final String name,
+            @CliOption(key = { "name" }, mandatory = false, help = "profile name") final String name,
             @CliOption(key = { "st" }, mandatory = false, help = "service type") final String serviceType,
             @CliOption(key = { "url" }, mandatory = false, help = "url") final String url,
             @CliOption(key = { "bus" }, mandatory = false, help = "busConfig") final File busConfig,

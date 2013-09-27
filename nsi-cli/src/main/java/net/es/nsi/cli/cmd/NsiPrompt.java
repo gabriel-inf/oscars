@@ -11,13 +11,13 @@ public class NsiPrompt extends DefaultPromptProvider {
 
     @Override
     public String getPrompt() {
-        return "nsi>";
+        return "esnet>";
     }
 
 
     @Override
     public String getProviderName() {
-        return "My prompt provider";
+        return "ESnet NSI provider";
     }
 
 }

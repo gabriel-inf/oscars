@@ -1,7 +1,8 @@
 verbose off
+listener stop
 
-prov load --n default
-prov copy --n esnet
+prov load --name default
+prov copy --name esnet
 prov set --url "https://oscars.es.net/ConnectionService"  --auth BASIC
 prov set --u nsibridge
 prov set --p CHANGEIT
@@ -9,14 +10,14 @@ prov set --bus samples/client-bus-oscars-ssl.xml
 prov save
 
 
-req load --n default
-req copy --n jupiter
+req load --name default
+req copy --name jupiter
 req set --url "http://localhost:8600/Requester"
 req save
 
 
-resv load --n default
-resv copy --n myresv
+resv load --name default
+resv copy --name myresv
 resv set --st "30 sec"
 resv set --et "30 min"
 resv set --d "my description"
@@ -29,9 +30,9 @@ resv set --dv 1785
 resv save
 
 
-defaults prov --n esnet
-defaults req --n jupiter
-defaults resv --n myresv
+defaults prov --name esnet
+defaults req --name jupiter
+defaults resv --name myresv
 
 defaults save
 

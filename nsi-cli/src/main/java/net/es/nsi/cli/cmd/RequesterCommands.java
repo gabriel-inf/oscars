@@ -6,9 +6,7 @@ import net.es.nsi.cli.config.RequesterProfile;
 import net.es.nsi.cli.core.CliInternalException;
 import net.es.nsi.cli.db.DB_Util;
 import net.es.oscars.nsibridge.client.cli.CLIListener;
-import net.es.oscars.nsibridge.config.SpringContext;
 import org.apache.log4j.Logger;
-import org.springframework.context.ApplicationContext;
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
@@ -19,7 +17,6 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
-import java.util.Map;
 
 
 @Component
@@ -94,13 +91,6 @@ public class RequesterCommands implements CommandMarker {
             for (RequesterProfile profile : profiles) {
                 out += profile.toString();
             }
-            out += "\nConfigured profiles:\n";
-            ApplicationContext ax = SpringContext.getInstance().getContext();
-            Map<String, RequesterProfile> beans = ax.getBeansOfType(RequesterProfile.class);
-
-            for (RequesterProfile profile : beans.values()) {
-                out += profile.toString();
-            }
             return out;
         } catch (CliInternalException ex) {
             ex.printStackTrace();
@@ -111,7 +101,7 @@ public class RequesterCommands implements CommandMarker {
 
     @CliCommand(value = "req new", help = "create a new requester profile")
     public String requester_new(
-            @CliOption(key = { "", "n" }, mandatory = true, help = "a requester profile name") final String name) {
+            @CliOption(key = { "name" }, mandatory = true, help = "a requester profile name") final String name) {
         RequesterProfile profile = new RequesterProfile();
         profile.setName(name);
 
@@ -121,18 +111,20 @@ public class RequesterCommands implements CommandMarker {
 
     @CliCommand(value = "req load", help = "load a requester profile")
     public String requester_load(
-            @CliOption(key = { "", "n" }, mandatory = true, help = "a requester profile name") final RequesterProfile inProfile) {
+            @CliOption(key = { "name" }, mandatory = true, help = "a requester profile name") final RequesterProfile inProfile) {
         NsiCliState.getInstance().setRequesterProfile(inProfile);
         String out;
         out = "profile loaded: [" + inProfile.getName() + "]\n";
-        out += inProfile.toString();
+        if (NsiCliState.getInstance().isVerbose()) {
+            out += inProfile.toString();
+        }
         NsiCliState.getInstance().setListenerStartable(true);
         return out;
     }
 
     @CliCommand(value = "req delete", help = "delete a named requester profile")
     public String requester_delete(
-            @CliOption(key = { "", "n" }, mandatory = true, help = "a requester profile name") final RequesterProfile inProfile) {
+            @CliOption(key = { "name" }, mandatory = true, help = "a requester profile name") final RequesterProfile inProfile) {
         String name = inProfile.getName();
         DB_Util.delete(inProfile);
         RequesterProfile currentProfile = NsiCliState.getInstance().getRequesterProfile();
@@ -147,7 +139,7 @@ public class RequesterCommands implements CommandMarker {
 
     @CliCommand(value = "req show", help = "show current or named requester profile")
     public String requester_show(
-            @CliOption(key = { "", "n" }, mandatory = false, help = "a requester profile name") final RequesterProfile inProfile) {
+            @CliOption(key = { "name" }, mandatory = false, help = "a requester profile name") final RequesterProfile inProfile) {
         RequesterProfile currentProfile = NsiCliState.getInstance().getRequesterProfile();
 
         if (inProfile != null) {
@@ -167,7 +159,10 @@ public class RequesterCommands implements CommandMarker {
         RequesterProfile currentProfile = NsiCliState.getInstance().getRequesterProfile();
         if (currentProfile != null) {
             DB_Util.save(currentProfile);
-            String out = currentProfile.toString();
+            String out = "";
+            if (NsiCliState.getInstance().isVerbose()) {
+                out += currentProfile.toString();
+            }
             return out;
         }
         return "could not save requester profile";
@@ -176,7 +171,7 @@ public class RequesterCommands implements CommandMarker {
 
     @CliCommand(value = "req copy", help = "make a copy of the current requester profile with a new name and set it as current")
     public String requester_copy(
-            @CliOption(key = { "", "n" }, mandatory = true, help = "a requester profile name") final String name) {
+            @CliOption(key = { "name" }, mandatory = true, help = "a requester profile name") final String name) {
         RequesterProfile currentProfile = NsiCliState.getInstance().getRequesterProfile();
 
         if (currentProfile == null) {
@@ -201,9 +196,9 @@ public class RequesterCommands implements CommandMarker {
 
     @CliCommand(value = "req set", help = "set current requester profile parameters")
     public String requester_set(
-            @CliOption(key = { "n" }, mandatory = false, help = "profile name") final String name,
+            @CliOption(key = { "name" }, mandatory = false, help = "profile name") final String name,
             @CliOption(key = { "url" }, mandatory = false, help = "URL") final String url,
-            @CliOption(key = { "r" }, mandatory = false, help = "requester id") final String requesterId,
+            @CliOption(key = { "r", "requesterId" }, mandatory = false, help = "requester id") final String requesterId,
             @CliOption(key = { "bus" }, mandatory = false, help = "bus config filename") final File busConfig
     )
     {

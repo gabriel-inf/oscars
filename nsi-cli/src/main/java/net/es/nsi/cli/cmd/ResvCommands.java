@@ -3,8 +3,6 @@ package net.es.nsi.cli.cmd;
 import net.es.nsi.cli.config.ResvProfile;
 import net.es.nsi.cli.core.CliInternalException;
 import net.es.nsi.cli.db.DB_Util;
-import net.es.oscars.nsibridge.config.SpringContext;
-import org.springframework.context.ApplicationContext;
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
@@ -13,7 +11,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 
 @Component
@@ -47,7 +44,7 @@ public class ResvCommands implements CommandMarker {
 
     @CliCommand(value = "resv new", help = "create a new reservation profile")
     public String resv_new(
-            @CliOption(key = { "", "n" }, mandatory = true, help = "a reservation profile name") final String name) {
+            @CliOption(key = { "name" }, mandatory = true, help = "a reservation profile name") final String name) {
         ResvProfile resvProfile = new ResvProfile();
         resvProfile.setName(name);
         NsiCliState.getInstance().setResvProfile(resvProfile);
@@ -63,13 +60,6 @@ public class ResvCommands implements CommandMarker {
             for (ResvProfile profile : profiles) {
                 out += profile.toString();
             }
-            out += "\n\nConfigured profiles:\n";
-            ApplicationContext ax = SpringContext.getInstance().getContext();
-            Map<String, ResvProfile> beans = ax.getBeansOfType(ResvProfile.class);
-
-            for (ResvProfile profile : beans.values()) {
-                out += profile.toString();
-            }
             return out;
         } catch (CliInternalException ex) {
             ex.printStackTrace();
@@ -79,12 +69,15 @@ public class ResvCommands implements CommandMarker {
 
     @CliCommand(value = "resv load", help = "load a named reservation profile")
     public String resv_load(
-            @CliOption(key = { "", "n" }, mandatory = true, help = "a reservation profile name") final ResvProfile inProfile) {
+            @CliOption(key = { "name" }, mandatory = true, help = "a reservation profile name") final ResvProfile inProfile) {
         NsiCliState.getInstance().setResvProfile(inProfile);
         String out;
 
         out = "profile loaded: [" + inProfile.getName() + "]\n";
-        out += inProfile.toString();
+
+        if (NsiCliState.getInstance().isVerbose()) {
+            out += inProfile.toString();
+        }
         return out;
     }
 
@@ -92,7 +85,7 @@ public class ResvCommands implements CommandMarker {
 
     @CliCommand(value = "resv delete", help = "delete a named reservation profile")
     public String resv_delete(
-            @CliOption(key = { "", "n" }, mandatory = true, help = "a reservation profile name") final ResvProfile inProfile) {
+            @CliOption(key = { "name" }, mandatory = true, help = "a reservation profile name") final ResvProfile inProfile) {
         DB_Util.delete(inProfile);
         ResvProfile currentProfile = NsiCliState.getInstance().getResvProfile();
         if (currentProfile != null) {
@@ -106,7 +99,7 @@ public class ResvCommands implements CommandMarker {
 
     @CliCommand(value = "resv show", help = "show current or named reservation profile")
     public String resv_show(
-            @CliOption(key = { "", "n" }, mandatory = false, help = "a reservation profile name") final ResvProfile inProfile) {
+            @CliOption(key = { "name" }, mandatory = false, help = "a reservation profile name") final ResvProfile inProfile) {
         ResvProfile currentProfile = NsiCliState.getInstance().getResvProfile();
         if (inProfile != null) {
             String out = inProfile.toString();
@@ -124,7 +117,10 @@ public class ResvCommands implements CommandMarker {
         ResvProfile currentProfile = NsiCliState.getInstance().getResvProfile();
         if (currentProfile != null) {
             DB_Util.save(currentProfile);
-            String out = currentProfile.toString();
+            String out = "";
+            if (NsiCliState.getInstance().isVerbose()) {
+                out += currentProfile.toString();
+            }
             return out;
         }
         return "could not save current reservation profile";
@@ -134,7 +130,7 @@ public class ResvCommands implements CommandMarker {
 
     @CliCommand(value = "resv copy", help = "make a copy of the current reservation profile with a new name and set it as current")
     public String resv_copy(
-            @CliOption(key = { "", "n" }, mandatory = true, help = "a reservation profile name") final String name) {
+            @CliOption(key = { "name" }, mandatory = true, help = "a reservation profile name") final String name) {
         ResvProfile currentProfile = NsiCliState.getInstance().getResvProfile();
         if (currentProfile == null) {
             return "no current profile";
@@ -157,8 +153,8 @@ public class ResvCommands implements CommandMarker {
 
     @CliCommand(value = "resv set", help = "set current reservation profile parameters")
     public String resv_set(
-            @CliOption(key = { "n" },  mandatory = false, help = "profile name") final String name,
-            @CliOption(key = { "b" },  mandatory = false, help = "bandwidth (mbps)") final Integer bw,
+            @CliOption(key = { "name" },  mandatory = false, help = "profile name") final String name,
+            @CliOption(key = { "b", "bw", "bandwidth" },  mandatory = false, help = "bandwidth (mbps)") final Integer bw,
             @CliOption(key = { "v" },  mandatory = false, help = "version") final Integer version,
 
             @CliOption(key = { "st" }, mandatory = false, help = "start time (natty format)") final Date startTime,

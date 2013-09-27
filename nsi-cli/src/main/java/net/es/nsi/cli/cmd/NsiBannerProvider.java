@@ -15,7 +15,7 @@ public class NsiBannerProvider extends DefaultBannerProvider {
         StringBuffer buf = new StringBuffer();
         buf.append("=======================================" + OsUtils.LINE_SEPARATOR);
         buf.append("*                                     *"+ OsUtils.LINE_SEPARATOR);
-        buf.append("*            NSI CLI API              *" +OsUtils.LINE_SEPARATOR);
+        buf.append("*            ESnet NSI CLI            *" +OsUtils.LINE_SEPARATOR);
         buf.append("*                                     *"+ OsUtils.LINE_SEPARATOR);
         buf.append("=======================================" + OsUtils.LINE_SEPARATOR);
         buf.append("Version:" + this.getVersion());
@@ -27,11 +27,11 @@ public class NsiBannerProvider extends DefaultBannerProvider {
     }
 
     public String getWelcomeMessage() {
-        return "Welcome to the NSI CLI API";
+        return "Welcome to the ESnet NSI CLI";
     }
 
     @Override
     public String getProviderName() {
-        return "The NSI CLI API banner";
+        return "ESnet NSI CLI";
     }
 }

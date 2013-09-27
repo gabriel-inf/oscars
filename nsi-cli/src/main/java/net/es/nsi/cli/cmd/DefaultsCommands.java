@@ -116,7 +116,7 @@ public class DefaultsCommands implements CommandMarker {
 
     @CliCommand(value = "defaults resv", help = "set the default reservation profile name")
     public String defaults_resv(
-            @CliOption(key = { "", "n" }, mandatory = true, help = "a reservation profile name") final ResvProfile inProfile) {
+            @CliOption(key = { "name" }, mandatory = true, help = "a reservation profile name") final ResvProfile inProfile) {
         String out = "";
 
         DefaultProfiles defs = NsiCliState.getInstance().getDefs();
@@ -134,7 +134,7 @@ public class DefaultsCommands implements CommandMarker {
     }
     @CliCommand(value = "defaults prov", help = "set the default provider profile name")
     public String defaults_prov(
-            @CliOption(key = { "", "n" }, mandatory = true, help = "a provider profile name") final ProviderProfile inProfile) {
+            @CliOption(key = { "name" }, mandatory = true, help = "a provider profile name") final ProviderProfile inProfile) {
         String out = "";
         DefaultProfiles defs = NsiCliState.getInstance().getDefs();
         if (defs == null) {
@@ -150,7 +150,7 @@ public class DefaultsCommands implements CommandMarker {
 
     @CliCommand(value = "defaults req", help = "set the default requester profile name")
     public String defaults_req(
-            @CliOption(key = { "", "n" }, mandatory = true, help = "a requester  profile name") final RequesterProfile inProfile) {
+            @CliOption(key = { "name" }, mandatory = true, help = "a requester  profile name") final RequesterProfile inProfile) {
         String out = "";
         DefaultProfiles defs = NsiCliState.getInstance().getDefs();
 

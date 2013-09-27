@@ -1,9 +1,6 @@
 package net.es.nsi.cli.db;
 
-import net.es.nsi.cli.config.DefaultProfiles;
-import net.es.nsi.cli.config.RequesterProfile;
-import net.es.nsi.cli.config.ProviderProfile;
-import net.es.nsi.cli.config.ResvProfile;
+import net.es.nsi.cli.config.*;
 import net.es.nsi.cli.core.CliInternalException;
 import net.es.oscars.nsibridge.config.SpringContext;
 import org.apache.commons.beanutils.BeanUtils;
@@ -75,8 +72,8 @@ public class DB_Util {
     public static ResvProfile getResvProfile(String name) throws CliInternalException {
         prepare();
         EntityManager em = PersistenceHolder.getEntityManager();
-        em.getTransaction().begin();
         String query = "SELECT c FROM ResvProfile c WHERE c.name  = '"+name+"'";
+        em.getTransaction().begin();
         List<ResvProfile> recordList = em.createQuery(query, ResvProfile.class).getResultList();
         em.getTransaction().commit();
 
@@ -92,45 +89,34 @@ public class DB_Util {
     public static List<ResvProfile> getResvProfiles() throws CliInternalException {
         prepare();
         EntityManager em = PersistenceHolder.getEntityManager();
-        em.getTransaction().begin();
         String query = "SELECT c FROM ResvProfile c";
+
+        em.getTransaction().begin();
         List<ResvProfile> recordList = em.createQuery(query, ResvProfile.class).getResultList();
         em.getTransaction().commit();
         return recordList;
     }
 
     public static ResvProfile copyResvProfile(ResvProfile prof, String inName) throws CliInternalException {
-        String name = prof.getName();
         prepare();
         EntityManager em = PersistenceHolder.getEntityManager();
-        if (em.contains(prof)) {
-            em.detach(prof);
-            prof.setName(inName);
-            prof.setId(null);
-            em.getTransaction().begin();
-            em.merge(prof);
-            em.getTransaction().commit();
-            getResvProfile(name);
-            return prof;
-        } else {
-            ResvProfile newProf = new ResvProfile();
-            try {
-                BeanUtils.copyProperties(newProf, prof);
-            } catch (InvocationTargetException ex) {
-                ex.printStackTrace();
-                throw new CliInternalException(ex.getMessage());
-            } catch (IllegalAccessException ex) {
-                ex.printStackTrace();
-                throw new CliInternalException(ex.getMessage());
-            }
-            newProf.setName(inName);
-            newProf.setId(null);
-            em.getTransaction().begin();
-            em.persist(newProf);
-            em.getTransaction().commit();
-
-            return newProf;
+        ResvProfile newProf = new ResvProfile();
+        try {
+            BeanUtils.copyProperties(newProf, prof);
+        } catch (InvocationTargetException ex) {
+            ex.printStackTrace();
+            throw new CliInternalException(ex.getMessage());
+        } catch (IllegalAccessException ex) {
+            ex.printStackTrace();
+            throw new CliInternalException(ex.getMessage());
         }
+        newProf.setName(inName);
+        newProf.setId(null);
+        em.getTransaction().begin();
+        em.persist(newProf);
+        em.getTransaction().commit();
+
+        return newProf;
     }
 
 
@@ -140,8 +126,9 @@ public class DB_Util {
     public static ProviderProfile getProviderProfile(String name) throws CliInternalException {
         prepare();
         EntityManager em = PersistenceHolder.getEntityManager();
-        em.getTransaction().begin();
         String query = "SELECT c FROM ProviderProfile c WHERE c.name  = '"+name+"'";
+
+        em.getTransaction().begin();
         List<ProviderProfile> recordList = em.createQuery(query, ProviderProfile.class).getResultList();
         em.getTransaction().commit();
 
@@ -166,50 +153,49 @@ public class DB_Util {
 
 
     public static ProviderProfile copyProviderProfile(ProviderProfile prof, String inName) throws CliInternalException {
-        String name = prof.getName();
         prepare();
         EntityManager em = PersistenceHolder.getEntityManager();
-        if (em.contains(prof)) {
-            em.detach(prof);
-            prof.setName(inName);
-            prof.setId(null);
-            prof.getProviderServer().setId(null);
-            prof.getProviderServer().getAuth().setId(null);
-            em.getTransaction().begin();
-            em.merge(prof);
-            em.getTransaction().commit();
-            getProviderProfile(name);
-            return prof;
-        } else {
-            ProviderProfile newProf = new ProviderProfile();
-            try {
-                BeanUtils.copyProperties(newProf, prof);
-            } catch (InvocationTargetException ex) {
-                ex.printStackTrace();
-                throw new CliInternalException(ex.getMessage());
-            } catch (IllegalAccessException ex) {
-                ex.printStackTrace();
-                throw new CliInternalException(ex.getMessage());
-            }
-            newProf.setName(inName);
-            newProf.setId(null);
-            newProf.getProviderServer().setId(null);
-            newProf.getProviderServer().getAuth().setId(null);
+        ProviderProfile newProf = new ProviderProfile();
+        ProviderServer  newPs = new ProviderServer();
+        NsiAuth         newAuth = new NsiAuth();
 
+        try {
+            BeanUtils.copyProperties(newProf,   prof);
+            BeanUtils.copyProperties(newPs,     prof.getProviderServer());
+            BeanUtils.copyProperties(newAuth,   prof.getProviderServer().getAuth());
+        } catch (InvocationTargetException ex) {
+            ex.printStackTrace();
+            throw new CliInternalException(ex.getMessage());
+        } catch (IllegalAccessException ex) {
+            ex.printStackTrace();
+            throw new CliInternalException(ex.getMessage());
+        }
+        newProf.setProviderServer(newPs);
+        newProf.setName(inName);
+        newPs.setAuth(newAuth);
+
+        newProf.setId(null);
+        newPs.setId(null);
+        newAuth.setId(null);
+
+
+        try {
             em.getTransaction().begin();
             em.persist(newProf);
             em.getTransaction().commit();
-
-            return newProf;
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
+
+        return newProf;
     }
 
 
     public static DefaultProfiles getDefaults() throws CliInternalException {
         prepare();
         EntityManager em = PersistenceHolder.getEntityManager();
-        em.getTransaction().begin();
         String query = "SELECT c FROM DefaultProfiles c";
+        em.getTransaction().begin();
         List<DefaultProfiles> recordList = em.createQuery(query, DefaultProfiles.class).getResultList();
         em.getTransaction().commit();
 
@@ -230,8 +216,9 @@ public class DB_Util {
     public static RequesterProfile getRequesterProfile(String name) throws CliInternalException {
         prepare();
         EntityManager em = PersistenceHolder.getEntityManager();
-        em.getTransaction().begin();
         String query = "SELECT c FROM RequesterProfile c WHERE c.name  = '"+name+"'";
+
+        em.getTransaction().begin();
         List<RequesterProfile> recordList = em.createQuery(query, RequesterProfile.class).getResultList();
         em.getTransaction().commit();
 
@@ -247,45 +234,34 @@ public class DB_Util {
     public static List<RequesterProfile> getRequesterProfiles() throws CliInternalException {
         prepare();
         EntityManager em = PersistenceHolder.getEntityManager();
-        em.getTransaction().begin();
         String query = "SELECT c FROM RequesterProfile c";
+        em.getTransaction().begin();
         List<RequesterProfile> recordList = em.createQuery(query, RequesterProfile.class).getResultList();
         em.getTransaction().commit();
         return recordList;
     }
 
     public static RequesterProfile copyRequesterProfile(RequesterProfile prof, String inName) throws CliInternalException {
-        String name = prof.getName();
         prepare();
         EntityManager em = PersistenceHolder.getEntityManager();
-        if (em.contains(prof)) {
-            em.detach(prof);
-            prof.setName(inName);
-            prof.setId(null);
-            em.getTransaction().begin();
-            em.merge(prof);
-            em.getTransaction().commit();
-            getResvProfile(name);
-            return prof;
-        } else {
-            RequesterProfile newProf = new RequesterProfile();
-            try {
-                BeanUtils.copyProperties(newProf, prof);
-            } catch (InvocationTargetException ex) {
-                ex.printStackTrace();
-                throw new CliInternalException(ex.getMessage());
-            } catch (IllegalAccessException ex) {
-                ex.printStackTrace();
-                throw new CliInternalException(ex.getMessage());
-            }
-            newProf.setName(inName);
-            newProf.setId(null);
-            em.getTransaction().begin();
-            em.persist(newProf);
-            em.getTransaction().commit();
 
-            return newProf;
+        RequesterProfile newProf = new RequesterProfile();
+        try {
+            BeanUtils.copyProperties(newProf, prof);
+        } catch (InvocationTargetException ex) {
+            ex.printStackTrace();
+            throw new CliInternalException(ex.getMessage());
+        } catch (IllegalAccessException ex) {
+            ex.printStackTrace();
+            throw new CliInternalException(ex.getMessage());
         }
+        newProf.setName(inName);
+        newProf.setId(null);
+        em.getTransaction().begin();
+        em.persist(newProf);
+        em.getTransaction().commit();
+
+        return newProf;
     }
 
 
