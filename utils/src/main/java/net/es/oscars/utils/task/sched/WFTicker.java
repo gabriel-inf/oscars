@@ -36,13 +36,16 @@ public class WFTicker extends Thread {
             task = wf.nextRunnable(now);
             if (task != null) {
                 task.onRun();
-                wf.finishRunning(task);
             }
         }catch (Exception ex) {
             log.error(ex);
             ex.printStackTrace();
             if(task != null && !Outcome.FAIL.equals(task.getOutcome())){
                 this.failTaskOnUnhandledException(task);
+            }
+        }finally{
+            if (task != null) {
+                wf.finishRunning(task);
             }
         }
 
