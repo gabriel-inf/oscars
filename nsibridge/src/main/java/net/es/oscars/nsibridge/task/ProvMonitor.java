@@ -34,12 +34,6 @@ public class ProvMonitor extends Thread {
     public void execute() {
         Date now = new Date();
 
-        Long millis = now.getTime();
-        Long sec = millis / 1000;
-        if (sec % 5 == 0) {
-            log.debug("prov monitor alive");
-        }
-
         List<ConnectionRecord> recordList;
         try {
              recordList = DB_Util.getConnectionRecords();

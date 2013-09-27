@@ -26,10 +26,6 @@ public class WFTicker extends Thread {
     public void execute() throws JobExecutionException {
         Workflow wf = net.es.oscars.utils.task.sched.Workflow.getInstance();
         long now = new Date().getTime();
-        Long sec = now / 1000;
-        if (sec % 5 == 0) {
-            log.debug("WFTicker alive");
-        }
         
         Task task = null;
         try {
