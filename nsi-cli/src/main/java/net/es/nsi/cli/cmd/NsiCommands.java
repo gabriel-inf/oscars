@@ -279,6 +279,11 @@ public class NsiCommands implements CommandMarker {
             out += "using current connection id: "+connectionId;
         }
 
+        if (connectionId != null && !connectionId.isEmpty()) {
+            NsiCliState.getInstance().setConfirmed(connectionId, false);
+            NsiCliState.getInstance().setCommitted(connectionId, false);
+        }
+
 
         ConnectionProviderPort port = getPort();
         Holder<CommonHeaderType> outHolder = ClientUtil.makeClientHeader();
@@ -334,7 +339,6 @@ public class NsiCommands implements CommandMarker {
         evType.setCapacity(rp.getBandwidth());
         evType.setDirectionality(DirectionalityType.BIDIRECTIONAL);
         evType.setSymmetricPath(true);
-
 
         try {
             port.reserve(connHolder, gri, description, rct, header, outHolder);
