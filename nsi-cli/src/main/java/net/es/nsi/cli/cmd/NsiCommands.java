@@ -599,7 +599,12 @@ public class NsiCommands implements CommandMarker {
 
 
         ConnectionProviderPort port = getPort();
-        Holder<CommonHeaderType> outHolder = ClientUtil.makeClientHeader();
+        Holder<CommonHeaderType> outHolder = new Holder<CommonHeaderType>();
+        try {
+            outHolder.value = makeHeader();
+        } catch (CliInternalException e) {
+            e.printStackTrace();
+        }
 
         try {
             switch (queryMode) {
