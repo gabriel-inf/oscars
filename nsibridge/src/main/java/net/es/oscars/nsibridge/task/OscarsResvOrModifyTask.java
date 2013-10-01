@@ -5,10 +5,13 @@ import net.es.oscars.nsibridge.beans.ResvRequest;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.beans.db.OscarsStatusRecord;
 import net.es.oscars.nsibridge.config.TimingConfig;
+import net.es.oscars.nsibridge.ifces.NsiProvMdl;
 import net.es.oscars.nsibridge.ifces.StateException;
 import net.es.oscars.nsibridge.oscars.*;
 import net.es.oscars.nsibridge.prov.*;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
+import net.es.oscars.nsibridge.state.prov.NSI_Prov_SM;
+import net.es.oscars.nsibridge.state.prov.NSI_Prov_TH;
 import net.es.oscars.utils.task.RunState;
 import net.es.oscars.utils.task.TaskException;
 import org.apache.log4j.Logger;
@@ -170,6 +173,15 @@ public class OscarsResvOrModifyTask extends OscarsTask  {
                     this.getStateMachine().process(this.successEvent, this.correlationId);
                     this.onSuccess();
                     DB_Util.persistStateMachines(connId);
+
+                    if (theOp.equals(OscarsOps.MODIFY) && os.equals(OscarsStates.ACTIVE)) {
+                        // send a dataplane update back
+                        NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
+                        NSI_Prov_SM psm = smh.findNsiProvSM(connId);
+                        NSI_Prov_TH pth = (NSI_Prov_TH) psm.getTransitionHandler();
+                        NsiProvMdl mdl = pth.getMdl();
+                        mdl.dataplaneUpdate(correlationId);
+                    }
                     return;
                 }  else {
                     this.getStateMachine().process(this.failEvent, this.correlationId);

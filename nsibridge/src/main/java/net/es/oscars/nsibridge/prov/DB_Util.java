@@ -1,6 +1,5 @@
 package net.es.oscars.nsibridge.prov;
 
-import com.sun.xml.bind.api.ClassResolver;
 import net.es.oscars.common.soap.gen.SubjectAttributes;
 import net.es.oscars.nsibridge.beans.db.*;
 import net.es.oscars.nsibridge.common.PersistenceHolder;
@@ -32,7 +31,6 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-import javax.xml.transform.stream.StreamSource;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
