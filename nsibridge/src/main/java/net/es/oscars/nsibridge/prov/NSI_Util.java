@@ -92,7 +92,13 @@ public class NSI_Util {
         ApplicationContext ax = sc.getContext();
         HttpConfig hc = ax.getBean("httpConfig", HttpConfig.class);
 
-        ht.setReplyTo(hc.getUrl()+"/ConnectionService");
+        if (hc.getProxyUrl() != null && !hc.getProxyUrl().isEmpty()) {
+            ht.setReplyTo(hc.getProxyUrl()+"/ConnectionService");
+        } else {
+            ht.setReplyTo(hc.getUrl()+"/ConnectionService");
+        }
+
+
         return ht;
     }
 

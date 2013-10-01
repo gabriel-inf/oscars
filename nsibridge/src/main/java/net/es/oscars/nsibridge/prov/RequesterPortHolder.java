@@ -39,7 +39,9 @@ public class RequesterPortHolder {
         fb.getInInterceptors().add(in);
         fb.getOutInterceptors().add(out);
 
-        fb.setAddress(url.toString());
+        if (url != null) {
+            fb.setAddress(url.toString());
+        }
 
         Map props = fb.getProperties();
         if (props == null) {

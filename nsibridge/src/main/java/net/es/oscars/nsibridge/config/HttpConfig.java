@@ -3,6 +3,8 @@ package net.es.oscars.nsibridge.config;
 
 public class HttpConfig {
     protected String url;
+    protected String proxyUrl;
+
     protected String bus;
     protected String sslBus;
     protected String trustedSSLProxy;
@@ -22,6 +24,14 @@ public class HttpConfig {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public String getProxyUrl() {
+        return proxyUrl;
+    }
+
+    public void setProxyUrl(String proxyUrl) {
+        this.proxyUrl = proxyUrl;
     }
 
     public String getBus() {
