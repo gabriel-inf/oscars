@@ -90,6 +90,8 @@ public class NsiCommands implements CommandMarker {
 
     @CliAvailabilityIndicator({"nsi clear"})
     public boolean canClear() {
+        if (!haveProfiles()) return false;
+
         if (!haveConnectionId()) return false;
         return (NsiCliState.getInstance().isNsiAvailable());
     }
@@ -522,9 +524,10 @@ public class NsiCommands implements CommandMarker {
     }
 
 
-    @CliCommand(value = "nsi clear", help = "clear the connection id")
+    @CliCommand(value = "nsi clear", help = "clear the connection id, set version to 0")
     public String clear() {
 
+        NsiCliState.getInstance().getResvProfile().setVersion(0);
         NsiCliState.getInstance().setConnectionId(null);
         return "";
     }
