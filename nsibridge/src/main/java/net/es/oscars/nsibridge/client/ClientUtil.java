@@ -31,7 +31,7 @@ public class ClientUtil {
     final public static String DEFAULT_URL = "https://localhost:8500/nsi-v2/ConnectionServiceProvider";
     final public static String DEFAULT_REQUESTER = "urn:oscars:nsa:client";
     final public static String DEFAULT_PROVIDER = DEFAULT_REQUESTER;
-    final public static String DEFAULT_PROTOCOL_VERSION = "2.0";
+    final public static String DEFAULT_PROTOCOL_VERSION = "application/vdn.ogf.nsi.cs.v2.provider+soap";
     
     /**
      * Creates a client class can be used to call provider at given URL

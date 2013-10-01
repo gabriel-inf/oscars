@@ -29,6 +29,7 @@ import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.types.StpType;
  */
 public class ReserveCLIClient {
     final static long DEFAULT_DURATION = 15*60*1000;//15 minutes
+    final static String DEFAULT_SERVICE_TYPE = "http://services.ogf.org/nsi/2013/07/descriptions/EVTS.A-GOLE";
     
     public static void main(String[] args){
       //initialize input variables
@@ -49,6 +50,7 @@ public class ReserveCLIClient {
         StpType destSTP = new StpType();
         evType.setSourceSTP(sourceSTP);
         evType.setDestSTP(destSTP);
+        criteria.setServiceType(DEFAULT_SERVICE_TYPE);
         ReserveOutputter outputter = new ReservePrettyOutputter();
         
         //parse options
