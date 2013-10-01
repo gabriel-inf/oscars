@@ -30,6 +30,8 @@ import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.Common
 public class ClientUtil {
     final public static String DEFAULT_URL = "https://localhost:8500/nsi-v2/ConnectionServiceProvider";
     final public static String DEFAULT_REQUESTER = "urn:oscars:nsa:client";
+    final public static String DEFAULT_PROVIDER = DEFAULT_REQUESTER;
+    final public static String DEFAULT_PROTOCOL_VERSION = "2.0";
     
     /**
      * Creates a client class can be used to call provider at given URL
@@ -171,6 +173,8 @@ public class ClientUtil {
     public static  Holder<CommonHeaderType> makeClientHeader(){
         CommonHeaderType hd = new CommonHeaderType();
         hd.setRequesterNSA(DEFAULT_REQUESTER);
+        hd.setProviderNSA(DEFAULT_PROVIDER);
+        hd.setProtocolVersion(DEFAULT_PROTOCOL_VERSION);
         hd.setCorrelationId("urn:uuid:"+UUID.randomUUID().toString());
         Holder<CommonHeaderType> header = new Holder<CommonHeaderType>();
         header.value = hd;

@@ -87,6 +87,8 @@ public class SimpleCLIClient {
 
             if(opts.has("n")){
                 header.setRequesterNSA((String) opts.valueOf("n"));
+               //make provider same as requester
+                header.setProviderNSA((String)opts.valueOf("n"));
             }
 
             if (opts.has("o")) {

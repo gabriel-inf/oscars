@@ -104,6 +104,8 @@ public class QueryCLIClient {
             
             if(opts.has("n")){
                 header.value.setRequesterNSA((String)opts.valueOf("n"));
+                //make provider same as requester
+                header.value.setProviderNSA((String)opts.valueOf("n"));
             }
             
             if(opts.has("output")){
