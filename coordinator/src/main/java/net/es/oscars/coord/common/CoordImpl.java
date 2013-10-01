@@ -490,6 +490,7 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
             ResDetails resDetails = queryReq.getResultData().getReservationDetails();
             UserRequestConstraintType modUC =  resDetails.getUserRequestConstraint();
             ReservedConstraintType modRC = resDetails.getReservedConstraint();
+            List<OptionalConstraintType> modOC = resDetails.getOptionalConstraint();
             // check that requested modifications are allowed
             String resState = resDetails.getStatus();
             Long curtime = System.currentTimeMillis()/1000L;
@@ -551,6 +552,9 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
             modifyResvReq.setUserRequestConstraint(modUC);
             // include information about the current reservation for use in error handling
             modifyResvReq.setReservedConstraint(modRC);
+
+            // add optional constraints
+            modifyResvReq.getOptionalConstraint().addAll(modOC);
 
             checkConditions( authDecision, null, modUC, true);
             loginName = getLoginName (subjectAttributes);
