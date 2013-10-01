@@ -38,7 +38,7 @@ public class ConnectionProvider implements ConnectionProviderPort {
         String connId;
         if (connectionId == null || connectionId.value == null || connectionId.value.equals("")) {
             log.debug("generating new connection ID (none provided)");
-            connId = UUID.randomUUID().toString();
+            connId = "urn:uuid:"+UUID.randomUUID().toString();
 
         } else {
             connId = connectionId.value;
