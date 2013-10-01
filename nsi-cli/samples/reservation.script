@@ -1,8 +1,9 @@
-
+nsi clear
+verbose off
 resv load --name myresv
 resv set --st "10 sec" --et "30 min"
 resv set --sv 1781 --dv 1781
-
+resv show
 
 nsi reserve
 nsi wait --type "RESERVE_CONFIRMED"
@@ -18,7 +19,7 @@ resv set --b 2
 nsi reserve
 nsi wait --type "RESERVE_CONFIRMED"
 nsi commit
-
+nsi wait --type "COMMIT_CONFIRMED"
 
 sleep --sec 30
 nsi terminate
