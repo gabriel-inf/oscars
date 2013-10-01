@@ -7,6 +7,7 @@ import net.es.nsi.cli.config.AuthType;
 import net.es.nsi.cli.config.RequesterProfile;
 import net.es.nsi.cli.config.ProviderProfile;
 import net.es.nsi.cli.config.ResvProfile;
+import net.es.nsi.cli.core.CliInternalException;
 import net.es.oscars.nsibridge.client.ClientUtil;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
 import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.provider.ConnectionProviderPort;
@@ -31,6 +32,9 @@ import org.springframework.stereotype.Component;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.ws.Holder;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
@@ -80,6 +84,13 @@ public class NsiCommands implements CommandMarker {
         if (!haveConnectionId()) return false;
         if (override) return true;
 
+        return (NsiCliState.getInstance().isNsiAvailable());
+    }
+
+
+    @CliAvailabilityIndicator({"nsi clear"})
+    public boolean canClear() {
+        if (!haveConnectionId()) return false;
         return (NsiCliState.getInstance().isNsiAvailable());
     }
 
@@ -287,7 +298,12 @@ public class NsiCommands implements CommandMarker {
 
         ConnectionProviderPort port = getPort();
         Holder<CommonHeaderType> outHolder = ClientUtil.makeClientHeader();
-        CommonHeaderType header = makeHeader();
+        CommonHeaderType header = null;
+        try {
+            header = makeHeader();
+        } catch (CliInternalException e) {
+            e.printStackTrace();
+        }
 
         ProviderProfile pp = NsiCliState.getInstance().getProvProfile();
         String serviceType = pp.getServiceType();
@@ -376,7 +392,12 @@ public class NsiCommands implements CommandMarker {
 
         ConnectionProviderPort port = getPort();
         Holder<CommonHeaderType> outHolder = ClientUtil.makeClientHeader();
-        CommonHeaderType header = makeHeader();
+        CommonHeaderType header = null;
+        try {
+            header = makeHeader();
+        } catch (CliInternalException e) {
+            e.printStackTrace();
+        }
 
         try {
             port.reserveCommit(connectionId, header, outHolder);
@@ -408,7 +429,12 @@ public class NsiCommands implements CommandMarker {
 
         ConnectionProviderPort port = getPort();
         Holder<CommonHeaderType> outHolder = ClientUtil.makeClientHeader();
-        CommonHeaderType header = makeHeader();
+        CommonHeaderType header = null;
+        try {
+            header = makeHeader();
+        } catch (CliInternalException e) {
+            e.printStackTrace();
+        }
 
         try {
             port.reserveAbort(connectionId, header, outHolder);
@@ -440,7 +466,12 @@ public class NsiCommands implements CommandMarker {
 
         ConnectionProviderPort port = getPort();
         Holder<CommonHeaderType> outHolder = ClientUtil.makeClientHeader();
-        CommonHeaderType header = makeHeader();
+        CommonHeaderType header = null;
+        try {
+            header = makeHeader();
+        } catch (CliInternalException e) {
+            e.printStackTrace();
+        }
 
         try {
             port.provision(connectionId, header, outHolder);
@@ -472,7 +503,12 @@ public class NsiCommands implements CommandMarker {
 
         ConnectionProviderPort port = getPort();
         Holder<CommonHeaderType> outHolder = ClientUtil.makeClientHeader();
-        CommonHeaderType header = makeHeader();
+        CommonHeaderType header = null;
+        try {
+            header = makeHeader();
+        } catch (CliInternalException e) {
+            e.printStackTrace();
+        }
 
         try {
             port.release(connectionId, header, outHolder);
@@ -484,6 +520,15 @@ public class NsiCommands implements CommandMarker {
 
         return out;
     }
+
+
+    @CliCommand(value = "nsi clear", help = "clear the connection id")
+    public String clear() {
+
+        NsiCliState.getInstance().setConnectionId(null);
+        return "";
+    }
+
 
     @CliCommand(value = "nsi terminate", help = "terminate a reservation")
     public String terminate(
@@ -504,7 +549,12 @@ public class NsiCommands implements CommandMarker {
 
         ConnectionProviderPort port = getPort();
         Holder<CommonHeaderType> outHolder = ClientUtil.makeClientHeader();
-        CommonHeaderType header = makeHeader();
+        CommonHeaderType header = null;
+        try {
+            header = makeHeader();
+        } catch (CliInternalException e) {
+            e.printStackTrace();
+        }
 
         try {
             port.terminate(connectionId, header, outHolder);
@@ -565,15 +615,63 @@ public class NsiCommands implements CommandMarker {
     }
 
 
-    private CommonHeaderType makeHeader() {
+    private CommonHeaderType makeHeader() throws CliInternalException {
         CommonHeaderType header = new CommonHeaderType();
         if (NsiCliState.getInstance().isListenerStarted()) {
-            String replyTo = NsiCliState.getInstance().getRequesterProfile().getUrl();
+            ProviderProfile pp = NsiCliState.getInstance().getProvProfile();
+            RequesterProfile rp = NsiCliState.getInstance().getRequesterProfile();
+
+            String providerNsa = pp.getProviderNSA();
+            String protocolV = pp.getProtocolVersion();
+            String requesterId = rp.getRequesterId();
+            String externalIp;
+            try {
+                externalIp  = getIpAddress();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                throw new CliInternalException(ex.getMessage());
+            }
+            String replyTo = "";
+
+            String url = rp.getUrl();
+            if (url.startsWith("http://")) {
+                replyTo = "http://";
+                url = url.replace("http://", "");
+            } else if (url.startsWith("https://")) {
+                url = url.replace("https://", "https://");
+
+                replyTo = "https://";
+            } else {
+                throw new CliInternalException("requester url does not start with http(s)://");
+            }
+
+            String host;
+            String portAndPath;
+            if (url.contains(":")) {
+                String[] pieces = url.split(":");
+                host = pieces[0];
+                portAndPath = ":"+pieces[1];
+            } else {
+                String[] pieces = url.split("/");
+                host = pieces[0];
+
+                portAndPath = "";
+                for (int i = 1; i <= pieces.length; i++) {
+                    portAndPath += "/"+pieces[i];
+                }
+            }
+            replyTo += externalIp+portAndPath;
+
+
+
+
+
             header.setReplyTo(replyTo);
-            String requesterId = NsiCliState.getInstance().getRequesterProfile().getRequesterId();
             header.setRequesterNSA(requesterId);
+            header.setProtocolVersion(protocolV);
+            header.setProviderNSA(providerNsa);
         }
-        header.setCorrelationId("urn:uuid"+UUID.randomUUID().toString());
+        header.setCorrelationId("urn:uuid:"+UUID.randomUUID().toString());
         return header;
     }
 
@@ -604,5 +702,14 @@ public class NsiCommands implements CommandMarker {
         }
 
     }
+
+    public String getIpAddress() throws IOException {
+        URL myIP = new URL("http://api.externalip.net/ip/");
+        BufferedReader in = new BufferedReader(
+                new InputStreamReader(myIP.openStream())
+        );
+        return in.readLine();
+    }
+
 
 }

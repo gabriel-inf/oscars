@@ -4,6 +4,7 @@ listener stop
 prov load --name default
 admin prov copy --name esnet
 prov set --url "https://oscars.es.net/ConnectionService"  --auth BASIC
+prov set --nsa "urn:ogf:network:nsa:es.net"
 prov set --u nsibridge
 prov set --p CHANGEIT
 prov set --bus samples/client-bus-oscars-ssl.xml
@@ -11,8 +12,8 @@ admin prov save
 
 
 req load --name default
-admin req copy --name jupiter
-req set --url "http://localhost:8600/Requester"
+admin req copy --name myrequester
+req set --url "http://myhostname:8600/Requester"
 admin req save
 
 
@@ -31,7 +32,7 @@ admin resv save
 
 
 admin defaults prov --name esnet
-admin defaults req --name jupiter
+admin defaults req --name myrequester
 admin defaults resv --name myresv
 
 admin defaults save

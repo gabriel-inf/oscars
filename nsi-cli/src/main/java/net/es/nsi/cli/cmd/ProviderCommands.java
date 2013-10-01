@@ -156,6 +156,8 @@ public class ProviderCommands implements CommandMarker {
             @CliOption(key = { "name" }, mandatory = false, help = "profile name") final String name,
             @CliOption(key = { "st" }, mandatory = false, help = "service type") final String serviceType,
             @CliOption(key = { "url" }, mandatory = false, help = "url") final String url,
+            @CliOption(key = { "prot" }, mandatory = false, help = "protocol version") final String prot,
+            @CliOption(key = { "nsa" }, mandatory = false, help = "nsa") final String nsa,
             @CliOption(key = { "bus" }, mandatory = false, help = "busConfig") final File busConfig,
             @CliOption(key = { "auth" }, mandatory = false, help = "auth type") final AuthType auth,
             @CliOption(key = { "u" }, mandatory = false, help = "http-basic username") final String username,
@@ -167,6 +169,8 @@ public class ProviderCommands implements CommandMarker {
 
         if (name != null)           currentProfile.setName(name);
         if (serviceType != null)    currentProfile.setServiceType(serviceType);
+        if (prot != null)           currentProfile.setProtocolVersion(prot);
+        if (nsa != null)            currentProfile.setProviderNSA(nsa);
         if (url != null)            currentProfile.getProviderServer().setUrl(url);
         if (busConfig != null)      currentProfile.getProviderServer().setBusConfig(busConfig.getAbsolutePath());
         if (auth != null)           currentProfile.getProviderServer().getAuth().setAuthType(auth);

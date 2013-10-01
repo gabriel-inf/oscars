@@ -11,6 +11,8 @@
     <bean id="defaultProvider" class="net.es.nsi.cli.config.ProviderProfile" scope="singleton">
         <property name="name" value="default" />
         <property name="serviceType" value="http://services.ogf.org/nsi/2013/07/descriptions/EVTS.A-GOLE"/>
+        <property name="providerNSA" value="default_nsa" />
+        <property name="protocolVersion" value="application/vdn.ogf.nsi.cs.v2.provider+soap" />
         <property name="providerServer" ref="defaultUPA" />
     </bean>
 
