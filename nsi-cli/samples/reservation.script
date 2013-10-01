@@ -11,7 +11,7 @@ nsi wait --type "COMMIT_CONFIRMED"
 nsi provision
 nsi wait --type "PROVISION_CONFIRMED"
 
-sleep --sec 20
+sleep --sec 120
 
 // modify
 resv set --b 2

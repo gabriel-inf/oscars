@@ -3,24 +3,24 @@
 An NSI 2.0 Requester Agent & CLI
 
 2. Requirements
-Java
+Java 6
 
 
 3. Quickstart
-Execute:
 
-`run.sh`
+Execute:
+`bin/run.sh`
 
 
 
 4. Initialization instructions
-- Edit samples/defaults.script to match your enviroment
+- Edit samples/init.script to match your enviroment
 - start the CLI
-- execute "script samples/defaults.script"
+- execute "script samples/init.script"
 
-5. Clearing the database:
+5. Clearing the database :
 Execute:
-`rm -rf db/*`
+`rm -rf db/nsi-cli*`
 
 
 5. Reference

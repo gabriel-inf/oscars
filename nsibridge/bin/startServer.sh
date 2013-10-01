@@ -23,6 +23,18 @@ if [ -z "$jarfile" ]; then
     echo "Starting ${shortname} with version:$vers context:$context"
 fi
 
-java -Djava.net.preferIPv4Stack=true -Xmx512m -Dlog4j.configuration=file:/etc/oscars/NsiBridgeService/conf/log4j.properties -Dnsibridge.manifest=file:/etc/oscars/NsiBridgeService/conf/manifest.yaml -Dnsibridge.beans=file:/etc/oscars/NsiBridgeService/conf/beans.xml -jar $jarfile&
+confDir="/etc/oscars/NsiBridgeService/conf"
+
+javaFlags="-Xmx512m "
+javaFlags="$javaFlags -Djava.net.preferIPv4Stack=true "
+javaFlags="$javaFlags -Dlog4j.configuration=file:$confDir/log4j.properties "
+javaFlags="$javaFlags -Dnsibridge.manifest=file:$confDir/manifest.yaml "
+javaFlags="$javaFlags -Dnsibridge.beans=file:$confDir/beans.xml
+javaFlags="$javaFlags -Dcom.sun.xml.bind.v2.runtime.JAXBContextImpl.fastBoot=true "
+javaFlags="$javaFlags -Dorg.apache.cxf.JDKBugHacks.defaultUsesCaches=true "
+
+
+
+java   -jar $jarfile&
 echo $! > $pidfile
 

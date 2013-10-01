@@ -21,7 +21,6 @@ import java.net.URL;
 
 public class Main {
     private static final Logger log = Logger.getLogger(Main.class);
-    public static boolean preparing = false;
 
     public static void main(String[] args) throws IOException {
 
@@ -38,23 +37,6 @@ public class Main {
     }
 
     private static void prepare(boolean full) {
-        preparing = true;
-        Thread th = new Thread() {
-            public void run(){
-                System.out.print("\nPreparing CLI...");
-                while (preparing) {
-                    System.out.print(".");
-                    try {
-                        Thread.sleep(1500);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-                System.out.println(" ready!");
-
-            }
-        };
-        th.start();
 
 
         try {
@@ -164,7 +146,6 @@ public class Main {
             ex.printStackTrace();
             System.exit(1);
         }
-        preparing = false;
 
     }
 
