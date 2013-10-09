@@ -1,27 +1,53 @@
 package net.es.oscars.topoUtil.beans;
 
-import net.es.oscars.topoUtil.beans.spec.DeviceSpec;
 
 import java.util.ArrayList;
 
 public class Network {
-    protected ArrayList<DeviceSpec> deviceSpecs = new ArrayList<DeviceSpec>();
+    protected ArrayList<Device> devices = new ArrayList<Device>();
+    private String idcId;
+    private String domainId;
+    private String topologyId;
 
-    public ArrayList<DeviceSpec> getDeviceSpecs() {
-        return deviceSpecs;
+    public ArrayList<Device> getDevices() {
+        return devices;
     }
 
-    public void setDeviceSpecs(ArrayList<DeviceSpec> deviceSpecs) {
-        this.deviceSpecs = deviceSpecs;
+    public void setDevices(ArrayList<Device> devices) {
+        this.devices = devices;
     }
 
-    public DeviceSpec findDeviceByName(String name) {
-        for (DeviceSpec deviceSpec : deviceSpecs) {
-            if (deviceSpec.getName().equals(name)) {
-                return deviceSpec;
+    public Device findDeviceByName(String name) {
+        for (Device device : devices) {
+            if (device.getName().equals(name)) {
+                return device;
             }
 
         }
         return null;
+    }
+
+    public String getIdcId() {
+        return idcId;
+    }
+
+    public void setIdcId(String idcId) {
+        this.idcId = idcId;
+    }
+
+    public String getDomainId() {
+        return domainId;
+    }
+
+    public void setDomainId(String domainId) {
+        this.domainId = domainId;
+    }
+
+    public String getTopologyId() {
+        return topologyId;
+    }
+
+    public void setTopologyId(String topologyId) {
+        this.topologyId = topologyId;
     }
 }

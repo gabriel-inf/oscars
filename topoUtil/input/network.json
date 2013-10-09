@@ -8,7 +8,7 @@
             "model": "juniper:ex4200",
             "loopback": "10.0.0.3",
 
-            "ifces": [
+            "ports": [
                 {
                     "name": "xe-1/0/0",
                     "capacity": 10000,
@@ -23,9 +23,9 @@
                     ]
                 },
                 {
-                    "name": "ge-2/0..7,15..19/0",
+                    "name": "ge-2/0/[0..7]",
                     "capacity": 1000,
-                    "custLinks": [
+                    "customerLinks": [
                         {
                             "name": "to_customerX",
                             "vlanRangeExpr": "2..4094"
@@ -38,7 +38,7 @@
             "name": "alpha",
             "model": "juniper:mx480",
             "loopback": "10.0.0.1",
-            "ifces": [
+            "ports": [
                 {
                     "name": "xe-1/0/0",
                     "capacity": 10000,
@@ -58,7 +58,7 @@
                             "name": "to_asw",
                             "metric":   100,
                             "remote": "asw:xe-1/0/0:to_alpha",
-                            "vlanRangeExpr":    "500.999"
+                            "vlanRangeExpr":    "500..999"
                         }
                     ]
 
@@ -82,11 +82,11 @@
             "name": "beta",
             "model": "juniper:mx480",
             "loopback": "10.0.0.2",
-            "ifces": [
+            "ports": [
                 {
                     "name": "xe-1/0/0",
                     "capacity": 10000,
-                    "custLinks": [
+                    "customerLinks": [
                         {
                             "name": "to_customer_L",
                             "vlanRangeExpr": "2..4094"

@@ -1,6 +1,6 @@
-package net.es.oscars.topoUtil.beans.spec;
+package net.es.oscars.topoUtil.beans;
 
-public class GenericLinkSpec {
+public class GenericLink {
     protected String name;
 
     public String getName() {

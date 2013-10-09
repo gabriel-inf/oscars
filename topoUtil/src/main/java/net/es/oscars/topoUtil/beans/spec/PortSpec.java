@@ -2,12 +2,12 @@ package net.es.oscars.topoUtil.beans.spec;
 
 import java.util.ArrayList;
 
-public class IfceSpec {
+public class PortSpec {
     protected String name;
     protected Integer capacity;
     protected ArrayList<EthInternalLinkSpec> ethLinks = new ArrayList<EthInternalLinkSpec>();
     protected ArrayList<MplsInternalLinkSpec> mplsLinks = new ArrayList<MplsInternalLinkSpec>();
-    protected ArrayList<CustomerLinkSpecSpec> custLinks = new ArrayList<CustomerLinkSpecSpec>();
+    protected ArrayList<CustomerLinkSpec> customerLinks = new ArrayList<CustomerLinkSpec>();
     protected Integer reservable;
 
     public Integer getReservable() {
@@ -33,12 +33,12 @@ public class IfceSpec {
         this.mplsLinks = mplsLinks;
     }
 
-    public ArrayList<CustomerLinkSpecSpec> getCustLinks() {
-        return custLinks;
+    public ArrayList<CustomerLinkSpec> getCustomerLinks() {
+        return customerLinks;
     }
 
-    public void setCustLinks(ArrayList<CustomerLinkSpecSpec> custLinks) {
-        this.custLinks = custLinks;
+    public void setCustomerLinks(ArrayList<CustomerLinkSpec> customerLinks) {
+        this.customerLinks = customerLinks;
     }
 
     public String getName() {

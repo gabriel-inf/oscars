@@ -1,9 +1,8 @@
-package net.es.oscars.topoUtil.beans.spec;
+package net.es.oscars.topoUtil.beans;
 
-public class InternalLinkSpec extends GenericLinkSpec {
+public class InternalLink extends GenericLink {
     protected Integer metric;
     protected String remote;
-
 
     public Integer getMetric() {
         return metric;

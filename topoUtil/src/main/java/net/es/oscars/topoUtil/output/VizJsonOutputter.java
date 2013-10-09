@@ -4,8 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import freemarker.template.TemplateException;
 import net.es.oscars.topoUtil.beans.*;
-import net.es.oscars.topoUtil.beans.spec.DeviceSpec;
-import net.es.oscars.topoUtil.beans.spec.IfceSpec;
 import net.es.oscars.topoUtil.beans.viz.VizDevice;
 import net.es.oscars.topoUtil.beans.viz.VizLink;
 import net.es.oscars.topoUtil.beans.viz.VizRoot;
@@ -19,12 +17,12 @@ public class VizJsonOutputter {
     public static String outputViz(Network network) throws IOException, TemplateException {
         VizRoot root = new VizRoot();
 
-        for (DeviceSpec dev : network.getDeviceSpecs()) {
+        for (Device dev : network.getDevices()) {
             VizDevice vd = new VizDevice();
             vd.setName(dev.getName());
-            for (IfceSpec ifceSpec : dev.getIfces()) {
+            for (Port port : dev.getPorts()) {
                 VizLink vl = new VizLink();
-                vl.setName(ifceSpec.getName());
+                vl.setName(port.getName());
                 vd.getChildren().add(vl);
             }
 

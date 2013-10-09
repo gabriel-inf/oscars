@@ -1,6 +1,8 @@
 package net.es.oscars.topoUtil.beans.spec;
 
-public class MplsInternalLinkSpec extends InternalLinkSpec {
+import net.es.oscars.topoUtil.beans.InternalLink;
+
+public class MplsInternalLinkSpec extends InternalLink {
     protected String ipv4Expr;
 
     public String getIpv4Expr() {

@@ -1,6 +1,8 @@
 package net.es.oscars.topoUtil.beans.spec;
 
-public class EthInternalLinkSpec extends InternalLinkSpec {
+import net.es.oscars.topoUtil.beans.InternalLink;
+
+public class EthInternalLinkSpec extends InternalLink {
     protected String vlanRangeExpr;
 
     public String getVlanRangeExpr() {

@@ -1,6 +1,8 @@
 package net.es.oscars.topoUtil.beans.spec;
 
-public class CustomerLinkSpecSpec extends GenericLinkSpec {
+import net.es.oscars.topoUtil.beans.GenericLink;
+
+public class CustomerLinkSpec extends GenericLink {
     protected String vlanRangeExpr;
 
     public String getVlanRangeExpr() {

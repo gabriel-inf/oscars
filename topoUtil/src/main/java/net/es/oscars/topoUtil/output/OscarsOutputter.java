@@ -1,8 +1,7 @@
 package net.es.oscars.topoUtil.output;
 
 import freemarker.template.TemplateException;
-import net.es.oscars.topoUtil.beans.spec.*;
-import net.es.oscars.topoUtil.beans.spec.NetworkSpec;
+import net.es.oscars.topoUtil.beans.*;
 import net.es.oscars.topoUtil.util.TemplateLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,42 +13,42 @@ import java.util.Map;
 
 public class OscarsOutputter {
     static final Logger LOG = LoggerFactory.getLogger(OscarsOutputter.class);
-    public static String outputOscars(NetworkSpec networkSpec) throws IOException, TemplateException {
+    public static String outputOscars(Network network) throws IOException, TemplateException {
         Map root = new HashMap<String, Object>();
         Map base = new HashMap<String, Object>();
-        base.put("idcId", networkSpec.getIdcId());
-        base.put("topologyId", networkSpec.getTopologyId());
-        base.put("domainId", networkSpec.getDomainId());
+        base.put("idcId", network.getIdcId());
+        base.put("topologyId", network.getTopologyId());
+        base.put("domainId", network.getDomainId());
         root.put("base", base);
         ArrayList devices = new ArrayList();
-        for (DeviceSpec deviceSpec : networkSpec.getDevices()) {
-            LOG.debug("-"+ deviceSpec.getName());
+        for (Device device: network.getDevices()) {
+            LOG.debug("-"+ device.getName());
             Map deviceMap = new HashMap<String, Object>();
-            deviceMap.put("address", deviceSpec.getLoopback());
-            deviceMap.put("name", deviceSpec.getName());
+            deviceMap.put("address", device.getLoopback());
+            deviceMap.put("name", device.getName());
 
             ArrayList ports = new ArrayList();
-            for (IfceSpec ifceSpec : deviceSpec.getIfces()) {
-                LOG.debug("--"+ ifceSpec.getName());
+            for (Port port : device.getPorts()) {
+                LOG.debug("--"+ port.getName());
                 Map portMap = new HashMap<String, Object>();
 
-                portMap.put("name", ifceSpec.getName());
-                portMap.put("capacity", ifceSpec.getCapacity());
+                portMap.put("name", port.getName());
+                portMap.put("capacity", port.getCapacity()*1000);
 
-                if (ifceSpec.getReservable() == null) {
-                    portMap.put("maxResCap", ifceSpec.getCapacity());
+                if (port.getReservable() == null) {
+                    portMap.put("maxResCap", port.getCapacity()*1000);
                 } else {
-                    portMap.put("maxResCap", ifceSpec.getReservable());
+                    portMap.put("maxResCap", port.getReservable()*1000);
                 }
                 portMap.put("minResCap", 1000000);
                 portMap.put("granularity", 1000000);
                 ArrayList links = new ArrayList();
 
-                for (CustomerLinkSpecSpec cl : ifceSpec.getCustLinks()) {
+                for (CustomerLink cl : port.getCustomerLinks()) {
                     LOG.debug("---"+cl.getName());
                     Map linkMap = new HashMap<String, Object>();
                     linkMap.put("name", cl.getName());
-                    linkMap.put("vlanRange", cl.getVlanRangeExpr());
+                    linkMap.put("vlanRange", cl.getVlanInfo().toOscarsString());
                     linkMap.put("isMpls", false);
                     linkMap.put("canTranslate", "true");
                     linkMap.put("mtu", 9000);
@@ -59,11 +58,11 @@ public class OscarsOutputter {
                     links.add(linkMap);
                 }
 
-                for (EthInternalLinkSpec el : ifceSpec.getEthLinks()) {
+                for (EthInternalLink el : port.getEthLinks()) {
                     LOG.debug("---"+el.getName());
                     Map linkMap = new HashMap<String, Object>();
                     linkMap.put("name", el.getName());
-                    linkMap.put("vlanRange", el.getVlanRangeExpr());
+                    linkMap.put("vlanRange", el.getVlanInfo().toOscarsString());
                     linkMap.put("isMpls", false);
                     linkMap.put("canTranslate", "true");
                     linkMap.put("mtu", 9000);
@@ -72,7 +71,7 @@ public class OscarsOutputter {
                     links.add(linkMap);
                 }
 
-                for (MplsInternalLinkSpec ml : ifceSpec.getMplsLinks()) {
+                for (MplsInternalLink ml : port.getMplsLinks()) {
                     LOG.debug("---"+ml.getName());
                     Map linkMap = new HashMap<String, Object>();
                     linkMap.put("name", ml.getName());

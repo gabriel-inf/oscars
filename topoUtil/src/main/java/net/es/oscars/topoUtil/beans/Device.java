@@ -1,14 +1,21 @@
-package net.es.oscars.topoUtil.beans.spec;
+package net.es.oscars.topoUtil.beans;
 
 
 import java.util.ArrayList;
 
-public class DeviceSpec {
-
+public class Device {
     protected String name;
     protected String loopback;
     protected String model;
-    protected ArrayList<PortSpec> ports = new ArrayList<PortSpec>();
+    protected ArrayList<Port> ports = new ArrayList<Port>();
+
+    public ArrayList<Port> getPorts() {
+        return ports;
+    }
+
+    public void setPorts(ArrayList<Port> ports) {
+        this.ports = ports;
+    }
 
     public String getName() {
         return name;
@@ -32,13 +39,5 @@ public class DeviceSpec {
 
     public void setModel(String model) {
         this.model = model;
-    }
-
-    public ArrayList<PortSpec> getPorts() {
-        return ports;
-    }
-
-    public void setPorts(ArrayList<PortSpec> ports) {
-        this.ports = ports;
     }
 }
