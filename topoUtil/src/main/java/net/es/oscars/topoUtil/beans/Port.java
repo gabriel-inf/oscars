@@ -10,6 +10,8 @@ public class Port {
     protected ArrayList<EthInternalLink> ethLinks = new ArrayList<EthInternalLink>();
     protected ArrayList<MplsInternalLink> mplsLinks = new ArrayList<MplsInternalLink>();
     protected ArrayList<CustomerLink> customerLinks = new ArrayList<CustomerLink>();
+    protected ArrayList<PeeringLink> peeringLinks = new ArrayList<PeeringLink>();
+
     public Integer getCapacity() {
         return capacity;
     }
@@ -56,5 +58,13 @@ public class Port {
 
     public void setCustomerLinks(ArrayList<CustomerLink> customerLinks) {
         this.customerLinks = customerLinks;
+    }
+
+    public ArrayList<PeeringLink> getPeeringLinks() {
+        return peeringLinks;
+    }
+
+    public void setPeeringLinks(ArrayList<PeeringLink> peeringLinks) {
+        this.peeringLinks = peeringLinks;
     }
 }

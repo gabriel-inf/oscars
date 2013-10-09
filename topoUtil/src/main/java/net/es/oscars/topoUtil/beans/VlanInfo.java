@@ -2,12 +2,15 @@ package net.es.oscars.topoUtil.beans;
 
 import com.google.common.collect.Range;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
 public class VlanInfo {
+    static final Logger LOG = LoggerFactory.getLogger(VlanInfo.class);
     public static final Integer MAX_TAGGED_VLAN = 4094;
     public static final Integer MIN_TAGGED_VLAN = 2;
     public static final Integer UNTAGGED_VLAN = 0;
@@ -53,7 +56,7 @@ public class VlanInfo {
             return;
         }
 
-        String[] parts = expression.split(",");
+        String[] parts = expression.split("\\,");
         if (parts.length == 0) {
             throw new VlanFormatException("Invalid expression: "+expression+", allowed: "+FORMAT);
         }
@@ -77,6 +80,7 @@ public class VlanInfo {
                 } else if (z > MAX_TAGGED_VLAN) {
                     throw new VlanFormatException("Invalid expression: "+expression+", "+z+ "is < "+MAX_TAGGED_VLAN);
                 }
+                LOG.info("a range: "+a +".." +z);
 
                 Range<Integer> range = Range.closed(a, z);
                 ranges.add(range);
@@ -84,6 +88,7 @@ public class VlanInfo {
             } else {
                 Integer a = Integer.valueOf(part);
                 Range<Integer> range = Range.closed(a, a);
+                LOG.info("a range: "+a);
                 ranges.add(range);
             }
         }

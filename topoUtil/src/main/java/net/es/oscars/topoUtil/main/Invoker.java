@@ -29,12 +29,12 @@ public class Invoker {
             Network net = SpecConverter.fromSpec(jnp.getNetworkSpec());
 
             String oscars = OscarsOutputter.outputOscars(net);
-            System.out.println(oscars);
+            // System.out.println(oscars);
 
 
 
             String viz = VizJsonOutputter.outputViz(net);
-            System.out.println(viz);
+            // System.out.println(viz);
         } catch (IOException e) {
             e.printStackTrace();
         } catch (TemplateException e) {

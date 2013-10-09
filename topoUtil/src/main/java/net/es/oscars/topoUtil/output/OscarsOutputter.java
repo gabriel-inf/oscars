@@ -57,6 +57,20 @@ public class OscarsOutputter {
                     linkMap.put("metric", 100000);
                     links.add(linkMap);
                 }
+                for (PeeringLink pl : port.getPeeringLinks()) {
+                    LOG.debug("---"+pl.getName());
+                    Map linkMap = new HashMap<String, Object>();
+                    linkMap.put("name", pl.getName());
+                    linkMap.put("vlanRange", pl.getVlanInfo().toOscarsString());
+                    linkMap.put("isMpls", false);
+                    linkMap.put("canTranslate", "true");
+                    linkMap.put("mtu", 9000);
+
+                    linkMap.put("remoteId", pl.getRemote());
+
+                    linkMap.put("metric", 1000);
+                    links.add(linkMap);
+                }
 
                 for (EthInternalLink el : port.getEthLinks()) {
                     LOG.debug("---"+el.getName());

@@ -42,6 +42,17 @@ public class SpecConverter {
                         cl.setVlanInfo(vf);
                         port.getCustomerLinks().add(cl);
                     }
+
+                    for (PeeringLinkSpec pls : ps.getPeeringLinks()) {
+                        LOG.debug("--- "+pls.getName());
+                        PeeringLink pl = new PeeringLink();
+                        pl.setName(pls.getName());
+                        VlanInfo vf = new VlanInfo(pls.getVlanRangeExpr());
+                        pl.setVlanInfo(vf);
+                        pl.setRemote(pls.getRemote());
+                        port.getPeeringLinks().add(pl);
+                    }
+
                     for (EthInternalLinkSpec es : ps.getEthLinks()) {
                         LOG.debug("--- "+es.getName());
                         EthInternalLink el = new EthInternalLink();

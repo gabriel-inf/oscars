@@ -8,10 +8,19 @@ public class PortSpec {
     protected ArrayList<EthInternalLinkSpec> ethLinks = new ArrayList<EthInternalLinkSpec>();
     protected ArrayList<MplsInternalLinkSpec> mplsLinks = new ArrayList<MplsInternalLinkSpec>();
     protected ArrayList<CustomerLinkSpec> customerLinks = new ArrayList<CustomerLinkSpec>();
+    protected ArrayList<PeeringLinkSpec> peeringLinks = new ArrayList<PeeringLinkSpec>();
     protected Integer reservable;
 
     public Integer getReservable() {
         return reservable;
+    }
+
+    public ArrayList<PeeringLinkSpec> getPeeringLinks() {
+        return peeringLinks;
+    }
+
+    public void setPeeringLinks(ArrayList<PeeringLinkSpec> peeringLinks) {
+        this.peeringLinks = peeringLinks;
     }
 
     public void setReservable(Integer reservable) {
