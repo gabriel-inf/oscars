@@ -1,0 +1,112 @@
+{
+    "idcId": "idc.foo.com",
+    "domainId": "foo.com",
+    "topologyId": "Foo.com topology",
+    "devices": [
+        {
+            "name": "asw",
+            "model": "juniper:ex4200",
+            "loopback": "10.0.0.3",
+
+            "ifces": [
+                {
+                    "name": "xe-1/0/0",
+                    "capacity": 10000,
+                    "reservable": 8000,
+                    "ethLinks": [
+                        {
+                            "name": "to_alpha",
+                            "metric":   100,
+                            "remote": "alpha:xe-2/3/0:to_asw",
+                            "vlanRangeExpr":    "500..999"
+                        }
+                    ]
+                },
+                {
+                    "name": "ge-2/0..7,15..19/0",
+                    "capacity": 1000,
+                    "custLinks": [
+                        {
+                            "name": "to_customerX",
+                            "vlanRangeExpr": "2..4094"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "alpha",
+            "model": "juniper:mx480",
+            "loopback": "10.0.0.1",
+            "ifces": [
+                {
+                    "name": "xe-1/0/0",
+                    "capacity": 10000,
+                    "custLinks": [
+                        {
+                            "name": "to_customer_K",
+                            "vlanRangeExpr": "2..4094"
+                        }
+                    ]
+                },
+                {
+                    "name": "xe-2/3/0",
+                    "capacity": 10000,
+                    "reservable": 8000,
+                    "ethLinks": [
+                        {
+                            "name": "to_asw",
+                            "metric":   100,
+                            "remote": "asw:xe-1/0/0:to_alpha",
+                            "vlanRangeExpr":    "500.999"
+                        }
+                    ]
+
+                },
+                {
+                    "name": "xe-2/0/0",
+                    "capacity": 10000,
+                    "mplsLinks": [
+                        {
+                            "name": "to_beta",
+                            "metric":   100,
+                            "remote": "beta:xe-2/0/0:to_beta",
+                            "ipv4Expr": "10.1.0.2/30"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+
+            "name": "beta",
+            "model": "juniper:mx480",
+            "loopback": "10.0.0.2",
+            "ifces": [
+                {
+                    "name": "xe-1/0/0",
+                    "capacity": 10000,
+                    "custLinks": [
+                        {
+                            "name": "to_customer_L",
+                            "vlanRangeExpr": "2..4094"
+                        }
+                    ]
+                },
+                {
+                    "name":"xe-2/0/0",
+                    "capacity": 10000,
+                    "mplsLinks": [
+                        {
+                            "name": "to_alpha",
+                            "metric":   100,
+                            "remote": "alpha:xe-2/0/0:to_beta",
+                            "ipv4Expr": "10.1.0.1/30"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+
+}
