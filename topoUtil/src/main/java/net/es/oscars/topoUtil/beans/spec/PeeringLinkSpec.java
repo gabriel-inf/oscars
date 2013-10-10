@@ -5,6 +5,15 @@ import net.es.oscars.topoUtil.beans.GenericLink;
 public class PeeringLinkSpec extends GenericLink {
     protected String vlanRangeExpr;
     protected String remote;
+    protected String nmlRemote;
+
+    public String getNmlRemote() {
+        return nmlRemote;
+    }
+
+    public void setNmlRemote(String nmlRemote) {
+        this.nmlRemote = nmlRemote;
+    }
 
     public String getRemote() {
         return remote;

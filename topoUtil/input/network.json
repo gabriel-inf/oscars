@@ -43,14 +43,19 @@
                     "customerLinks": [
                         {
                             "name": "to_customer_K",
-                            "vlanRangeExpr": "2..4094"
+                            "vlanRangeExpr": "100..200"
                         }
                     ],
                     "peeringLinks": [
                         {
-                            "name": "to_domainX",
-                            "remote": "urn:ogf:network:www.X.com:node=Y:port=Z:link=to_alpha.foo",
-                            "vlanRangeExpr": "2..4094"
+                            "name": "to_startap",
+                            "remote": "urn:ogf:network:startap.net:5410:1/2/0:es.net",
+                            "vlanRangeExpr": "3000..3999"
+                        },
+                        {
+                            "name": "to_startapNML",
+                            "nmlRemote": "urn:ogf:network:startap.net:2013:startap-es",
+                            "vlanRangeExpr": "2000..2999"
                         }
                     ]
                 },
@@ -94,7 +99,7 @@
                     "customerLinks": [
                         {
                             "name": "to_customer_L",
-                            "vlanRangeExpr": "2..4094"
+                            "vlanRangeExpr": "100..200"
                         }
                     ]
                 },

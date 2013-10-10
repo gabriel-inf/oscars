@@ -1,0 +1,15 @@
+{
+    "nsa": "urn:ogf:network:es.net:2013:nsa",
+    "locationId": "urn:ogf:network:es.net:2013:location",
+    "latitude": 37.87161,
+    "longitude": 122.272996,
+    "serviceId": "urn:ogf:network:es.net:2013:nsa-provserv",
+    "serviceLink": "http://jupiter.es.net:8288/ConnectionService",
+    "topologyId": "http://schemas.ogf.org/nsi/2013/09/topology#es.net",
+    "topologyName": "es.net",
+    "topologyPrefix": "urn:ogf:network:es.net:2013:",
+    "peers": [
+        "urn:ogf:network:startap.net:2013:nsa"
+    ],
+    "outputFile": "output/nml.xml"
+}

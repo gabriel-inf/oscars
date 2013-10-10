@@ -50,6 +50,7 @@ public class SpecConverter {
                         VlanInfo vf = new VlanInfo(pls.getVlanRangeExpr());
                         pl.setVlanInfo(vf);
                         pl.setRemote(pls.getRemote());
+                        pl.setNmlRemote(pls.getNmlRemote());
                         port.getPeeringLinks().add(pl);
                     }
 

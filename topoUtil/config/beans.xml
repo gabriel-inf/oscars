@@ -15,6 +15,15 @@
 
     </bean>
 
+
+    <bean id="nmlConfigProvider"
+          class="net.es.oscars.topoUtil.config.NmlConfigProvider"
+          init-method="loadConfig"
+          scope="singleton">
+        <property name="jsonFile" value="config/nml.json"/>
+    </bean>
+
+
     <bean id="oscarsConfigProvider"
           class="net.es.oscars.topoUtil.config.OscarsConfigProvider"
           init-method="loadConfig"
@@ -31,6 +40,11 @@
 
     <bean id="outputterRunner"
           class="net.es.oscars.topoUtil.output.OutputterRunner"
+          scope="singleton">
+    </bean>
+
+    <bean id="nmlOutputter"
+          class="net.es.oscars.topoUtil.output.NmlOutputter"
           scope="singleton">
     </bean>
 
