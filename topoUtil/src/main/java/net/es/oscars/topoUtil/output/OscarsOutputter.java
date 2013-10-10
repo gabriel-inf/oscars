@@ -48,12 +48,12 @@ public class OscarsOutputter implements Outputter {
                 Map portMap = new HashMap<String, Object>();
 
                 portMap.put("name", port.getName());
-                portMap.put("capacity", port.getCapacity()*1000);
+                portMap.put("capacity", port.getCapacity()*1000000);
 
                 if (port.getReservable() == null) {
-                    portMap.put("maxResCap", port.getCapacity()*1000);
+                    portMap.put("maxResCap", port.getCapacity()*1000000);
                 } else {
-                    portMap.put("maxResCap", port.getReservable()*1000);
+                    portMap.put("maxResCap", port.getReservable()*1000000);
                 }
                 portMap.put("minResCap", 1000000);
                 portMap.put("granularity", 1000000);
