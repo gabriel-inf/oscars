@@ -13,10 +13,10 @@ import java.util.List;
 public class SpecConverter {
     static final Logger LOG = LoggerFactory.getLogger(SpecConverter.class);
     public static Network fromSpec(NetworkSpec spec) throws VlanFormatException {
+
+
+
         Network net = new Network();
-        net.setDomainId(spec.getDomainId());
-        net.setIdcId(spec.getIdcId());
-        net.setTopologyId(spec.getTopologyId());
         for (DeviceSpec ds : spec.getDevices()){
             LOG.debug("- "+ds.getName());
             Device dev = new Device();

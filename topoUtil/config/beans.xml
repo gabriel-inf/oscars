@@ -7,14 +7,43 @@
                     http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
 
-    <bean id="networkConfigProvider"
-          class="net.es.oscars.topoUtil.config.JsonNetworkConfigProvider"
+    <bean id="networkSpecProvider"
+          class="net.es.oscars.topoUtil.config.NetworkSpecProvider"
           init-method="loadConfig"
           scope="singleton">
         <property name="jsonFile" value="input/network.json"/>
 
     </bean>
 
+    <bean id="oscarsConfigProvider"
+          class="net.es.oscars.topoUtil.config.OscarsConfigProvider"
+          init-method="loadConfig"
+          scope="singleton">
+        <property name="jsonFile" value="config/oscars.json"/>
+    </bean>
+
+    <bean id="vizConfigProvider"
+          class="net.es.oscars.topoUtil.config.VizConfigProvider"
+          init-method="loadConfig"
+          scope="singleton">
+        <property name="jsonFile" value="config/viz.json"/>
+    </bean>
+
+    <bean id="outputterRunner"
+          class="net.es.oscars.topoUtil.output.OutputterRunner"
+          scope="singleton">
+    </bean>
+
+
+    <bean id="oscarsOutputter"
+          class="net.es.oscars.topoUtil.output.OscarsOutputter"
+          scope="singleton">
+    </bean>
+
+    <bean id="vizOutputter"
+          class="net.es.oscars.topoUtil.output.VizJsonOutputter"
+          scope="singleton">
+    </bean>
 
 
 </beans>

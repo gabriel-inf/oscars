@@ -2,23 +2,38 @@ package net.es.oscars.topoUtil.output;
 
 import freemarker.template.TemplateException;
 import net.es.oscars.topoUtil.beans.*;
+import net.es.oscars.topoUtil.config.OscarsConfig;
+import net.es.oscars.topoUtil.config.OscarsConfigProvider;
+import net.es.oscars.topoUtil.config.SpringContext;
 import net.es.oscars.topoUtil.util.TemplateLoader;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class OscarsOutputter {
+public class OscarsOutputter implements Outputter {
     static final Logger LOG = LoggerFactory.getLogger(OscarsOutputter.class);
-    public static String outputOscars(Network network) throws IOException, TemplateException {
+    public void output(Network network) throws IOException, TemplateException {
+
+        SpringContext sc = SpringContext.getInstance();
+
+        ApplicationContext ax = sc.getContext();
+
+        OscarsConfigProvider ocp = ax.getBean("oscarsConfigProvider", OscarsConfigProvider.class);
+        OscarsConfig oc = ocp.getOscarsConfig();
+
+
         Map root = new HashMap<String, Object>();
         Map base = new HashMap<String, Object>();
-        base.put("idcId", network.getIdcId());
-        base.put("topologyId", network.getTopologyId());
-        base.put("domainId", network.getDomainId());
+        base.put("idcId", oc.getIdcId());
+        base.put("topologyId", oc.getTopologyId());
+        base.put("domainId", oc.getDomainId());
         root.put("base", base);
         ArrayList devices = new ArrayList();
         for (Device device: network.getDevices()) {
@@ -106,8 +121,9 @@ public class OscarsOutputter {
         }
         root.put("devices", devices);
 
-        return TemplateLoader.populateTemplate(root, "config/templates", "oscars.ftl");
-
+        String oscarsOutput = TemplateLoader.populateTemplate(root, "config/templates", "oscars.ftl");
+        File f = new File(oc.getOutputFile());
+        FileUtils.writeStringToFile(f, oscarsOutput);
 
     }
 }

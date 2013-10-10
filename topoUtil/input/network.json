@@ -1,7 +1,4 @@
 {
-    "idcId": "idc.foo.com",
-    "domainId": "foo.com",
-    "topologyId": "Foo.com topology",
     "devices": [
         {
             "name": "asw",

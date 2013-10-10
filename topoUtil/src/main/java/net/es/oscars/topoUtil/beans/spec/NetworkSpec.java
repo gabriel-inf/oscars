@@ -4,9 +4,6 @@ import java.util.ArrayList;
 
 public class NetworkSpec {
     private ArrayList<DeviceSpec> devices;
-    private String idcId;
-    private String domainId;
-    private String topologyId;
 
 
     public ArrayList<DeviceSpec> getDevices() {
@@ -17,27 +14,4 @@ public class NetworkSpec {
         this.devices = devices;
     }
 
-    public String getIdcId() {
-        return idcId;
-    }
-
-    public void setIdcId(String idcId) {
-        this.idcId = idcId;
-    }
-
-    public String getDomainId() {
-        return domainId;
-    }
-
-    public void setDomainId(String domainId) {
-        this.domainId = domainId;
-    }
-
-    public String getTopologyId() {
-        return topologyId;
-    }
-
-    public void setTopologyId(String topologyId) {
-        this.topologyId = topologyId;
-    }
 }

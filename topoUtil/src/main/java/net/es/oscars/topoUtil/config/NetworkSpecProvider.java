@@ -10,7 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
 
-public class JsonNetworkConfigProvider {
+public class NetworkSpecProvider {
     private NetworkSpec networkSpec;
     protected Resource jsonFile;
 
