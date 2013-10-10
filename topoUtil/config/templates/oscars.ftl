@@ -8,10 +8,10 @@
     <CtrlPlane:address>${deviceSpec.address}</CtrlPlane:address>
 <#list deviceSpec.ports as port>
     <CtrlPlane:port id="urn:ogf:network:domain=${base.domainId}:node=${deviceSpec.name}:port=${port.name}">
-      <CtrlPlane:capacity>${port.capacity?string.computer}</CtrlPlane:capacity>
-      <CtrlPlane:maximumReservableCapacity>${port.maxResCap?string.computer}</CtrlPlane:maximumReservableCapacity>
-      <CtrlPlane:minimumReservableCapacity>${port.minResCap?string.computer}</CtrlPlane:minimumReservableCapacity>
-      <CtrlPlane:granularity>${port.granularity?string.computer}</CtrlPlane:granularity>
+      <CtrlPlane:capacity>${port.capacity}</CtrlPlane:capacity>
+      <CtrlPlane:maximumReservableCapacity>${port.maxResCap}</CtrlPlane:maximumReservableCapacity>
+      <CtrlPlane:minimumReservableCapacity>${port.minResCap}</CtrlPlane:minimumReservableCapacity>
+      <CtrlPlane:granularity>${port.granularity}</CtrlPlane:granularity>
 <#list port.links as link>
 <#assign isMpls = link.isMpls>
 <#assign isCustomer = link.isMpls>
