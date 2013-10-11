@@ -201,8 +201,8 @@ public class ConnectivityPCE {
                 topoResponse = (GetTopologyResponseType)response[0];
                 this.log.debug(netLogger.end("getTopology", null, this.topoBridgeUrl, netLogProps));
             } catch (Exception e) {
-                this.log.debug(netLogger.error("getTopology",ErrSev.MAJOR, e.getMessage(), topoBridgeUrl, netLogProps));
-                throw new OSCARSServiceException("Error from topoBridge: " + e.getMessage());
+                this.log.info(netLogger.error("getTopology",ErrSev.MINOR, e.getMessage(), topoBridgeUrl, netLogProps));
+                // throw new OSCARSServiceException("Error from topoBridge: " + e.getMessage());
             }
             
             for(CtrlPlaneTopologyContent topo : topoResponse.getTopology()){
