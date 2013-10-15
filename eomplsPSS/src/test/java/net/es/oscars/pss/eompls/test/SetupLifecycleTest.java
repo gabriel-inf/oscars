@@ -9,8 +9,7 @@ import net.es.oscars.pss.beans.PSSException;
 import net.es.oscars.pss.config.ConfigHolder;
 import net.es.oscars.pss.eompls.config.EoMPLSConfigHolder;
 import net.es.oscars.pss.eompls.util.EoMPLSClassFactory;
-import net.es.oscars.pss.sched.quartz.PSSScheduler;
-import net.es.oscars.pss.sched.quartz.WorkflowInspectorJob;
+import net.es.oscars.pss.workflow.WorkflowInspectorJob;
 import net.es.oscars.pss.soap.PSSSoapHandler;
 import net.es.oscars.pss.soap.gen.SetupReqContent;
 import net.es.oscars.pss.soap.gen.TeardownReqContent;
@@ -56,17 +55,9 @@ public class SetupLifecycleTest {
             throw new SkipException("skipping Tests, eompls is  not configured");
         }
         
-        log.debug("starting PSS main scheduler");
-        PSSScheduler sched = PSSScheduler.getInstance();
-        try {
-            sched.setWorkflowInspector(WorkflowInspectorJob.class);
-            sched.start();
-        } catch (PSSException ex) {
-            // TODO Auto-generated catch block
-            ex.printStackTrace();
-        }
-        
-        
+        WorkflowInspectorJob wfJob = new WorkflowInspectorJob();
+        wfJob.start();
+
         
 
         
@@ -92,7 +83,6 @@ public class SetupLifecycleTest {
         this.testBoth(resDet);
 
         log.debug("simulation.run.end");
-        PSSScheduler.getInstance().stop();
     }
     private void testBoth(ResDetails resDet) {
         PSSSoapHandler soap = new PSSSoapHandler();

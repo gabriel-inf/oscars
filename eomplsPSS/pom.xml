@@ -111,12 +111,6 @@
             <version>2.3.16</version>
         </dependency>
 
-        <!-- quartz and commons -->
-        <dependency>
-            <groupId>org.opensymphony.quartz</groupId>
-            <artifactId>quartz</artifactId>
-            <version>1.6.1</version>
-        </dependency>
 
          <dependency>
             <groupId>commons-collections</groupId>
