@@ -470,6 +470,8 @@ public class SR_VPLS_ConfigGen implements DeviceConfigGenerator, PostCommitConfi
         String vplsDesc = sdng.getVplsDescription(gri, ingQosBandwidth*1000000, description);
         vpls.put("description", vplsDesc);
 
+        String vplsName = sdng.getVplsName(gri, description);
+        vpls.put("name", vplsName);
 
 
         String qosId  = ids.getQosId().toString();
