@@ -8,9 +8,7 @@ import net.es.oscars.utils.svc.ServiceNames;
 
 import net.es.oscars.pss.soap.gen.PSSService;
 import net.es.oscars.pss.soap.gen.PSSPortType;
-import net.es.oscars.pss.sched.quartz.PSSScheduler;
-import net.es.oscars.pss.sched.quartz.WorkflowInspectorJob;
-import net.es.oscars.pss.beans.PSSException;
+import net.es.oscars.pss.workflow.WorkflowInspectorJob;
 
 @OSCARSService (
         implementor = "net.es.oscars.pss.soap.PSSSoapHandler",
@@ -30,13 +28,8 @@ public class DRAGONPSSSoapServer extends OSCARSSoapService<PSSService, PSSPortTy
 
     private DRAGONPSSSoapServer() throws OSCARSServiceException {
         super(ServiceNames.SVC_PSS);
-        PSSScheduler sched = PSSScheduler.getInstance();
-        try {
-            sched.setWorkflowInspector(WorkflowInspectorJob.class);
-            sched.start();
-        } catch (PSSException ex) {
-            // TODO Auto-generated catch block
-            ex.printStackTrace();
-        }
+        WorkflowInspectorJob wfJob = new WorkflowInspectorJob();
+        wfJob.start();
+
     }
 }
