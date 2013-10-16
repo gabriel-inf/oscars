@@ -1,7 +1,7 @@
 %define package_name eomplsPSS 
 %define service_name PSSService
 %define pss_name eompls
-%define mvn_project_list common-libs,common-logging,common-soap,utils,pss,%{package_name}
+%define mvn_project_list common-libs,common-logging,common-soap,utils,database,pss,%{package_name}
 %define install_base /opt/oscars/%{package_name}
 %define oscars_home /etc/oscars
 %define log_dir /var/log/oscars
