@@ -121,7 +121,7 @@ public class VlanLinkEvaluator extends LinkEvaluator {
         String currLinkId = NMWGParserUtil.normalizeURN(NMWGParserUtil.getURN(pathConstraints.getHop().get(0), NMWGParserUtil.LINK_TYPE));
         String localLinkId = null;
         VlanRange prevDomainSuggested = new VlanRange(VlanRange.ANY_RANGE);//default to any
-        VlanRange prevDomainVlanAvail = new VlanRange(VlanRange.ANY_RANGE);//default to any
+        VlanRange prevDomainVlanAvail = new VlanRange(VlanRange.ANY_UNTAGGED_RANGE);//default to any
         while(currLinkId != null){
             if(currLinkId.startsWith(localDomain)){
                 localLinkId = currLinkId;

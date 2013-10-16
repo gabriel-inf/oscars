@@ -6,6 +6,7 @@ import java.util.Random;
 public class VlanRange {
     public static final Integer MAX_VLAN = 4096;
     public static final String ANY_RANGE = "2-4094";
+    public static final String ANY_UNTAGGED_RANGE = "0,2-4094";
     
     private boolean[] map;
 
