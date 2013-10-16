@@ -1,7 +1,7 @@
 %define package_name connectivityPCE 
 %define service_name ConnectivityPCE
 %define pce_name connectivity
-%define mvn_project_list common-libs,common-logging,common-soap,utils,topoBridge,%{package_name}
+%define mvn_project_list common-libs,common-logging,common-soap,utils,topoBridge,pce,%{package_name}
 %define install_base /opt/oscars/%{package_name}
 %define oscars_home /etc/oscars
 %define log_dir /var/log/oscars
