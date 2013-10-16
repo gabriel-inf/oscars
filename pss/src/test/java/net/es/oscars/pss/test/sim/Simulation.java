@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import net.es.oscars.pss.workflow.WorkflowInspectorJob;
 import org.apache.log4j.Logger;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
@@ -14,7 +15,6 @@ import net.es.oscars.utils.config.ConfigException;
 import net.es.oscars.utils.config.ConfigHelper;
 import net.es.oscars.pss.beans.PSSException;
 import net.es.oscars.pss.config.ConfigHolder;
-import net.es.oscars.pss.sched.quartz.PSSScheduler;
 import net.es.oscars.pss.util.ClassFactory;
 
 public class Simulation {
@@ -46,15 +46,10 @@ public class Simulation {
     public void run() throws PSSException, ConfigException {
         log.debug("simulation.run.start");
 
-        log.debug("starting PSS main scheduler");
-        PSSScheduler sched = PSSScheduler.getInstance();
-        try {
-            sched.setWorkflowInspector(SimWorkflowInspectorJob.class);
-            sched.start();
-        } catch (PSSException ex) {
-            // TODO Auto-generated catch block
-            ex.printStackTrace();
-        }
+
+        WorkflowInspectorJob wfJob = new WorkflowInspectorJob();
+        wfJob.start();
+
 
         ConfigHolder.loadConfig(pssConfigFn);
         ClassFactory.getInstance().configure();
@@ -83,7 +78,6 @@ public class Simulation {
             }
         }
         log.debug("simulation.run.end");
-        PSSScheduler.getInstance().stop();
     }
 
 
