@@ -9,10 +9,10 @@
     <bean id="httpConfig"
           class="net.es.oscars.nsibridge.config.HttpConfig"
           scope="singleton">
-        <property name="url" value="https://jupiter.es.net:8500/"/>
+        <property name="url" value="http://simian.es.net:8500/"/>
         <property name="bus" value="config/server-bus.xml"/>
         <property name="sslBus" value="config/server-bus-ssl.xml"/>
-        <property name="basicAuth" value="false" />
+        <property name="basicAuth" value="true" />
         <property name="trustedSSLProxy" value="" />
     </bean>
 

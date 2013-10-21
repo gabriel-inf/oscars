@@ -14,15 +14,15 @@ import net.es.oscars.nsibridge.client.ClientUtil;
 import net.es.oscars.nsibridge.client.cli.handlers.ReserveHandler;
 import net.es.oscars.nsibridge.client.cli.output.ReserveOutputter;
 import net.es.oscars.nsibridge.client.cli.output.ReservePrettyOutputter;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.provider.ConnectionProviderPort;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ReservationRequestCriteriaType;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ScheduleType;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.types.TypeValuePairType;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.point2point.EthernetVlanType;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.point2point.ObjectFactory;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.types.DirectionalityType;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.types.StpType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.provider.ConnectionProviderPort;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.ReservationRequestCriteriaType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.ScheduleType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.types.TypeValuePairType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.point2point.EthernetVlanType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.point2point.ObjectFactory;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.types.DirectionalityType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.types.StpType;
 
 /**
  * Client to create or modify a reservation

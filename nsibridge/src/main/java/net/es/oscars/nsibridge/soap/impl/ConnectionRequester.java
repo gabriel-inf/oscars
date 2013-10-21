@@ -1,6 +1,6 @@
 package net.es.oscars.nsibridge.soap.impl;
 
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.requester.ConnectionRequesterPort;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.requester.ConnectionRequesterPort;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
@@ -12,17 +12,17 @@ import javax.xml.ws.Holder;
 import javax.xml.ws.RequestWrapper;
 import javax.xml.ws.ResponseWrapper;
 
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.*;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.*;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.*;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.types.*;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.ifce.*;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.*;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.headers.*;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.types.*;
 
 @WebService(
         serviceName = "ConnectionServiceRequester",
         portName = "ConnectionServiceRequesterPort",
         targetNamespace = "http://schemas.ogf.org/nsi/2013/07/connection/requester",
-        wsdlLocation = "file:schema/2013_07/ogf_nsi_connection_requester_v2_0.wsdl",
-        endpointInterface = "net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.requester.ConnectionRequesterPort")
+//        wsdlLocation = "file:schema/2013_07/ogf_nsi_connection_requester_v2_0.wsdl",
+        endpointInterface = "net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.requester.ConnectionRequesterPort")
 
 public class ConnectionRequester implements ConnectionRequesterPort {
 
@@ -31,12 +31,12 @@ public class ConnectionRequester implements ConnectionRequesterPort {
 
     public void error(
             @WebParam(name = "serviceException", targetNamespace = "")
-            net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.types.ServiceExceptionType serviceException,
+            ServiceExceptionType serviceException,
             @WebParam(name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true)
-            net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType header,
+            CommonHeaderType header,
             @WebParam(mode = WebParam.Mode.OUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true)
-            javax.xml.ws.Holder<net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType> header1
-    ) throws net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException {
+            javax.xml.ws.Holder<CommonHeaderType> header1
+    ) throws ServiceException {
 
     }
     @Override

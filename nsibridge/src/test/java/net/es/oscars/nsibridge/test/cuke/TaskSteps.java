@@ -59,9 +59,15 @@ public class TaskSteps {
         String corrId = HelperSteps.getValue("corrId");
 
         Workflow wf = Workflow.getInstance();
+
         int elapsed = 0;
         boolean haveRunState = false;
         while ((elapsed < timeout) && !haveRunState) {
+            /*
+            if (elapsed % 1000 == 0) {
+                log.debug(wf.printTasks());
+            }
+            */
             boolean matchAll = true;
             for (UUID taskId : corrTasks.get(corrId)) {
                 RunState rs = wf.getRunState(taskId);

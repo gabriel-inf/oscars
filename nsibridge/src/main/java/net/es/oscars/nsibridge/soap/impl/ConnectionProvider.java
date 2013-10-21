@@ -2,13 +2,13 @@ package net.es.oscars.nsibridge.soap.impl;
 
 import net.es.oscars.nsibridge.beans.*;
 import net.es.oscars.nsibridge.prov.RequestProcessor;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.provider.ConnectionProviderPort;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.provider.ConnectionProviderPort;
 
 import javax.jws.WebParam;
 import javax.jws.WebService;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.*;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.*;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.*;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.*;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.headers.*;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.ifce.*;
 import org.apache.log4j.Logger;
 
 import javax.xml.ws.Holder;
@@ -18,8 +18,8 @@ import java.util.UUID;
                       serviceName = "ConnectionServiceProvider",
                       portName = "ConnectionServiceProviderPort",
                       targetNamespace = "http://schemas.ogf.org/nsi/2013/07/connection/provider",
-                      wsdlLocation = "schema/2013_07/ConnectionService/ogf_nsi_connection_provider_v2_0.wsdl",
-                      endpointInterface = "net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.provider.ConnectionProviderPort")
+//                      wsdlLocation = "schema/2013_07/ConnectionService/ogf_nsi_connection_provider_v2_0.wsdl",
+                      endpointInterface = "net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.provider.ConnectionProviderPort")
 
 public class ConnectionProvider implements ConnectionProviderPort {
     private static final Logger log = Logger.getLogger(ConnectionProvider.class.getName());

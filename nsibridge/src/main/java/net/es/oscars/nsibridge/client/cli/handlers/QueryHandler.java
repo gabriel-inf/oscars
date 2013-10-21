@@ -1,7 +1,7 @@
 package net.es.oscars.nsibridge.client.cli.handlers;
 
 import net.es.oscars.nsibridge.client.cli.output.QueryOutputter;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.requester.ConnectionRequesterPort;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.requester.ConnectionRequesterPort;
 
 
 import javax.jws.WebParam;
@@ -10,17 +10,18 @@ import java.util.List;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.ws.Holder;
 
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.*;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.*;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.*;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.types.*;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.ifce.*;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.*;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.headers.*;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.types.*;
 
 @WebService(
         serviceName = "ConnectionServiceRequester",
         portName = "ConnectionServiceRequesterPort",
         targetNamespace = "http://schemas.ogf.org/nsi/2013/07/connection/requester",
-        wsdlLocation = "file:schema/2013_07/ogf_nsi_connection_requester_v2_0.wsdl",
-        endpointInterface = "net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.requester.ConnectionRequesterPort")
+        endpointInterface = "net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.requester.ConnectionRequesterPort")
+
+// wsdlLocation = "file:schema/2013_07/ogf_nsi_connection_requester_v2_0.wsdl",
 
 public class QueryHandler implements ConnectionRequesterPort {
     private QueryOutputter outputter;
@@ -30,7 +31,11 @@ public class QueryHandler implements ConnectionRequesterPort {
         this.outputter = outputter;
     }
     @Override
-    public void querySummaryFailed(@WebParam(name = "serviceException", targetNamespace = "") ServiceExceptionType serviceException, @WebParam(name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) CommonHeaderType header, @WebParam(mode = WebParam.Mode.OUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> header1) throws ServiceException {
+    public void querySummaryFailed(
+            @WebParam(name = "serviceException", targetNamespace = "") ServiceExceptionType serviceException,
+            @WebParam(name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) CommonHeaderType header,
+            @WebParam(mode = WebParam.Mode.OUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> header1)
+                throws ServiceException {
         this.outputter.outputFailed(serviceException);
         HandlerExitUtil.exit(1);
     }
@@ -58,12 +63,12 @@ public class QueryHandler implements ConnectionRequesterPort {
      */
     public void error(
             @WebParam(name = "serviceException", targetNamespace = "")
-            net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.types.ServiceExceptionType serviceException,
+            ServiceExceptionType serviceException,
             @WebParam(name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true)
-            net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType header,
+            CommonHeaderType header,
             @WebParam(mode = WebParam.Mode.OUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true)
-            javax.xml.ws.Holder<net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType> header1
-    ) throws net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException {
+            javax.xml.ws.Holder<CommonHeaderType> header1
+    ) throws ServiceException {
 
     }
     @Override

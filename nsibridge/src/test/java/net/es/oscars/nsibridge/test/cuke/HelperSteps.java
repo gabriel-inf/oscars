@@ -3,7 +3,7 @@ package net.es.oscars.nsibridge.test.cuke;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import net.es.oscars.nsibridge.beans.ResvRequest;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.point2point.EthernetVlanType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.point2point.EthernetVlanType;
 import net.es.oscars.nsibridge.test.req.NSIRequestFactory;
 
 import javax.xml.datatype.DatatypeFactory;

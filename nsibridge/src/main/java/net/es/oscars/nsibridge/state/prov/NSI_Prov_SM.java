@@ -1,8 +1,8 @@
 package net.es.oscars.nsibridge.state.prov;
 
 import net.es.oscars.nsibridge.ifces.*;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ProvisionStateEnumType;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ReservationStateEnumType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.ProvisionStateEnumType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.ReservationStateEnumType;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_State;
 import org.apache.log4j.Logger;
 

@@ -12,6 +12,7 @@ import net.es.oscars.nsibridge.oscars.OscarsProxy;
 import net.es.oscars.nsibridge.prov.ScheduleUtils;
 import net.es.oscars.nsibridge.soap.impl.OscarsSecurityContext;
 import net.es.oscars.utils.task.sched.Schedule;
+import net.es.oscars.utils.task.sched.WFTicker;
 import net.es.oscars.utils.task.sched.Workflow;
 import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
@@ -37,10 +38,8 @@ public class EnvironmentSteps {
         op.initialize();
 
 
-        Schedule sch = Schedule.getInstance();
-        sch.start();
-        assertThat(sch.isStarted(), is(true));
-
+        WFTicker wfTicker = new WFTicker();
+        wfTicker.start();
         ScheduleUtils.scheduleProvMonitor();
         ScheduleUtils.scheduleResvTimeoutMonitor();
 

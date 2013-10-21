@@ -4,18 +4,18 @@ import java.util.List;
 
 import javax.xml.bind.JAXBElement;
 
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ConnectionStatesType;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.DataPlaneStatusType;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.QueryRecursiveResultCriteriaType;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.QueryRecursiveResultType;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.QuerySummaryResultCriteriaType;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.QuerySummaryResultType;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.ScheduleType;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.types.ServiceExceptionType;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.types.TypeValuePairType;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.point2point.EthernetVlanType;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.types.OrderedStpType;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.types.StpType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.ConnectionStatesType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.DataPlaneStatusType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.QueryRecursiveResultCriteriaType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.QueryRecursiveResultType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.QuerySummaryResultCriteriaType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.QuerySummaryResultType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.ScheduleType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.types.ServiceExceptionType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.types.TypeValuePairType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.point2point.EthernetVlanType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.types.OrderedStpType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.types.StpType;
 
 /**
  * Outputs results using a human-readable text format

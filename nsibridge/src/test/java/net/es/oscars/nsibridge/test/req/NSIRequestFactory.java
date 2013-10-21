@@ -3,15 +3,15 @@ import net.es.oscars.nsibridge.beans.QueryRequest;
 import net.es.oscars.nsibridge.beans.ResvRequest;
 import net.es.oscars.nsibridge.beans.SimpleRequest;
 import net.es.oscars.nsibridge.beans.SimpleRequestType;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.*;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.types.*;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.*;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.types.*;
 
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.services.point2point.*;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.point2point.*;
 
 
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.types.TypeValuePairListType;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.types.TypeValuePairType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.types.TypeValuePairListType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.types.TypeValuePairType;
 import net.es.oscars.nsibridge.test.cuke.HelperSteps;
 
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -65,11 +65,11 @@ public class NSIRequestFactory {
 
         sch.setStartTime(sTime);
         sch.setEndTime(eTime);
-        srcStp.setNetworkId("esnet");
+        srcStp.setNetworkId("urn:ogf:network:es.net:2013");
         srcStp.setLocalId("urn:ogf:network:stp:esnet.ets:chi-80");
 
         dstStp.setLocalId("urn:ogf:network:stp:esnet.ets:ps-80");
-        dstStp.setNetworkId("esnet");
+        dstStp.setNetworkId("urn:ogf:network:es.net:2013");
 
         EthernetVlanType evtp = new EthernetVlanType();
         crit.getAny().add(evtp);
