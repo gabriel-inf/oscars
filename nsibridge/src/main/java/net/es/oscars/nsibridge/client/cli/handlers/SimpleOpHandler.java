@@ -1,6 +1,6 @@
 package net.es.oscars.nsibridge.client.cli.handlers;
 
-import net.es.oscars.nsibridge.client.cli.output.SimpleOpOutputter;
+import net.es.oscars.nsi.soap.util.output.SimpleOpOutputter;
 import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.requester.ConnectionRequesterPort;
 
 import javax.jws.WebParam;

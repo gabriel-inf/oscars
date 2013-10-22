@@ -4,7 +4,7 @@ import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceExcepti
 import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
 import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.types.ServiceExceptionType;
 import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.requester.ConnectionRequesterPort;
-import net.es.oscars.nsibridge.client.cli.output.ReserveOutputter;
+import net.es.oscars.nsi.soap.util.output.ReserveOutputter;
 
 import javax.jws.WebParam;
 import javax.jws.WebService;
@@ -12,9 +12,7 @@ import java.util.List;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.ws.Holder;
 
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.ifce.*;
 import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.*;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.headers.*;
 import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.types.*;
 
 @WebService(

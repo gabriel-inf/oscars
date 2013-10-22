@@ -13,8 +13,8 @@ import joptsimple.OptionSet;
 
 import net.es.oscars.nsibridge.client.ClientUtil;
 import net.es.oscars.nsibridge.client.cli.handlers.QueryHandler;
-import net.es.oscars.nsibridge.client.cli.output.QueryOutputter;
-import net.es.oscars.nsibridge.client.cli.output.QueryPrettyOutputter;
+import net.es.oscars.nsi.soap.util.output.QueryOutputter;
+import net.es.oscars.nsi.soap.util.output.QueryPrettyOutputter;
 import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.ifce.QuerySummarySyncFailed;
 import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
 import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.provider.ConnectionProviderPort;
