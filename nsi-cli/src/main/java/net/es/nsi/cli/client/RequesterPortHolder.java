@@ -1,6 +1,6 @@
 package net.es.nsi.cli.client;
 
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.provider.ConnectionProviderPort;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.requester.ConnectionRequesterPort;
 import org.apache.cxf.interceptor.LoggingInInterceptor;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
@@ -9,24 +9,23 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ProviderPortHolder {
-
-    private ProviderPortHolder () {}
-    private static ProviderPortHolder instance;
-    public static ProviderPortHolder getInstance() {
-        if (instance == null) instance = new ProviderPortHolder();
+public class RequesterPortHolder {
+    private RequesterPortHolder() {}
+    private static RequesterPortHolder instance;
+    public static RequesterPortHolder getInstance() {
+        if (instance == null) instance = new RequesterPortHolder();
         return instance;
     }
 
-    HashMap<URL, ConnectionProviderPort> ports = new HashMap<URL, ConnectionProviderPort>();
-    public synchronized ConnectionProviderPort getPort(URL url) {
+    HashMap<URL, ConnectionRequesterPort> ports = new HashMap<URL, ConnectionRequesterPort>();
+    public synchronized ConnectionRequesterPort getPort(URL url) {
         if (ports.get(url) == null) {
             ports.put(url, createPort(url));
         }
         return ports.get(url);
     }
 
-    private ConnectionProviderPort createPort(URL url) {
+    private ConnectionRequesterPort createPort(URL url) {
 
 
         // set logging
@@ -40,7 +39,9 @@ public class ProviderPortHolder {
         fb.getInInterceptors().add(in);
         fb.getOutInterceptors().add(out);
 
-        fb.setAddress(url.toString());
+        if (url != null) {
+            fb.setAddress(url.toString());
+        }
 
         Map props = fb.getProperties();
         if (props == null) {
@@ -52,9 +53,12 @@ public class ProviderPortHolder {
                 });
         fb.setProperties(props);
 
-        fb.setServiceClass(ConnectionProviderPort.class);
-        ConnectionProviderPort port = (ConnectionProviderPort) fb.create();
+        fb.setServiceClass(ConnectionRequesterPort.class);
+        ConnectionRequesterPort port = (ConnectionRequesterPort) fb.create();
         return port;
+
+
     }
+
 
 }

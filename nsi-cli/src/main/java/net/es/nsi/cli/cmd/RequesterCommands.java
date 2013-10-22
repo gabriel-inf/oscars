@@ -5,7 +5,7 @@ import net.es.nsi.cli.client.CliNsiHandler;
 import net.es.nsi.cli.config.RequesterProfile;
 import net.es.nsi.cli.core.CliInternalException;
 import net.es.nsi.cli.db.DB_Util;
-import net.es.oscars.nsibridge.client.cli.CLIListener;
+import net.es.nsi.cli.client.CLIListener;
 import org.apache.log4j.Logger;
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;

@@ -10,9 +10,9 @@ import net.es.nsi.cli.config.ProviderProfile;
 import net.es.nsi.cli.config.RequesterProfile;
 import net.es.nsi.cli.config.ResvProfile;
 import net.es.nsi.cli.db.DB_Util;
-import net.es.oscars.nsibridge.client.cli.CLIListener;
-import net.es.oscars.nsibridge.config.SpringContext;
-import net.es.oscars.nsibridge.prov.RequesterPortHolder;
+import net.es.nsi.cli.client.CLIListener;
+import net.es.nsi.cli.config.SpringContext;
+import net.es.nsi.cli.client.RequesterPortHolder;
 import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 

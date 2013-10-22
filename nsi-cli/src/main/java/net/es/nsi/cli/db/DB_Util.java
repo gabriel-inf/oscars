@@ -2,7 +2,7 @@ package net.es.nsi.cli.db;
 
 import net.es.nsi.cli.config.*;
 import net.es.nsi.cli.core.CliInternalException;
-import net.es.oscars.nsibridge.config.SpringContext;
+import net.es.nsi.cli.config.SpringContext;
 import org.apache.commons.beanutils.BeanUtils;
 import org.springframework.context.ApplicationContext;
 

@@ -1,14 +1,14 @@
 package net.es.nsi.cli.client;
 
 import net.es.nsi.cli.cmd.NsiCliState;
-import net.es.oscars.nsibridge.client.cli.output.QueryOutputter;
-import net.es.oscars.nsibridge.client.cli.output.QueryPrettyOutputter;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.requester.ConnectionRequesterPort;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.connection.types.*;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.types.ServiceExceptionType;
-import net.es.oscars.nsibridge.soap.gen.nsi_2_0_2013_07.framework.types.TypeValuePairListType;
+import net.es.oscars.nsi.soap.util.output.QueryOutputter;
+import net.es.oscars.nsi.soap.util.output.QueryPrettyOutputter;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.requester.ConnectionRequesterPort;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.*;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.types.ServiceExceptionType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.types.TypeValuePairListType;
 import org.apache.log4j.Logger;
 
 import javax.jws.WebParam;

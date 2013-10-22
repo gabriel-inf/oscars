@@ -3,7 +3,7 @@ package net.es.nsi.cli.cmd;
 import net.es.nsi.cli.config.DefaultProfiles;
 import net.es.nsi.cli.core.CliInternalException;
 import net.es.nsi.cli.db.DB_Util;
-import net.es.oscars.nsibridge.config.SpringContext;
+import net.es.nsi.cli.config.SpringContext;
 import org.springframework.context.ApplicationContext;
 import org.springframework.shell.core.Completion;
 import org.springframework.shell.core.Converter;

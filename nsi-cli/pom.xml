@@ -16,6 +16,9 @@
         <spring.version>3.2.3.RELEASE</spring.version>
         <hibernate.version>4.2.4.Final</hibernate.version>
         <hsqldb.version>2.3.0</hsqldb.version>
+        <nsi-soap.version>2013_07_r99</nsi-soap.version>
+        <slf4j.version>1.7.5</slf4j.version>
+        <cxf.version>2.7.6</cxf.version>
 
     </properties>
 
@@ -60,6 +63,59 @@
     </repositories>
 
     <dependencies>
+        <!-- logging -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.17</version>
+        </dependency>
+
+
+        <!-- CXF -->
+
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-frontend-jaxws</artifactId>
+            <version>${cxf.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-transports-http</artifactId>
+            <version>${cxf.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-transports-http-jetty</artifactId>
+            <version>${cxf.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-bindings-soap</artifactId>
+            <version>${cxf.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-ws-policy</artifactId>
+            <version>${cxf.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-ws-security</artifactId>
+            <version>${cxf.version}</version>
+        </dependency>
+
+
+
+
         <dependency>
             <groupId>com.joestelmach</groupId>
             <artifactId>natty</artifactId>
@@ -81,15 +137,23 @@
         </dependency>
 
         <dependency>
-            <groupId>org.springframework.shell</groupId>
-            <artifactId>spring-shell</artifactId>
-            <version>${spring.shell.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
             <version>${spring.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.shell</groupId>
+            <artifactId>spring-shell</artifactId>
+            <version>${spring.shell.version}</version>
+        </dependency>
+
+
 
         <!-- persistence -->
         <dependency>
@@ -105,11 +169,13 @@
         </dependency>
 
 
+
         <dependency>
             <groupId>net.es.oscars</groupId>
-            <artifactId>nsibridge</artifactId>
-            <version>1.0</version>
+            <artifactId>nsi-soap</artifactId>
+            <version>${nsi-soap.version}</version>
         </dependency>
+
     </dependencies>
 
     <build>

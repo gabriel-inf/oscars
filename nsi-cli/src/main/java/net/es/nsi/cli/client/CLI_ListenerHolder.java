@@ -1,6 +1,5 @@
 package net.es.nsi.cli.client;
 
-import net.es.oscars.nsibridge.client.cli.CLIListener;
 
 import java.util.HashMap;
 
