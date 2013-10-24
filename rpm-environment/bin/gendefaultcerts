@@ -72,13 +72,13 @@ rm -f oscars.jks
 keytool -genkey \
     -dname "${CERTSUBJECT}" \
     -keystore oscars.jks -keyalg RSA -storetype jks -storepass $STOREPASS -keypass $KEYPASS \
-    -alias mykey
+    -alias mykey -validity 3650
 
 rm -f localhost.jks
 keytool -genkey \
     -dname "CN=localhost, OU=OSCARS DEFAULT, O=OSCARS, ST=CA, C=US" \
     -keystore localhost.jks -keyalg RSA -storetype jks -storepass $STOREPASS -keypass $KEYPASS \
-    -alias mykey
+    -alias mykey -validity 3650
 
 keytool -export -keystore localhost.jks -alias mykey -file localhost.cer -storepass $STOREPASS \
      -keypass $KEYPASS 
