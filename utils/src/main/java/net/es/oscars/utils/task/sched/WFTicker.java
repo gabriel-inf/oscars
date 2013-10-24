@@ -24,36 +24,43 @@ public class WFTicker extends Thread {
     }
     
     public void execute() throws JobExecutionException {
-        Workflow wf = net.es.oscars.utils.task.sched.Workflow.getInstance();
-        long now = new Date().getTime();
-        
-        Task task = null;
-        try {
-            task = wf.nextRunnable(now);
-            if (task != null) {
-                task.onRun();
-            }
-        }catch (Exception ex) {
-            log.error(ex);
-            ex.printStackTrace();
-            if(task != null && !Outcome.FAIL.equals(task.getOutcome())){
-                this.failTaskOnUnhandledException(task);
-            }
-        }finally{
-            if (task != null) {
-                wf.finishRunning(task);
-            }
-        }
+        Thread th = new Thread() {
+            public void run() {
+                Workflow wf = net.es.oscars.utils.task.sched.Workflow.getInstance();
+                long now = new Date().getTime();
 
-    }
-    
-    public void failTaskOnUnhandledException(Task task){
-        try {
-            task.onFail();
-        } catch (Exception e) {
-            log.error("Error failing task: " + e.getMessage());
-            e.printStackTrace();
-        }
+                Task task = null;
+                try {
+                    task = wf.nextRunnable(now);
+                    if (task != null) {
+                        task.onRun();
+                    }
+                }catch (Exception ex) {
+                    log.error(ex);
+                    ex.printStackTrace();
+                    if(task != null && !Outcome.FAIL.equals(task.getOutcome())){
+                        this.failTaskOnUnhandledException(task);
+                    }
+                }finally{
+                    if (task != null) {
+                        wf.finishRunning(task);
+                    }
+                }
+            }
+
+            public void failTaskOnUnhandledException(Task task){
+                try {
+                    task.onFail();
+                } catch (Exception e) {
+                    log.error("Error failing task: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+
+        };
+        th.start();
+
+
     }
 
 }
