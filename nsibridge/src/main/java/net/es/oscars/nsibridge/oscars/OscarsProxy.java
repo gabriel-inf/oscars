@@ -78,13 +78,19 @@ public class OscarsProxy {
 
         if (oscarsStubConfig.isStub()) {
             // log.info("stub mode for sendModify");
+            OscarsStates oldState = stubStates.get(modifyReservation.getGlobalReservationId());
+
             ModifyResReply cr = new ModifyResReply();
             stubStates.put(modifyReservation.getGlobalReservationId(), OscarsStates.INPATHCALCULATION);
             try {
                 long delay = oscarsStubConfig.getResponseDelayMillis();
                 log.debug("sleeping for " + delay + "ms");
                 Thread.sleep(delay);
-                this.scheduleStatusUpdate(modifyReservation.getGlobalReservationId(), OscarsStates.RESERVED, oscarsStubConfig.getResvDelayMillis());
+                if (oldState.equals(OscarsStates.ACTIVE)) {
+                    this.scheduleStatusUpdate(modifyReservation.getGlobalReservationId(), OscarsStates.ACTIVE, oscarsStubConfig.getResvDelayMillis());
+                } else {
+                    this.scheduleStatusUpdate(modifyReservation.getGlobalReservationId(), OscarsStates.RESERVED, oscarsStubConfig.getResvDelayMillis());
+                }
 
 
 

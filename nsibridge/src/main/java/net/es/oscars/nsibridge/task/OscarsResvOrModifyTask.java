@@ -4,6 +4,7 @@ package net.es.oscars.nsibridge.task;
 import net.es.oscars.nsibridge.beans.ResvRequest;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.beans.db.OscarsStatusRecord;
+import net.es.oscars.nsibridge.beans.db.ResvRecord;
 import net.es.oscars.nsibridge.config.TimingConfig;
 import net.es.oscars.nsibridge.ifces.NsiProvMdl;
 import net.es.oscars.nsibridge.ifces.StateException;
@@ -18,6 +19,7 @@ import org.apache.log4j.Logger;
 
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class OscarsResvOrModifyTask extends OscarsTask  {
@@ -168,11 +170,35 @@ public class OscarsResvOrModifyTask extends OscarsTask  {
 
             try {
                 OscarsStates os = OscarsUtil.pollUntilResvStable(cr);
-                DB_Util.updateDataplaneRecord(cr, os);
+
                 if (os.equals(OscarsStates.RESERVED) || os.equals(OscarsStates.ACTIVE)) {
                     this.getStateMachine().process(this.successEvent, this.correlationId);
                     this.onSuccess();
                     DB_Util.persistStateMachines(connId);
+
+
+                    if (theOp.equals(OscarsOps.MODIFY)) {
+
+                        List<ResvRecord> rrs = ConnectionRecord.getUncommittedResvRecords(cr);
+                        ResvRecord rr = rrs.get(0);
+                        if (rr != null) {
+                            DB_Util.updateDataplaneRecord(cr, os, rr.getVersion());
+                        } else {
+                            DB_Util.updateDataplaneRecord(cr, os, 0);
+                        }
+                    } else {
+                        ResvRecord rr = ConnectionRecord.getCommittedResvRecord(cr);
+                        if (rr != null) {
+                            DB_Util.updateDataplaneRecord(cr, os, rr.getVersion());
+                        } else {
+                            DB_Util.updateDataplaneRecord(cr, os, 0);
+                        }
+                    }
+
+
+
+
+
 
                     if (theOp.equals(OscarsOps.MODIFY) && os.equals(OscarsStates.ACTIVE)) {
                         // send a dataplane update back

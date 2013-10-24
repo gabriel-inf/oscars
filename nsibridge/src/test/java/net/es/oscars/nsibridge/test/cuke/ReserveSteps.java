@@ -47,6 +47,7 @@ public class ReserveSteps {
 
         String connId = HelperSteps.getValue("connId");
         String corrId = HelperSteps.getValue("corrId");
+        log.debug("reserve: connId: "+connId+" corrId:"+corrId);
 
         resvRequest.getInHeader().setCorrelationId(corrId);
         rt.setConnectionId(connId);
@@ -72,7 +73,7 @@ public class ReserveSteps {
         ConnectionProvider cp = new ConnectionProvider();
         String connId = HelperSteps.getValue("connId");
         String corrId = HelperSteps.getValue("corrId");
-
+        log.debug("reserveCommit: connId: "+connId+" corrId:"+corrId);
 
         SimpleRequest commRequest = NSIRequestFactory.getSimpleRequest(connId, corrId, SimpleRequestType.RESERVE_COMMIT);
         Holder<CommonHeaderType> outHolder = new Holder<CommonHeaderType>();

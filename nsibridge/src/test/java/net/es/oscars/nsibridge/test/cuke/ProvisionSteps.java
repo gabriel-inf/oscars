@@ -27,6 +27,7 @@ import static org.junit.Assert.assertThat;
 public class ProvisionSteps {
 
     private static Logger log = Logger.getLogger(ProvisionSteps.class);
+    private static DataplaneStatusRecord dsr;
 
     private int provReqCount;
 
@@ -122,13 +123,23 @@ public class ProvisionSteps {
         assertThat(found, is(true));
     }
 
-    @Then("^the dataplaneStatus is \"([^\"]*)\"$")
-    public void the_dataplaneStatus_is(String arg1) throws Throwable {
+    @Then("^the dataplane record \"([^\"]*)\" active$")
+    public void dataplane_record_is_active(String is) throws Throwable {
+        boolean testTrue = false;
+        if (is.equals("is")) {
+            testTrue = true;
+        }
+        assertThat(dsr.isActive(), is(testTrue));
+    }
+
+
+
+    @Then("^I can get the dataplane record with version (\\d+)$")
+    public void get_dataplanerecord(Integer version) throws Throwable {
         String connId = HelperSteps.getValue("connId");
 
         ConnectionRecord cr = DB_Util.getConnectionRecord(connId);
         ResvRecord rr = ConnectionRecord.getCommittedResvRecord(cr);
-        int version = rr.getVersion();
         DataplaneStatusRecord dr = null;
         for (DataplaneStatusRecord adr :cr.getDataplaneStatusRecords()) {
             log.debug(connId+" v: "+adr.getVersion()+" a:"+adr.isActive());
@@ -137,12 +148,6 @@ public class ProvisionSteps {
             }
         }
         assertThat(dr, notNullValue());
-        boolean active = false;
-        if (arg1.toLowerCase().equals("active")) {
-            active = true;
-        }
-        assertThat(dr.isActive(), is(active));
-
+        dsr = dr;
     }
-
 }

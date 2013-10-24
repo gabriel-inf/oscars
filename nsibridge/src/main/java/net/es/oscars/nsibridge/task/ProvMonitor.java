@@ -60,7 +60,7 @@ public class ProvMonitor extends Thread {
             }
 
             OscarsProvQueue opq = OscarsProvQueue.getInstance();
-            // log.debug("considering connId: "+connId+" ps: "+cr.getProvisionState()+" record: "+now);
+            // log.debug("considering connId: "+connId+" ps: "+cr.getProvisionState()+" start: "+rr.getStartTime()+" end: "+rr.getEndTime()+" now: "+now);
 
             try {
                 switch (cr.getProvisionState()) {

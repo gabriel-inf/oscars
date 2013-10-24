@@ -78,6 +78,7 @@ public class SendNSIMessageTask extends Task  {
                 }
 
                 outHeader = NSI_Util.makeNsiOutgoingHeader(cr.getRequesterNSA());
+                log.debug("connId: "+connId+" corrId: "+corrId+" notify: "+replyTo+" type:"+message);
 
 
             } else {

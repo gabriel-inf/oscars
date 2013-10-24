@@ -25,7 +25,7 @@ Feature: set up oscars circuit when start time comes, tear down after end time
         When I wait up to 5000 ms until provMonitor schedules "SETUP"
 
         Given I wait up to 30 sec until any previous tasks complete
-        Then the dataplaneStatus is "active"
-        Given I clear all existing tasks
 
+        Then I can get the dataplane record with version 0
+        Then the dataplane record "is" active
 

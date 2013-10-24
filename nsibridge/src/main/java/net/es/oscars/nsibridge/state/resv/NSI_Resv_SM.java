@@ -138,7 +138,7 @@ public class NSI_Resv_SM implements StateMachine {
 
         }
 
-        String post = "PST: PSM ["+this.getId()+"] now at state ["+this.getState().value()+"] after event ["+event+"]";
+        String post = "PST: RSM ["+this.getId()+"] now at state ["+this.getState().value()+"] after event ["+event+"]";
         LOG.debug(post);
         Set<UUID> taskIds = this.transitionHandler.process(correlationId, ps, ns, event, this);
         for (UUID taskId : taskIds) {

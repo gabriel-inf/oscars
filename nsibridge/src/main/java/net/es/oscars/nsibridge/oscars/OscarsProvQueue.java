@@ -64,6 +64,7 @@ public class OscarsProvQueue {
     }
 
     public synchronized void scheduleOp(String connId, OscarsOps op) throws TaskException {
+        log.debug("scheduling "+connId+" op: "+op);
         if (!needsOp(connId, op)) {
             return;
         }

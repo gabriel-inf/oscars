@@ -125,7 +125,14 @@ public class OscarsCancelOrModifyTask extends OscarsTask  {
                 return;
             }
 
-            DB_Util.updateDataplaneRecord(cr, os);
+            ResvRecord rr = ConnectionRecord.getCommittedResvRecord(cr);
+            if (rr != null) {
+                DB_Util.updateDataplaneRecord(cr, os, rr.getVersion());
+
+            } else {
+
+                DB_Util.updateDataplaneRecord(cr, os, 0);
+            }
 
 
             switch (theOp) {

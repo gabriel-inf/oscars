@@ -42,27 +42,27 @@ public class DB_Util {
     private static final Logger log = Logger.getLogger(DB_Util.class);
     private static HashMap<String, ConnectionRecord> connectionRecords = new HashMap<String, ConnectionRecord>();
 
-    public static void updateDataplaneRecord(ConnectionRecord cr, OscarsStates os) throws ServiceException {
-        ResvRecord rr = ConnectionRecord.getCommittedResvRecord(cr);
-        if (rr == null) {
-            return;
-        }
+    public static void updateDataplaneRecord(ConnectionRecord cr, OscarsStates os, Integer version) throws ServiceException {
+
         DataplaneStatusRecord dsr = null;
         for (DataplaneStatusRecord d : cr.getDataplaneStatusRecords()) {
-            if (d.getVersion() == rr.getVersion()) {
+            if (d.getVersion() == version) {
+                log.debug("updating dataplane record: connId: ["+cr.getConnectionId()+"] status: "+os+" version: "+d.getVersion());
                 dsr = d;
             }
         }
         if (dsr == null) {
             dsr = new DataplaneStatusRecord();
+            dsr.setVersion(version);
             cr.getDataplaneStatusRecords().add(dsr);
+            log.debug("inserting new dataplane record: connId: ["+cr.getConnectionId()+"] status: "+os);
         }
         if (os.equals(OscarsStates.ACTIVE)) {
             dsr.setActive(true);
         } else {
             dsr.setActive(false);
         }
-        dsr.setVersion(rr.getVersion());
+        log.debug("updated dataplane record: connId: ["+cr.getConnectionId()+"] status: "+os+" version: "+dsr.getVersion());
         EntityManager em = PersistenceHolder.getEntityManager();
         em.getTransaction().begin();
         em.persist(cr);

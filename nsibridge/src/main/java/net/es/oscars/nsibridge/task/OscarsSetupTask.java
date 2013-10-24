@@ -2,6 +2,7 @@ package net.es.oscars.nsibridge.task;
 
 
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
+import net.es.oscars.nsibridge.beans.db.ResvRecord;
 import net.es.oscars.nsibridge.oscars.OscarsStates;
 import net.es.oscars.nsibridge.oscars.OscarsUtil;
 import net.es.oscars.nsibridge.prov.DB_Util;
@@ -22,7 +23,9 @@ public class OscarsSetupTask extends OscarsTask  {
 
         try {
             OscarsStates os = OscarsUtil.pollUntilResvStable(cr);
-            DB_Util.updateDataplaneRecord(cr, os);
+            ResvRecord rr = ConnectionRecord.getCommittedResvRecord(cr);
+
+            DB_Util.updateDataplaneRecord(cr, os, rr.getVersion());
         } catch (ServiceException ex) {
             log.error(ex.getMessage(), ex);
             return;

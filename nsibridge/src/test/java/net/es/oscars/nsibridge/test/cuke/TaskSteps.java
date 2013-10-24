@@ -57,23 +57,31 @@ public class TaskSteps {
     @When("^I wait up to (\\d+) ms until the task runstate is \"([^\"]*)\"$")
     public void I_wait_up_to_ms_until_the_task_runstate_is(int timeout, String runState) throws Throwable {
         String corrId = HelperSteps.getValue("corrId");
+        log.debug("corrid: "+corrId);
 
         Workflow wf = Workflow.getInstance();
 
         int elapsed = 0;
         boolean haveRunState = false;
         while ((elapsed < timeout) && !haveRunState) {
-            /*
             if (elapsed % 1000 == 0) {
-                log.debug(wf.printTasks());
+//                log.debug(wf.printTasks());
             }
-            */
             boolean matchAll = true;
-            for (UUID taskId : corrTasks.get(corrId)) {
-                RunState rs = wf.getRunState(taskId);
-                // log.debug("taskId: " + taskId + " runState: " + rs);
-                if (!rs.toString().equals(runState)) {
-                    matchAll = false;
+            if (corrTasks.get(corrId) == null) {
+                log.info("no tasks for "+corrId);
+                matchAll = false;
+            } else {
+
+                for (UUID taskId : corrTasks.get(corrId)) {
+                    RunState rs = wf.getRunState(taskId);
+                    if (rs == null) {
+                        log.error ("no rs!"+corrId);
+                    }
+                    // log.debug("taskId: " + taskId + " runState: " + rs);
+                    if (!rs.toString().equals(runState)) {
+                        matchAll = false;
+                    }
                 }
             }
             if (matchAll) {
