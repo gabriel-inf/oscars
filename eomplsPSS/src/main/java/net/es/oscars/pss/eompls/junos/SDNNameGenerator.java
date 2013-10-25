@@ -68,7 +68,7 @@ public class SDNNameGenerator {
 
 
     public String getVplsName(String gri, String description) {
-        return oscarsName(gri, description);
+        return gri;
     }
 
 

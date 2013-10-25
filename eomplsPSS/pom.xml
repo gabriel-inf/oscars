@@ -20,6 +20,13 @@
     </pluginRepositories>
 
     <dependencies>
+        <!-- specific database -->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>5.1.26</version>
+        </dependency>
+
         <!-- common SOAP interfaces (from local repository) -->
         <dependency>
             <groupId>net.es.oscars</groupId>

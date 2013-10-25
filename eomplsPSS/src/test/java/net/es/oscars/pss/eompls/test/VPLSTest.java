@@ -115,6 +115,7 @@ public class VPLSTest {
 
         params.getVpls().put("id", vplsId);
         params.getVpls().put("description", gri);
+        params.getVpls().put("name", gri);
 
 
         params.getIngqos().put("id", ingQosId);
