@@ -22,6 +22,7 @@ public class WorkflowInspectorJob extends Thread {
                 break;
             }catch(Exception e){
                 log.error("Error in WorkflowInspectorJob: " + e.getMessage());
+                log.error(e.getMessage(), e);
             }
         }
     }
@@ -37,6 +38,7 @@ public class WorkflowInspectorJob extends Thread {
             try {
                 wfAgent.process(actions);
             } catch (PSSException e) {
+                log.error(e.getMessage(), e);
                 e.printStackTrace();
             }
             wfAgent.update(next);
