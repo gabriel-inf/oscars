@@ -16,6 +16,7 @@ public class SRLUtils {
         log.debug("releasing ids for scope: "+scope+" gri: "+gri);
         String dbname = EoMPLSPSSCore.getInstance().getDbname();
 
+        EoMPLSPSSCore.getInstance().getSession().close();
         EoMPLSPSSCore.getInstance().getSession().beginTransaction();
 
         ScopedResourceLockDAO srlDAO = new ScopedResourceLockDAO(dbname);
@@ -35,6 +36,7 @@ public class SRLUtils {
     public static void releaseIdentifier(String scope, Integer resource) {
         log.debug("releasing "+resource+" for scope: "+scope);
         String dbname = EoMPLSPSSCore.getInstance().getDbname();
+        EoMPLSPSSCore.getInstance().getSession().close();
         EoMPLSPSSCore.getInstance().getSession().beginTransaction();
 
         ScopedResourceLockDAO srlDAO = new ScopedResourceLockDAO(dbname);
@@ -51,6 +53,7 @@ public class SRLUtils {
 
     public static Integer getIdentifier(String scope, String gri, Integer preferred, String rangeExp) {
         String dbname = EoMPLSPSSCore.getInstance().getDbname();
+        EoMPLSPSSCore.getInstance().getSession().close();
         EoMPLSPSSCore.getInstance().getSession().beginTransaction();
 
         ScopedResourceLockDAO srlDAO = new ScopedResourceLockDAO(dbname);
@@ -64,6 +67,7 @@ public class SRLUtils {
 
     public static List<Integer> getExistingIdentifiers(String scope, String gri) {
         String dbname = EoMPLSPSSCore.getInstance().getDbname();
+        EoMPLSPSSCore.getInstance().getSession().close();
         EoMPLSPSSCore.getInstance().getSession().beginTransaction();
 
         ScopedResourceLockDAO srlDAO = new ScopedResourceLockDAO(dbname);

@@ -17,6 +17,7 @@ public class GCUtils {
         String config = null;
         String dbname = EoMPLSPSSCore.getInstance().getDbname();
 
+        EoMPLSPSSCore.getInstance().getSession().close();
         EoMPLSPSSCore.getInstance().getSession().beginTransaction();
 
         GeneratedConfigDAO gcDAO =  new GeneratedConfigDAO(dbname);
@@ -39,6 +40,8 @@ public class GCUtils {
     public static void storeDeviceConfig(String gri, String deviceId, ActionType phase, String config) throws PSSException {
 
         String dbname = EoMPLSPSSCore.getInstance().getDbname();
+
+        EoMPLSPSSCore.getInstance().getSession().close();
 
         EoMPLSPSSCore.getInstance().getSession().beginTransaction();
 
