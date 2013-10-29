@@ -318,6 +318,7 @@ public class Reservation extends HibernateBean implements Serializable {
                 return constraint.getPath();
             } else {
                 constraint = this.getConstraint(ConstraintType.USER);
+                if (constraint == null) return null;
                 return constraint.getPath();
             }
         } catch (RMException ex) {
