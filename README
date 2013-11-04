@@ -20,7 +20,7 @@ To build and run all the servers
            - compiles, runs tests but continues after errors and installs
       mvn install - compiles, run tests, installs
 
-4.   run $OSCARS_DIST/bin/stopServers.sh [dev|sdk|pro] ALL to start all the servers
+4.   run $OSCARS_DIST/bin/startServers.sh [dev|sdk|pro] ALL to start all the servers
         the output from the servers will be piped to $OSCARS_DIST/*.out
 
 5. run $OSCARS_DIST/bin/stopServers.sh ALL to kill all the servers.
