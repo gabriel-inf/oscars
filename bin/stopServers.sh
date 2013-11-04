@@ -52,13 +52,13 @@ stopauthZ() {
 
 stopCoord () {
     Service="CoordinatorService"
-    ShortName="coord"
+    ShortName="coordinator"
     stopService
 }
 
 stopRM () {
     Service="ResourceManager"
-    ShortName="rm"
+    ShortName="resourceManager"
     stopService
 }
 
@@ -76,19 +76,19 @@ stopStubPCE(){
 
 stopConnPCE() {
     Service="ConnectivityPCE"
-    ShortName="connPCE"
+    ShortName="connectivityPCE"
     stopService
 }
 
 stopBWPCE() {
     Service="BandwidthPCE"
-    ShortName="bwPCE"
+    ShortName="bandwidthPCE"
     stopService
 }
 
 stopDijPCE () {
     Service="DijkstraPCE"
-    ShortName="dijPCE"
+    ShortName="dijkstraPCE"
     stopService
 }
 
@@ -163,7 +163,7 @@ stopnullPCE () {
 
 stopnullAgg () {
     Service="NullAggregator"
-    ShortName="nullagg"
+    ShortName="pce-nullagg"
     stopService
 }
 
