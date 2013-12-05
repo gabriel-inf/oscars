@@ -1,0 +1,197 @@
+<#assign softpolice = policer.soft >
+<#assign applyqos = policer.applyqos >
+<#assign protect = lsp.has_protect >
+<#assign has_two_vpls_ids = vpls.has_two_ids >
+
+
+configure private
+
+# customer facing interfaces
+<#list ifces as ifce>
+edit interfaces ${ifce.name}
+edit unit ${ifce.vlan}
+set description ${ifce.description}
+set encapsulation vlan-vpls
+set vlan-id ${ifce.vlan}
+set output-vlan-map swap
+set family vpls filter input ${filters.stats}
+set family vpls filter output ${filters.stats}
+top
+</#list>
+
+
+# firewall: statistics filter
+edit firewall family vpls filter ${filters.stats}
+set interface-specific
+set term oscars then count oscars_counter
+set term oscars then accept
+top
+
+
+# vpls instance
+top
+edit routing-instances ${vpls.name}
+set instance-type vpls
+<#list ifces as ifce>
+set interface ${ifce.name}.${ifce.vlan}
+</#list>
+edit protocols vpls
+set no-tunnel-services
+set mtu 9100
+edit site CE
+<#list ifces as ifce>
+set interface ${ifce.name}.${ifce.vlan}
+</#list>
+top
+
+
+
+
+
+
+<#if lsps??>
+# anything below here only for multi-device LSPs
+
+# a new loopback
+edit interfaces lo0 family inet
+set address ${lsp.loopback}
+top
+
+# firewall: primary path filter
+edit firewall family any filter ${filters.primary} term oscars then
+set count oscars
+set loss-priority low
+set forwarding-class expedited-forwarding-vc
+set accept
+top
+
+
+# paths
+<#list paths as path>
+edit protocols mpls path ${path.name}
+<#list path.hops as hop>
+set ${hop} strict
+</#list>
+top
+</#list>
+
+# lsps
+<#list lsps as lsp>
+top
+edit protocols mpls label-switched-path ${lsp.primary}
+set to ${lsp.to}
+set metric 65000
+set no-cspf
+set priority 4 4
+set primary ${lsp.path}
+set policing filter ${filters.primary}
+</#list>
+
+
+# routing policy
+top
+set policy-options community ${community.name} members ${community.members}
+
+top
+edit policy-options policy-statement ${policy} term oscars
+set from community ${community.name}
+<#list lsps as lsp>
+set then install-nexthop lsp ${lsp.primary}
+</#list>
+set then accept
+
+top
+edit routing-options
+set forwarding-table export [ ${policy} ]
+
+
+
+
+# VPLS SDPs & neighbors
+<#list lsps as lsp>
+edit routing-instances ${vpls.name} protocols vpls mesh-group sdp-${vpls.id}
+set vpls-id ${vpls.id}
+edit neighbor ${lsp.neighbor}
+set psn-tunnel-endpoint ${lsp.to}
+set community ${community.name}
+set encapsulation-type ethernet-vlan
+</#list>
+
+
+
+
+
+
+
+<#if applyqos>
+#### QoS feature
+
+# firewall: primary path policer
+edit firewall policer ${policer.name}
+set if-exceeding bandwidth-limit ${policer.bandwidth_limit?string.computer}
+set if-exceeding burst-size-limit ${policer.burst_size_limit?string.computer}
+
+<#if softpolice>
+set then loss-priority high
+<#else>
+set then discard
+</#if>
+top
+
+# add the policer to the filter
+edit firewall family any filter ${filters.primary} term oscars then
+set policer ${policer.name}
+top
+</#if>
+
+
+
+
+
+<#if protect>
+#### Loose Path Protection feature
+
+# firewall: protect path filter
+top
+edit firewall family any filter ${filters.protect} term oscars then
+set count oscars
+set loss-priority high
+set forwarding-class best-effort-vc
+set accept
+
+# protect LSPs
+<#list lsps as lsp>
+top
+edit protocols mpls label-switched-path ${lsp.protect}
+set to ${lsp.to}
+set metric 65100
+set no-cspf
+set priority 5 5
+set policing filter ${filters.protect}
+</#list>
+
+<#list lsps as lsp>
+top
+edit policy-options policy-statement ${policy} term oscars
+set then install-nexthop lsp ${lsp.protect}
+</#list>
+
+
+<#if has_two_vpls_ids>
+# two VPLS ids for ALU interop
+top
+edit routing-instances ${vpls.name} protocols vpls mesh-group sdp-${vpls.protect}
+set vpls-id ${vpls.protect}
+</#if>
+
+</#if>
+
+
+
+
+# end if lsps??
+</#if>
+
+
+
+commit and-quit

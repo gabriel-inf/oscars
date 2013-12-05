@@ -1,0 +1,13 @@
+exit all
+
+
+<#assign softpolice = ingqos.soft >
+<#if softpolice>
+configure qos sap-ingress ${ingqos.id} queue 2 rate max cir ${ingqos.bandwidth?string.computer}000
+<#else>
+configure qos sap-ingress ${ingqos.id} queue 2 rate ${ingqos.bandwidth?string.computer}000 cir ${ingqos.bandwidth?string.computer}000
+</#if>
+
+
+
+exit all

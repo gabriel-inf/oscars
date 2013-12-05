@@ -1,0 +1,52 @@
+<#assign applyqos = policer.applyqos >
+<#assign protect = lsp.protect >
+
+
+configure private
+
+# interfaces
+<#list ifces as ifce>
+delete interfaces ${ifce.name} unit ${ifce.vlan}
+</#list>
+delete firewall family vpls filter ${filters.stats}
+delete routing-instances ${vpls.name}
+
+
+
+
+
+<#if lsps??>
+delete interfaces lo0 family inet address ${lsp.loopback}
+delete firewall family any filter ${filters.primary}
+
+
+<#list lsps as lsp>
+delete protocols mpls label-switched-path ${lsp.name}
+</#list>
+
+<#list paths as path>
+delete protocols mpls path ${path.name}
+</#list>
+
+delete policy-options community ${community.name}
+delete policy-options policy-statement ${policy}
+delete routing-options forwarding-table export ${policy}
+
+
+<#if applyqos>
+delete firewall policer ${policer.name}
+</#if>
+
+<#if protect>
+delete firewall family any filter ${filters.protect}
+<#list lsps as lsp>
+delete protocols mpls label-switched-path ${lsp.protect}
+</#list>
+
+
+</#if>
+
+</#if>
+
+
+commit and-quit

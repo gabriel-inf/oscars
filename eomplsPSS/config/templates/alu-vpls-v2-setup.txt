@@ -1,0 +1,204 @@
+<#assign softpolice = ingqos.soft >
+<#assign applyqos = ingqos.applyqos >
+<#assign protect = lsp.has_protect >
+
+
+<#if applyqos>
+exit all
+configure qos sap-ingress ${ingqos.id} create
+exit all
+configure qos sap-ingress ${ingqos.id} description "${ingqos.description}"
+exit all
+configure qos sap-ingress ${ingqos.id} queue 1 create
+exit all
+configure qos sap-ingress ${ingqos.id} queue 2 create
+exit all
+configure qos sap-ingress ${ingqos.id} queue 11 multipoint create
+exit all
+configure qos sap-ingress ${ingqos.id} fc "ef" create
+exit all
+configure qos sap-ingress ${ingqos.id} fc "ef" queue 2
+exit all
+configure qos sap-ingress ${ingqos.id} default-fc ef
+exit all
+
+
+configure qos sap-egress ${egrqos.id} create
+exit all
+configure qos sap-egress ${egrqos.id} description "${egrqos.description}"
+exit all
+configure qos sap-egress ${egrqos.id} queue 1 create
+exit all
+configure qos sap-egress ${egrqos.id} queue 2 create
+exit all
+configure qos sap-egress ${egrqos.id} queue 2 percent-rate 100.00 cir 100.00 port-limit
+exit all
+configure qos sap-egress ${egrqos.id} fc "ef" create
+exit all
+configure qos sap-egress ${egrqos.id} fc "ef" queue 2
+exit all
+
+
+
+<#if softpolice>
+configure qos sap-ingress ${ingqos.id} queue 2 rate max cir ${ingqos.bandwidth?string.computer}000
+<#else>
+configure qos sap-ingress ${ingqos.id} queue 2 rate ${ingqos.bandwidth?string.computer}000 cir ${ingqos.bandwidth?string.computer}000
+</#if>
+</#if>
+
+
+
+
+
+exit all
+
+
+
+<#if lsps??>
+configure router interface "${loopback.name}"
+address ${loopback.address}
+loopback
+no shutdown
+</#if>
+
+
+
+exit all
+
+<#if paths??>
+# mpls path
+<#list paths as path>
+configure router mpls path "${path.name}" shutdown
+<#list path.hops as hop>
+configure router mpls path "${path.name}" hop ${hop.order} ${hop.address} strict
+</#list>
+configure router mpls path "${path.name}" no shutdown
+</#list>
+</#if>
+
+
+
+<#if lsps??>
+# mpls LSP
+<#list lsps as lsp>
+configure router mpls lsp "${lsp.primary}" shutdown
+configure router mpls lsp "${lsp.primary}" to ${lsp.to}
+configure router mpls lsp "${lsp.primary}" primary "${lsp.path}" priority 5 5
+configure router mpls lsp "${lsp.primary}" metric 65000
+configure router mpls lsp "${lsp.primary}" no shutdown
+</#list>
+</#if>
+
+
+
+
+<#if protect>
+configure router mpls path "loose" no shutdown
+
+<#list lsps as lsp>
+configure router mpls lsp "${lsp.protect}" shutdown
+configure router mpls lsp "${lsp.protect}" to ${lsp.to}
+configure router mpls lsp "${lsp.protect}" metric 65100
+configure router mpls lsp "${lsp.protect}" primary "loose" priority 4 4
+configure router mpls lsp "${lsp.protect}" no shutdown
+</#list>
+</#if>
+
+
+
+<#if sdps??>
+<#list sdps as sdp>
+# service distribution point - forwards packets to the MPLS tunnel
+configure service sdp ${sdp.id} mpls create
+exit all
+configure service sdp ${sdp.id} shutdown
+configure service sdp ${sdp.id} description "${sdp.description}"
+configure service sdp ${sdp.id} far-end ${sdp.far_end}
+configure service sdp ${sdp.id} lsp "${sdp.primary_lsp_name}"
+configure service sdp ${sdp.id} keep-alive shutdown
+configure service sdp ${sdp.id} no shutdown
+exit all
+</#list>
+</#if>
+
+
+
+<#if protect>
+
+<#list sdps as sdp>
+configure service sdp ${sdp.protectid} mpls create
+exit all
+configure service sdp ${sdp.protectid} shutdown
+configure service sdp ${sdp.protectid} description "${sdp.protect_description}"
+configure service sdp ${sdp.protectid} far-end ${sdp.far_end}
+configure service sdp ${sdp.protectid} lsp "${sdp.protect_lsp_name}"
+configure service sdp ${sdp.protectid} keep-alive shutdown
+configure service sdp ${sdp.protectid} no shutdown
+exit all
+
+
+</#list>
+</#if>
+
+
+
+# vpls service
+configure service vpls ${vpls.id} customer 1 create
+exit all
+configure service vpls ${vpls.id} shutdown
+configure service vpls ${vpls.id} description "${vpls.description}"
+configure service vpls ${vpls.id} service-name "${vpls.name}"
+configure service vpls ${vpls.id} service-mtu 9114
+configure service vpls ${vpls.id} fdb-table-size 4096
+configure service vpls ${vpls.id} stp shutdown
+
+configure service vpls ${vpls.id} endpoint ${vpls.endpoint} create
+configure service vpls ${vpls.id} endpoint ${vpls.endpoint} restrict-protected-src discard-frame
+configure service vpls ${vpls.id} endpoint ${vpls.endpoint} no suppress-standby-signaling
+exit all
+
+
+# saps
+<#list ifces as ifce>
+configure service vpls ${vpls.id} sap ${ifce.name}:${ifce.vlan} create
+exit all
+configure service vpls ${vpls.id} sap ${ifce.name}:${ifce.vlan} auto-learn-mac-protect
+configure service vpls ${vpls.id} sap ${ifce.name}:${ifce.vlan} restrict-protected-src discard-frame
+configure service vpls ${vpls.id} sap ${ifce.name}:${ifce.vlan} description "${ifce.description}"
+<#if applyqos>
+configure service vpls ${vpls.id} sap ${ifce.name}:${ifce.vlan} ingress qos ${ingqos.id}
+configure service vpls ${vpls.id} sap ${ifce.name}:${ifce.vlan} egress qos ${egrqos.id}
+</#if>
+configure service vpls ${vpls.id} sap ${ifce.name}:${ifce.vlan} no shutdown
+</#list>
+
+
+<#if sdps??>
+# vpls sdps
+<#list sdps as sdp>
+configure service vpls ${vpls.id} spoke-sdp ${sdp.id}:${vpls.id} vc-type vlan endpoint ${vpls.endpoint} create
+exit all
+configure service vpls ${vpls.id} spoke-sdp ${sdp.id}:${vpls.id} restrict-protected-src discard-frame
+configure service vpls ${vpls.id} spoke-sdp ${sdp.id}:${vpls.id} precedence primary
+configure service vpls ${vpls.id} spoke-sdp ${sdp.id}:${vpls.id} no shutdown
+exit all
+</#list>
+</#if>
+
+
+<#if protect>
+
+<#list sdps as sdp>
+configure service vpls ${vpls.id} spoke-sdp ${sdp.protectid}:${vpls.protectid} vc-type vlan endpoint ${vpls.endpoint} create
+exit all
+configure service vpls ${vpls.id} spoke-sdp ${sdp.protectid}:${vpls.protectid} egress qos 3 port-redirect-group "best-effort-vc" instance 1
+configure service vpls ${vpls.id} spoke-sdp ${sdp.protectid}:${vpls.protectid} restrict-protected-src discard-frame
+configure service vpls ${vpls.id} spoke-sdp ${sdp.protectid}:${vpls.protectid} no shutdown
+exit all
+</#list>
+
+</#if>
+
+
+configure service vpls ${vpls.id} no shutdown
