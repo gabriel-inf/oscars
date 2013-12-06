@@ -73,7 +73,7 @@
     <dependency>
         <groupId>net.sf.jopt-simple</groupId>
         <artifactId>jopt-simple</artifactId>
-        <version>3.0.1</version>
+        <version>${jopt.simple.version}</version>
     </dependency>
         
     <!-- c3p0 -->

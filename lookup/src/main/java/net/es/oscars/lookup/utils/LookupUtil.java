@@ -166,7 +166,7 @@ public class LookupUtil {
                     parser.printHelpOn(System.out);
                 }catch(Exception e){}
             }
-            List<String> nonOpts = opts.nonOptionArguments();
+            List<?> nonOpts = opts.nonOptionArguments();
             if(nonOpts.size() > 0 && (opts.has("r") || opts.has("l"))){
                 System.out.println("Do not pass bare argument if specifying -r or -l.");
                 System.exit(1);

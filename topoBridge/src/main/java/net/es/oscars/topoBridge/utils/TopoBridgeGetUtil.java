@@ -90,7 +90,7 @@ public class TopoBridgeGetUtil {
                     parser.printHelpOn(System.out);
                 }catch(Exception e){}
             }
-            List<String> nonOpts = opts.nonOptionArguments();
+            List<?> nonOpts = opts.nonOptionArguments();
             if(nonOpts.size() < 1){
                 System.out.println("Please specify a domain.");
                 System.exit(1);
@@ -101,7 +101,7 @@ public class TopoBridgeGetUtil {
             }
             
             TopoBridgeGetUtil util = new TopoBridgeGetUtil(url);
-            util.getTopology(nonOpts.get(0));
+            util.getTopology(nonOpts.get(0).toString());
         }catch(OptionException e){
             System.out.println(e.getMessage());
             System.out.println(helpMsg);
