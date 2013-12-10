@@ -1,0 +1,8 @@
+---
+
+-   id:     "sdn"
+    impl:   "net.es.oscars.pss.sdn.SdnService"
+
+
+-   id:     "eompls"
+    impl:   "net.es.oscars.pss.eompls.EoMPLSService"

@@ -1,0 +1,42 @@
+---
+soap:
+    publishTo:  'https://localhost:9050/OSCARS/PSSService'
+
+circuitService:
+    id:                 'sdn'
+    logRequest:         true
+    logResponse:        true
+    params:
+        controller: "http://student6.es.net:8080"
+
+definitions:
+    models:             'defs-models.yaml'
+    services:           'defs-services.yaml'
+
+# generic impl / params config from here on
+verify:
+    impl:               'net.es.oscars.pss.stub.StubVerifier'
+
+notify:
+    impl:               'net.es.oscars.pss.notify.CoordNotifier'
+    params: 
+        coordUrl:       'https://localhost:9003/OSCARS/Coord'
+
+connectorDirectory:
+    impl:               'net.es.oscars.pss.stub.StubConnectorDirectory'
+
+deviceConnectorMap:
+    impl:               'net.es.oscars.pss.stub.StubDeviceConnectorMap'
+
+deviceModelMap:
+    impl:               'net.es.oscars.pss.stub.StubDeviceModelMap'
+
+deviceResolve:
+    impl:               'net.es.oscars.pss.stub.StubDeviceAddressResolver'
+
+workflow:
+    impl:               'net.es.oscars.pss.workflow.FifoWF'
+
+validate:
+    impl:               'net.es.oscars.pss.stub.StubValidator'
+

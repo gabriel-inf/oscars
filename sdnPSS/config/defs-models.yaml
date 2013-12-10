@@ -1,0 +1,6 @@
+---
+- id: "sdn"
+  services: 
+    - id:               sdn
+      configGenerator: "net.es.oscars.pss.stub.StubConfigGen"
+            

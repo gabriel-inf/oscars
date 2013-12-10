@@ -1,0 +1,4 @@
+---
+
+-   id:     "sdn"
+    impl:   "net.es.oscars.pss.stub.StubCircuitService"

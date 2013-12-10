@@ -25,6 +25,11 @@
             <layout>default</layout>
             <url>file:///${basedir}/../common-libs/repo</url>
         </repository>
+        <repository>
+            <id>Restlet</id>
+            <name>Maven Restlet Repository</name>
+            <url>http://maven.restlet.org</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -77,7 +82,31 @@
             <artifactId>xercesImpl</artifactId>
             <version>2.9.1</version>
         </dependency>
-
+        
+        <!-- Jackson fasterxml/JSON dependencies -->
+        <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>2.1.4</version>
+        </dependency>
+        <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>2.1.4</version>
+        </dependency>
+        <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>2.1.4</version>
+        </dependency>
+        
+        <!-- Jersey dependencies (REST) -->
+        <dependency>
+                <groupId>org.restlet.jse</groupId>
+                <artifactId>org.restlet</artifactId>
+                <version>2.0.0</version>
+        </dependency>
+                
         <!-- command-line parsing -->
         <dependency>
             <groupId>net.sf.jopt-simple</groupId>
