@@ -177,17 +177,17 @@ public class CreateReservation extends HttpServlet {
         if (strParam != null && !strParam.trim().equals("")) {
             description = strParam.trim();
         }
-        
+
         //optional constraints
-        for(Map<String,String> optConstraint : ServletCore.getInstance().getOptConstraints()){
-        	if(request.getParameter(optConstraint.get("name")) != null){
-        		OptionalConstraintType optCon = new OptionalConstraintType();
-        		optCon.setCategory(optConstraint.get("name"));
-        		OptionalConstraintValue optConVal = new OptionalConstraintValue();
-        		optConVal.setStringValue(request.getParameter(optConstraint.get("name")).trim());
-				optCon.setValue(optConVal);
-				resv.getOptionalConstraint().add(optCon);
-        	}
+        for(Map<String,Object> optConstraint : ServletCore.getInstance().getOptConstraints()){
+            if(request.getParameter(optConstraint.get("name")+"") != null){
+                OptionalConstraintType optCon = new OptionalConstraintType();
+                optCon.setCategory(optConstraint.get("name")+"");
+                OptionalConstraintValue optConVal = new OptionalConstraintValue();
+                optConVal.setStringValue(request.getParameter(optConstraint.get("name")+"").trim());
+                optCon.setValue(optConVal);
+                resv.getOptionalConstraint().add(optCon);
+            }
         }
         
 

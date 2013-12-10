@@ -16,3 +16,27 @@ wbui:
 #          name: "min_latency"
 #        - label: "Maximum Latency"
 #          name: "max_latency"
+#        - label: "Policing"
+#          name: "policing"
+#          choices:
+#               - label: "Soft"
+#                 value: "soft"
+#                 default: 1
+#               - label: "Hard"
+#                 value: "hard"
+#        - label: "Protection"
+#          name: "protection"
+#          choices:
+#               - label: "None"
+#                 value: "none"
+#                 default: 1
+#               - label: "Loose Secondary Path"
+#                 value: "loose-secondary-path"
+#        - label: "Apply QOS"
+#          name: "apply-qos"
+#          choices:
+#               - label: "Yes"
+#                 value: "true"
+#                 default: 1
+#               - label: "No"
+#                 value: "false"

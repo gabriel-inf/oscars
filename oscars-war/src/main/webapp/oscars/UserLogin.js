@@ -162,14 +162,50 @@ oscars.UserLogin.handleReply = function (responseObject, ioArgs) {
                 //   responseObject.optionalConstraints[i].name +
                 //    "\" id=\"" + responseObject.optionalConstraints[i].name + 
                 //    "\" dojoType=\"dijit.form.ValidationTextBox\" />";
-                col2.innerHTML = "<input type=\"text\" name=\"" + 
-                   responseObject.optionalConstraints[i].name +
-                    "\" id=\"" + responseObject.optionalConstraints[i].name + 
-                    "\"/>";
-                new dijit.form.TextBox({
-                    name: responseObject.optionalConstraints[i].name,
-                    value: "" /* no or empty value! */,
-                    }, responseObject.optionalConstraints[i].name);
+                
+                if(responseObject.optionalConstraints[i].choices != null){
+                    console.log("SELECT");
+                    console.log("    name: " + responseObject.optionalConstraints[i].name);
+                    console.log("    choices: ");
+                    col2.innerHTML = "<select name=\"" + 
+                       responseObject.optionalConstraints[i].name +
+                        "\" id=\"" + responseObject.optionalConstraints[i].name + 
+                        "\"/>";
+                     var defaultValue = "";
+                     var choiceObj = {
+                        identifier: "value",
+                        label: "label",
+                        items: responseObject.optionalConstraints[i].choices
+                     };
+                     for(var j=0;j<responseObject.optionalConstraints[i].choices.length;j++){
+                        if(responseObject.optionalConstraints[i].choices[j].default == 1){
+                            defaultValue = responseObject.optionalConstraints[i].choices[j].value;
+                        }
+                     }
+                     console.log("1");
+                     var choiceStore = new dojo.data.ItemFileReadStore({
+                        data: choiceObj
+                     });
+                     console.log("2");
+                     new dijit.form.FilteringSelect({
+                        name: responseObject.optionalConstraints[i].name,
+                        store: choiceStore,
+                        value: defaultValue,
+                        searchAttr: "label",
+                        }, responseObject.optionalConstraints[i].name);
+                     console.log("3");
+                }else{
+                    console.log("TEXT");
+                    console.log("    name: " + responseObject.optionalConstraints[i].name);
+                    col2.innerHTML = "<input type=\"text\" name=\"" + 
+                       responseObject.optionalConstraints[i].name +
+                        "\" id=\"" + responseObject.optionalConstraints[i].name + 
+                        "\"/>";
+                    new dijit.form.TextBox({
+                        name: responseObject.optionalConstraints[i].name,
+                        value: "" /* no or empty value! */,
+                        }, responseObject.optionalConstraints[i].name);
+                }
             }
         });
         reservationCreatePane.setHref("forms/reservationCreate.html");

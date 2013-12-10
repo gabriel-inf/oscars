@@ -45,7 +45,7 @@ public class ServletCore {
     private HashMap<String,Object> authNPolicyMap   = null;
     private HashMap<String,Object> authZMap         = null;
     private HashMap<String,Object> authZPolicyMap   = null;
-    private List<Map<String,String>> optConstraints   = null;
+    private List<Map<String,Object>> optConstraints   = null;
 
     private Map config              = null;
     private URL authNHost           = null;
@@ -151,11 +151,11 @@ public class ServletCore {
         return this.guestLogin;
     }
 
-    public List<Map<String, String>> getOptConstraints() {
-		return optConstraints;
-	}
+    public List<Map<String, Object>> getOptConstraints() {
+        return optConstraints;
+    }
 
-	public String getSecureCookie() {
+    public String getSecureCookie() {
         return this.secureCookie;
     }
 
@@ -250,13 +250,13 @@ public class ServletCore {
         guestLogin = (String) wbui.get("guestLogin");
         secureCookie = (String) wbui.get("secureCookie");
         assert secureCookie != null : "No secureCookie setting in configuration";
-        this.optConstraints = new ArrayList<Map<String,String>>();
+        this.optConstraints = new ArrayList<Map<String,Object>>();
         if(wbui.containsKey("optionalConstraints") && wbui.get("optionalConstraints") != null){
-        	for(Map<String,String> optConstraint : (List<Map<String,String>>) wbui.get("optionalConstraints")){
-        		assert optConstraint.get("label") != null : "No label for optional constraint";	
-        		assert optConstraint.get("name") != null : "No name for optional constraint";	
-        		this.optConstraints.add(optConstraint);
-        	}
+            for(Map<String,Object> optConstraint : (List<Map<String,Object>>) wbui.get("optionalConstraints")){
+                assert optConstraint.get("label") != null : "No label for optional constraint";	
+                assert optConstraint.get("name") != null : "No name for optional constraint";	
+                this.optConstraints.add(optConstraint);
+             }
         }
     }
 
