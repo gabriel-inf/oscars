@@ -146,9 +146,7 @@ public class AuthZManager {
                     this.log.debug(netLogger.getMsg(event, attribute.getValue() + ": PERMITTED_DOMAINS are " +
                                     authCond.getConditionValue()));
                     negConditions.getAuthCondition().add(authCond);
-                    if (!allUsers){
-                        self = true;
-                    }
+                    allUsers = true;
                 } else if (constraintName.equals(AuthZConstants.ALL_USERS)) {
                     // leave this test in for historic reasons, the value should always be true
                     if (auth.getConstraintValue().equals("true")) {

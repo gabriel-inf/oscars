@@ -19,6 +19,7 @@ import net.es.oscars.utils.sharedConstants.AuthZConstants;
 import net.es.oscars.utils.sharedConstants.NotifyRequestTypes;
 import net.es.oscars.utils.sharedConstants.ErrorCodes;
 import net.es.oscars.utils.soap.OSCARSServiceException;
+import net.es.oscars.utils.topology.NMWGParserUtil;
 import net.es.oscars.logging.ModuleName;
 import net.es.oscars.logging.ErrSev;
 import net.es.oscars.logging.OSCARSNetLogger;
@@ -722,6 +723,7 @@ public class ResourceManager {
         }
         try {
             ReservationDAO dao = new ReservationDAO(this.dbname);
+            log.debug("loginIds=" + RMUtils.join(loginIds, ",", "'", "'"));
             reservations = dao.list(numRequested, resOffset, loginIds, statuses,
                     description, vlanTags, startTime, endTime);
             if (linkIds != null && !linkIds.isEmpty()) {
@@ -826,29 +828,29 @@ public class ResourceManager {
         Path reqPath = this.getPath(res);
         List<PathElem> pathElems = reqPath.getPathElems();
         String srcURN = pathElems.get(0).getUrn();
-        String src = parseURN(srcURN,"domain");
         String destURN = pathElems.get(pathElems.size()-1).getUrn();
-        String dest = parseURN(destURN,"domain");
+        String src ="";
+        String dest = "";
+        try {
+            src = NMWGParserUtil.normalizeURN(NMWGParserUtil.getURN(srcURN, NMWGParserUtil.DOMAIN_TYPE));
+            dest = NMWGParserUtil.normalizeURN(NMWGParserUtil.getURN(destURN, NMWGParserUtil.DOMAIN_TYPE));
+        } catch (OSCARSServiceException e) {
+            log.debug(e.getMessage());
+            return false;
+        }
         if (dest == null || src == null ) {
             log.debug( netLogger.error(event,ErrSev.MINOR,
                         "incorrect path in database for reservation res.getGlobalReservationId()"));
         }
         for (String dom : domains) {
-            if (dom.equals(src) ||
-                    dom.equals(dest)) {
+            String normalizedDom = NMWGParserUtil.normalizeURN(dom);
+            log.debug("gri=" + res.getGlobalReservationId() + ", " + "normalizedDom=" + normalizedDom + ", " + "dom=" + dom);
+            if (normalizedDom.equals(src) ||
+                    normalizedDom.equals(dest)) {
                 return true;
             }
         }
         return false;
-    }
-    private String parseURN(String urn, String value){
-        String parts[] = urn.split(":");
-        for (int i= 0; i < parts.length; i++){
-            if (parts[i].startsWith( value + "=")) {
-                return parts[i].substring(value.length() +1);
-            }
-        }
-        return null;
     }
 
     
