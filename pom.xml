@@ -8,6 +8,10 @@
     <properties>
        <oscars.version>0.0.1-SNAPSHOT</oscars.version>
 
+       <commons.collections.version>3.2</commons.collections.version>
+       <commons.configuration.version>1.6</commons.configuration.version>
+       <commons.httpclient.version>3.1</commons.httpclient.version>
+       <commons.lang.version>2.6</commons.lang.version>
        <cxf.version>2.2.5</cxf.version>
        <java.version>1.5</java.version>
        <jopt.simple.version>4.5</jopt.simple.version>

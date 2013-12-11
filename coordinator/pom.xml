@@ -106,14 +106,14 @@
          <dependency>
             <groupId>commons-collections</groupId>
             <artifactId>commons-collections</artifactId>
-            <version>3.2</version>
+            <version>${commons.collections.version}</version>
             <scope>runtime</scope>
         </dependency>
 
         <dependency>
             <groupId>commons-configuration</groupId>
             <artifactId>commons-configuration</artifactId>
-            <version>1.6</version>
+            <version>${commons.configuration.version}</version>
         </dependency>
 
         <dependency>

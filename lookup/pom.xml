@@ -117,14 +117,14 @@
         <dependency>
             <groupId>commons-collections</groupId>
             <artifactId>commons-collections</artifactId>
-            <version>3.2</version>
+            <version>${commons.collections.version}</version>
             <scope>runtime</scope>
         </dependency>
 
         <dependency>
             <groupId>commons-httpclient</groupId>
             <artifactId>commons-httpclient</artifactId>
-            <version>3.1</version>
+            <version>${commons.httpclient.version}</version>
         </dependency>
 
 
