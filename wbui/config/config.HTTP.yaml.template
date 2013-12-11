@@ -7,15 +7,40 @@ wbui:
     userName: 'oscars'
     sessionName: 'oscarssess'
     secureCookie: '0'
-# Below is an example of how to add optional constraint fields to WBUI
-# The label is what will appear next to the textbox on the GUI. The name
-# is what will be passed in the SOAP message as the optionConstraint "category" 
-# attribute.
+    
+###############################################################################
+# Below are example of how to add optional constraint fields to WBUI.
+# You can create a list of custom definitions. You can set the 
+# following values for each custom definition:
+#       label: Required. This is the text that will display on the web interface
+#       name: Required. The value set as the "category" in the optionalConstraint. 
+#       type: Optional. Can be "string", "integer", or "float". Defaults to "string". 
+#       minVal: Optional. For integer and float values, the minimum allowed value.
+#       maxVal: Optional. For integer and float values, the maximum allowed value.
+#       required: Optional. "1" or "0". Indicates whether field is required. Defaults to 0.
+#       choices: Optional. A list of acceptable values. Setting this makes a pull-down menu 
+#            on web interface instead of text field. It has the following fields:
+#                label: Required. The text to display in the menu
+#                value: Required. The value to assign to the optional constraint
+#                default: Optional. "1" or "0". Indicates whether his is the default selected option.
+###############################################################################
 #    optionalConstraints:
-#        - label: "Minimum Latency"
+#        - label: "Custom Tag"
+#          name: "custom_tag"
+#        - label: "Packet Size (bytes)"
+#          name: "packet_size"
+#          type: "integer"
+#          minVal: 1
+#          maxVal: 9000
+#          required: 1
+#        - label: "Latency (ms)"
 #          name: "min_latency"
-#        - label: "Maximum Latency"
-#          name: "max_latency"
+#          type: "float"
+#        - label: "Loss Percentage"
+#          name: "loss_percentage"
+#          type: "float"
+#          minVal: 0
+#          maxVal: 1
 #        - label: "Policing"
 #          name: "policing"
 #          choices:

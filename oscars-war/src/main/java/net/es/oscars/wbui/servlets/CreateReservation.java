@@ -184,7 +184,9 @@ public class CreateReservation extends HttpServlet {
                 OptionalConstraintType optCon = new OptionalConstraintType();
                 optCon.setCategory(optConstraint.get("name")+"");
                 OptionalConstraintValue optConVal = new OptionalConstraintValue();
-                optConVal.setStringValue(request.getParameter(optConstraint.get("name")+"").trim());
+                String inputVal = request.getParameter(optConstraint.get("name")+"").trim();
+                this.validateOptionalConstraint(inputVal, optConstraint);
+                optConVal.setStringValue(inputVal);
                 optCon.setValue(optConVal);
                 resv.getOptionalConstraint().add(optCon);
             }
@@ -205,6 +207,92 @@ public class CreateReservation extends HttpServlet {
         this.log.debug("toReservation:end");
         
         return resv;
+    }
+
+    private void validateOptionalConstraint(String value,
+            Map<String, Object> optConstraintDef) throws OSCARSServiceException{
+        
+        //check if null
+        if(value == null || "".equals(value)){
+            if(optConstraintDef.containsKey("required") && "1".equals(optConstraintDef.get("required")+"")){
+                throw new OSCARSServiceException("Missing required value " + optConstraintDef.get("label"));
+            }else{
+                return;
+            }
+        }
+        
+        //check type
+        String type =  "string";
+        if(optConstraintDef.containsKey("type") && optConstraintDef.get("type") != null){
+            type = optConstraintDef.get("type")+"";
+        }
+        if(type.equals("integer")){
+            try{
+                int intValue = Integer.parseInt(value);
+                if(optConstraintDef.containsKey("minVal") && optConstraintDef.get("minVal") != null){
+                    int minValue = Integer.parseInt(optConstraintDef.get("minVal")+"");
+                    if(intValue < minValue){
+                        throw new OSCARSServiceException("Value of " + 
+                                optConstraintDef.get("label") + "is set to " +
+                                intValue + " which is below minimum value " + minValue);
+                    }
+                }
+                if(optConstraintDef.containsKey("maxVal") && optConstraintDef.get("maxVal") != null){
+                    int maxValue = Integer.parseInt(optConstraintDef.get("maxVal")+"");
+                    if(intValue > maxValue){
+                        throw new OSCARSServiceException("Value of " + 
+                                optConstraintDef.get("label") + "is set to " +
+                                intValue + " which is above maximum value " + maxValue);
+                    }
+                }
+            }catch(NumberFormatException e){
+                e.printStackTrace();
+                throw new OSCARSServiceException("Value of " + 
+                        optConstraintDef.get("label") + " must be an integer");
+            }
+        }else if(type.equals("float")){
+            try{
+                double dblValue = Double.parseDouble(value);
+                if(optConstraintDef.containsKey("minVal") && optConstraintDef.get("minVal") != null){
+                    double minValue = Double.parseDouble(optConstraintDef.get("minVal")+"");
+                    if(dblValue < minValue){
+                        throw new OSCARSServiceException("Value of " + 
+                                optConstraintDef.get("label") + "is set to " +
+                                dblValue + " which is below minimum value " + minValue);
+                    }
+                }
+                if(optConstraintDef.containsKey("maxVal") && optConstraintDef.get("maxVal") != null){
+                    double maxValue = Double.parseDouble(optConstraintDef.get("maxVal")+"");
+                    if(dblValue > maxValue){
+                        throw new OSCARSServiceException("Value of " + 
+                                optConstraintDef.get("label") + "is set to " +
+                                dblValue + " which is above maximum value " + maxValue);
+                    }
+                }
+            }catch(NumberFormatException e){
+                e.printStackTrace();
+                throw new OSCARSServiceException("Value of " + 
+                        optConstraintDef.get("label") + " must be a floating-point number");
+            }
+        }
+        
+        //check against choices
+        if(optConstraintDef.containsKey("choices") && optConstraintDef.get("choices") != null){
+            boolean foundMatch = false;
+            for(HashMap<String, Object> choice : (List<HashMap<String, Object>>) optConstraintDef.get("choices")){
+                if(!choice.containsKey("value") || choice.get("value") == null){
+                    continue;
+                }
+                String stringVal = choice.get("value")+"";
+                if(stringVal.equals(value+"")){
+                    foundMatch = true;
+                    break;
+                }
+            }
+            if(!foundMatch){
+                throw new OSCARSServiceException("Invalid value for " + optConstraintDef.get("label"));
+            }
+        }
     }
 
     /**
