@@ -383,13 +383,23 @@ public class ResourceManager {
             throw new OSCARSServiceException( ErrorCodes.RESV_DATABASE_ERROR, rmEx.getMessage(), ErrorReport.SYSTEM);
         }
         res.setConstraintMap(conMap);
-
-        List <OptionalConstraintType> oclist = resDetails.getOptionalConstraint();
-        if (oclist != null && !oclist.isEmpty()) {
-            for (OptionalConstraintType oc: oclist) {
-                OptConstraint optionalCons = WSDLTypeConverter.OptionalConstraintType2OptConstraint(oc);
-             	//optionalCons.setReservationId(Integer.parseInt(resDetails.getGlobalReservationId()));
-                 res.addOptConstraint(optionalCons);
+        
+        //handle optional constraints
+        if(res.getOptConstraintList() != null){
+            HashMap<String,Boolean> optConstraintMap = new HashMap<String,Boolean>();
+            for(OptConstraint existingOptConstraint : res.getOptConstraintList()){
+                optConstraintMap.put(existingOptConstraint.getKeyName(), true);
+            }
+            List <OptionalConstraintType> oclist = resDetails.getOptionalConstraint();
+            if (oclist != null && !oclist.isEmpty()) {
+                for (OptionalConstraintType oc: oclist) {
+                    if(oc.getCategory() == null){
+                        continue;
+                    }
+                    if(!optConstraintMap.containsKey(oc.getCategory())){
+                        res.addOptConstraint(WSDLTypeConverter.OptionalConstraintType2OptConstraint(oc));
+                    }
+                }
             }
         }
         this.log.debug(netLogger.end(event));
