@@ -164,9 +164,6 @@ oscars.UserLogin.handleReply = function (responseObject, ioArgs) {
                 //    "\" dojoType=\"dijit.form.ValidationTextBox\" />";
                 
                 if(responseObject.optionalConstraints[i].choices != null){
-                    console.log("SELECT");
-                    console.log("    name: " + responseObject.optionalConstraints[i].name);
-                    console.log("    choices: ");
                     col2.innerHTML = "<select name=\"" + 
                        responseObject.optionalConstraints[i].name +
                         "\" id=\"" + responseObject.optionalConstraints[i].name + 
@@ -182,21 +179,16 @@ oscars.UserLogin.handleReply = function (responseObject, ioArgs) {
                             defaultValue = responseObject.optionalConstraints[i].choices[j].value;
                         }
                      }
-                     console.log("1");
                      var choiceStore = new dojo.data.ItemFileReadStore({
                         data: choiceObj
                      });
-                     console.log("2");
                      new dijit.form.FilteringSelect({
                         name: responseObject.optionalConstraints[i].name,
                         store: choiceStore,
                         value: defaultValue,
                         searchAttr: "label",
                         }, responseObject.optionalConstraints[i].name);
-                     console.log("3");
                 }else{
-                    console.log("TEXT");
-                    console.log("    name: " + responseObject.optionalConstraints[i].name);
                     col2.innerHTML = "<input type=\"text\" name=\"" + 
                        responseObject.optionalConstraints[i].name +
                         "\" id=\"" + responseObject.optionalConstraints[i].name + 

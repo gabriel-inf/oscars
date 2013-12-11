@@ -33,6 +33,8 @@ import net.es.oscars.utils.topology.PathTools;
 import net.es.oscars.api.soap.gen.v06.Layer2Info;
 import net.es.oscars.api.soap.gen.v06.Layer3Info;
 import net.es.oscars.api.soap.gen.v06.MplsInfo;
+import net.es.oscars.api.soap.gen.v06.OptionalConstraintType;
+import net.es.oscars.api.soap.gen.v06.OptionalConstraintValue;
 import net.es.oscars.api.soap.gen.v06.PathInfo;
 import net.es.oscars.api.soap.gen.v06.QueryResContent;
 import net.es.oscars.api.soap.gen.v06.QueryResReply;
@@ -301,7 +303,43 @@ public class QueryReservation extends HttpServlet {
                 outputMap.put("lspClassReplace", mplsInfo.getLspClass());
             }
         }
-
+        
+        //parse optional constraints
+        List<Map<String, Object>> optConstraintDefs = ServletCore.getInstance().getOptConstraints();
+        List<HashMap<String,String>> optConstraintJSON = new ArrayList<HashMap<String,String>>();
+        if(resv.getOptionalConstraint() != null){
+            for(OptionalConstraintType optConstraint: resv.getOptionalConstraint()){
+                String finalKey = optConstraint.getCategory();
+                String finalVal = optConstraint.getValue().getStringValue();
+                //Want to display the label for key (and for choice elements) as opposed to what is passed around the protocol
+                for(Map<String, Object> optConstraintDef : optConstraintDefs){
+                    if(!optConstraintDef.containsKey("name") || optConstraintDef.get("name") == null ||
+                            !optConstraintDef.containsKey("label") ||optConstraintDef.get("label") == null ||
+                            !optConstraint.getCategory().equals(optConstraintDef.get("name"))){
+                        continue;
+                    }
+                    finalKey = optConstraintDef.get("label") + "";
+                    if(optConstraintDef.containsKey("choices") && optConstraintDef.get("choices") != null){
+                        for(HashMap<String, String> choice : (List<HashMap<String,String>>) optConstraintDef.get("choices")){
+                            if(!choice.containsKey("value") || choice.get("value") == null){
+                                continue;
+                            }
+                            if(choice.get("value").equals(finalVal)){
+                                finalVal = choice.get("label");
+                                break;
+                            }
+                        }
+                    }
+                    break;
+                }
+                HashMap<String,String> jsonOptItem = new HashMap<String,String>();
+                jsonOptItem.put("label", finalKey);
+                jsonOptItem.put("value", finalVal);
+                optConstraintJSON.add(jsonOptItem);
+            }
+        }
+        outputMap.put("optionalConstraints", optConstraintJSON);
+        
         QueryReservation.outputPaths(path, outputMap);
 
 

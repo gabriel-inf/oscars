@@ -279,6 +279,30 @@ oscars.ReservationDetails.handleReply = function (responseObject, ioArgs) {
         refreshButton.style.display = "";
         // set parameter values in form from responseObject
         oscars.Form.applyParams(responseObject);
+        
+        //handle optional constraints
+        var resDetailsTable = dojo.byId("resDetailsTable");
+        var optConstraintStartRow = 14; //change to move position in table
+        //clear out old optional constraint fields
+        while(resDetailsTable.rows.length > optConstraintStartRow){
+            if(resDetailsTable.rows[optConstraintStartRow].class == "optionalConstraintRow"){
+                resDetailsTable.deleteRow(optConstraintStartRow);
+            }else{
+                break;
+            }
+        }
+        //insert new optional constraint fields
+        if(responseObject.optionalConstraints != null){
+            for(var optN=0;optN<responseObject.optionalConstraints.length;optN++){
+                var row = resDetailsTable.insertRow(optConstraintStartRow+optN);
+                row.class = "optionalConstraintRow";
+                var col1 = row.insertCell(0);
+                var col2 = row.insertCell(1);
+                col1.innerHTML = responseObject.optionalConstraints[optN].label;
+                col2.innerHTML = responseObject.optionalConstraints[optN].value;
+            }
+        }
+        
         var node2=dojo.byId("bandwidthReplace");
         node2.value=responseObject["bandwidthReplace"];
         var node3 = dojo.byId("descriptionReplace");
