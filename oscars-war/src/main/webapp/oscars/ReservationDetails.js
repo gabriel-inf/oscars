@@ -171,6 +171,16 @@ oscars.ReservationDetails.cloneReservation = function () {
     if (oscars.Utils.isBlank(node.innerHTML)) {
         layer2Reservation = false;
     }
+    
+    dojo.query(".optionalConstraintVal").forEach(function(node, index, arr){
+      if(node.id != null){
+        var targetNode = dijit.byId(node.id.replace(/Replace$/, ""));
+        if(targetNode != null){
+            targetNode.attr("value", node.value);
+        }
+      }
+    });
+    
    /* Removing section below because a) it doesn't work and b) the more common
       case is you almost always don't want it to copy the path. This basically 
       moves the extra clicks from the common case (not specifying path) where 
@@ -300,6 +310,10 @@ oscars.ReservationDetails.handleReply = function (responseObject, ioArgs) {
                 var col2 = row.insertCell(1);
                 col1.innerHTML = responseObject.optionalConstraints[optN].label;
                 col2.innerHTML = responseObject.optionalConstraints[optN].value;
+                col2.innerHTML += "<input type=\"hidden\" " + 
+                    "id=\"" + responseObject.optionalConstraints[optN].name + "Replace\" " +
+                    "name=\"" + responseObject.optionalConstraints[optN].name + "Replace\" " +
+                    "class=\"optionalConstraintVal\" value=\""+responseObject.optionalConstraints[optN].rawValue + "\"/>";
             }
         }
         

@@ -333,6 +333,8 @@ public class QueryReservation extends HttpServlet {
                     break;
                 }
                 HashMap<String,String> jsonOptItem = new HashMap<String,String>();
+                jsonOptItem.put("name", optConstraint.getCategory());
+                jsonOptItem.put("rawValue", optConstraint.getValue().getStringValue());
                 jsonOptItem.put("label", finalKey);
                 jsonOptItem.put("value", finalVal);
                 optConstraintJSON.add(jsonOptItem);
