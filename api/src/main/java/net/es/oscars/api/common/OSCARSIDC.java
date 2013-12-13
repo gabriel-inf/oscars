@@ -182,13 +182,13 @@ public class OSCARSIDC implements Runnable {
             this.authNHost = new URL ((String)soap.get("publishTo"));
             LOG.debug(netLogger.getMsg(event,"authN running on " + this.authNHost.toString()));
             
-            // retrieve coodinator host
+            // retrieve coordinator host
             soap = (HashMap<String,Object>) this.coordMap.get("soap");
             if (soap == null ){
                 throw new ConfigException("soap stanza not found in coordinator.yaml");
             }
             this.coordHost = new URL ((String)soap.get("publishTo"));
-            LOG.debug(netLogger.getMsg(event,"coodinator running on " + this.coordHost.toString()));
+            LOG.debug(netLogger.getMsg(event,"coordinator running on " + this.coordHost.toString()));
             
             // retrieve lookup host
             soap = (HashMap<String,Object>) this.lookupMap.get("soap");

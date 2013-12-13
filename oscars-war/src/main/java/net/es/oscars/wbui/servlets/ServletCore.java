@@ -333,7 +333,7 @@ public class ServletCore {
     }
 
     private void setCoordHost () throws OSCARSServiceException {
-        // Retrieve AuthZPolicy host 
+        // Retrieve coordinator host 
         assert coordMap != null : "No Coordinator config provided in manifest";
         try {
             Map soap = (HashMap<String,Object>) this.coordMap.get("soap");
@@ -341,7 +341,7 @@ public class ServletCore {
                 throw new ConfigException("soap stanza not found in coord.yaml");
             }
             this.coordHost = new URL ((String)soap.get("publishTo"));
-            LOG.debug(netLogger.end("setCoordHost","coodinator running on " + this.coordHost.toString()));
+            LOG.debug(netLogger.end("setCoordHost","coordinator running on " + this.coordHost.toString()));
         } catch (MalformedURLException e) {
             throw new OSCARSServiceException (e);
         }  catch (ConfigException e) {
