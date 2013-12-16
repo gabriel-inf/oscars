@@ -35,6 +35,6 @@ javaFlags="$javaFlags -Dorg.apache.cxf.JDKBugHacks.defaultUsesCaches=true "
 
 
 
-java   -jar $jarfile&
+java $javaFlags  -jar $jarfile&
 echo $! > $pidfile
 
