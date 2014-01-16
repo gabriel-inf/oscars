@@ -68,8 +68,6 @@ oscars.ReservationDetails.postModify = function () {
     oscars.ReservationDetails.setCurrentGri(formNode);
     var bandwidth = dojo.byId("bandwidthReplace").value;
     formNode.modifyBandwidth.value = bandwidth;
-    var description = dojo.byId("descriptionReplace").value;
-    formNode.modifyDescription.value = description;
     dojo.xhrPost({
         url: 'servlet/ModifyReservation',
         handleAs: "json",
@@ -157,7 +155,16 @@ oscars.ReservationDetails.cloneReservation = function () {
     oscars.ReservationCreate.resetFields();
     // copy fields from reservation details form to reservation creation form
     var node = dojo.byId("descriptionReplace");
-    dijit.byId("reservationDescription").setValue(node.value);
+    descrVal = "";
+    if(node.innerHTML){
+        descrVal = node.innerHTML.replace("[PRODUCTION CIRCUIT]", "");
+        if(descrVal != node.innerHTML){
+            dijit.byId("production").setAttribute('checked', true);
+        }else{
+            dijit.byId("production").setAttribute('checked', false);
+        }
+    }
+    dijit.byId("reservationDescription").setValue(descrVal);
     node = dojo.byId("bandwidthReplace");
     dijit.byId("bandwidth").setValue(node.value);
     node = dojo.byId("sourceReplace");

@@ -24,7 +24,6 @@
 <!-- not currently modifiable; hidden preferable to fields that look to
      be modifiable if the user had the proper authorization -->
 <input type="hidden" name="modifyBandwidth" id="modifyBandwidth" />
-<input type="hidden" name="modifyDescription" id="modifyDescription" />
 <input type="hidden" name="forcedStatus" id="forcedStatus" />
 <table>
   <tbody>
@@ -106,9 +105,7 @@
   <tr><td>Status</td><td colspan="2" id="statusReplace" /></tr>
   <tr><td>User</td><td colspan="2" id="userReplace" /></tr>
   <tr><td>Description</td>
-      <td colspan="2">
-          <input dojoType="dijit.form.TextBox" name="descriptionReplace"
-                id="descriptionReplace" style="width: 28em"/>
+      <td colspan="2" id="descriptionReplace" ></td>
   </tr>
   <tr>
     <td>Start date</td>
