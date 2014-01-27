@@ -318,7 +318,7 @@ public class DijkstraPCE {
                          * be a domain thus multiple nodes could be valid destinations. 
                          */
                         validDestNodes.put(remoteNode, true);
-                    }if(destTestResult == DEST_NOT_EVAL){
+                    }else if(destTestResult == DEST_NOT_EVAL){
                         /* destination found but the link properties (e.g. VLANs)
                          * invalidate this solution */
                         excludedLinkMap.put(NMWGParserUtil.normalizeURN(link.getId()), true);
