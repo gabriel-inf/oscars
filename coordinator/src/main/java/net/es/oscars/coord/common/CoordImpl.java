@@ -494,6 +494,7 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
             // check that requested modifications are allowed
             String resState = resDetails.getStatus();
             Long curtime = System.currentTimeMillis()/1000L;
+            boolean doDataplaneModify = false;
             if ( (inputUC.getBandwidth() != 0 )&&
                     (inputUC.getBandwidth() != modUC.getBandwidth())) {
                 if ( !Coordinator.getInstance().isAllowActiveModify() && 
@@ -502,6 +503,8 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
                                                     "Cannot change bandwidth of " +
                                                      resState + " reservation",
                                                      ErrorReport.USER);
+                }else if(!resState.equals(StateEngineValues.RESERVED)){
+                    doDataplaneModify = true;
                 }
                 modUC.setBandwidth(inputUC.getBandwidth());
                 modRC.setBandwidth(inputUC.getBandwidth());
@@ -567,6 +570,7 @@ public class CoordImpl implements net.es.oscars.coord.soap.gen.CoordPortType {
                                                                              loginName,
                                                                              authDecision.getConditions(),
                                                                              modifyResvReq);
+            request.setDoDataplaneModify(doDataplaneModify);
              // save original description if no new one is input
             if ( (request.getAttribute(CoordRequest.DESCRIPTION_ATTRIBUTE) == null) ||
                     (request.getAttribute(CoordRequest.DESCRIPTION_ATTRIBUTE).equals(""))) {

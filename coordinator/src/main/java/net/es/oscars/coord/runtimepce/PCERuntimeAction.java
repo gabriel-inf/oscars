@@ -34,6 +34,7 @@ import net.es.oscars.api.soap.gen.v06.ReservedConstraintType;
 import net.es.oscars.api.soap.gen.v06.PathInfo;
 import net.es.oscars.coord.req.CancelRequest;
 import net.es.oscars.coord.req.CoordRequest;
+import net.es.oscars.coord.req.ModifyReservationRequest;
 import net.es.oscars.utils.sharedConstants.NotifyRequestTypes;
 import net.es.oscars.utils.sharedConstants.StateEngineValues;
 import net.es.oscars.utils.config.ContextConfig;
@@ -535,7 +536,11 @@ public class PCERuntimeAction extends CoordAction <PCEData, PCEData> implements 
             if (localRes || firstDomain) {
                 
                 //if reservation is ACTIVE, then contact PSS
-                if(requestType.equals(PCERequestTypes.PCE_MODIFY_COMMIT) && resDetails.getStatus().equals(StateEngineValues.ACTIVE)){
+                boolean doDataplaneModify = false;
+                try{
+                    doDataplaneModify = ((ModifyReservationRequest) this.getCoordRequest()).isDoDataplaneModify();
+                }catch(Exception e){}
+                if(requestType.equals(PCERequestTypes.PCE_MODIFY_COMMIT) && doDataplaneModify){
                     ModifyReqContent pssModifyRequest = new ModifyReqContent();
                     pssModifyRequest.setTransactionId(this.getCoordRequest().getMessageProperties().getGlobalTransactionId());
                     pssModifyRequest.setReservation(resDetails);

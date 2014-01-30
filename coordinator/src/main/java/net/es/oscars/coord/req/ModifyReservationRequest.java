@@ -37,7 +37,9 @@ public class ModifyReservationRequest extends CoordRequest <ModifyResContent,Mod
     private static final Logger     LOG = Logger.getLogger(ModifyReservationRequest.class.getName());
     private OSCARSNetLogger         netLogger = null;
     private boolean                 hasFailed = false; // true when the failed method has been called.
-
+    private boolean                 doDataplaneModify = false;
+    
+    
     public ModifyReservationRequest(String name, 
                                     String gri,
                                     String loginName, 
@@ -156,6 +158,14 @@ public class ModifyReservationRequest extends CoordRequest <ModifyResContent,Mod
             return true;
         }
         return false;
+    }
+
+    public boolean isDoDataplaneModify() {
+        return doDataplaneModify;
+    }
+
+    public void setDoDataplaneModify(boolean doDataplaneModify) {
+        this.doDataplaneModify = doDataplaneModify;
     }
 
     /**
