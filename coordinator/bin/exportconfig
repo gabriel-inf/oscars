@@ -83,15 +83,15 @@ if [ ! -f $DST_DIR_PCE/pce-configuration-http.xml ] ; then
   cp $SRC_DIR/pce-configuration-http.xml $DST_DIR_PCE/pce-configuration-http.xml
 fi
 if [ ! -f $DST_DIR_PCE/pce-configuration-ssl.xml ] ; then
-  cp -n $SRC_DIR/pce-configuration-ssl.xml $DST_DIR_PCE/pce-configuration-ssl.xml
+  cp $SRC_DIR/pce-configuration-ssl.xml $DST_DIR_PCE/pce-configuration-ssl.xml
 fi
 
 if [ ! -f $DST_DIR_PCE/pce-runtime.HTTP.yaml ] ; then
-  cp -n $SRC_DIR/pce-runtime.HTTP.yaml $DST_DIR_PCE/pce-runtime.HTTP.yaml
+  cp $SRC_DIR/pce-runtime.HTTP.yaml $DST_DIR_PCE/pce-runtime.HTTP.yaml
 fi
 
 if [ ! -f $DST_DIR_PCE/pce-runtime.SSL.yaml ] ; then
-  cp -n $SRC_DIR/pce-runtime.SSL.yaml $DST_DIR_PCE/pce-runtime.SSL.yaml
+  cp $SRC_DIR/pce-runtime.SSL.yaml $DST_DIR_PCE/pce-runtime.SSL.yaml
 fi
 
 # CFX-SSL configuration for pceruntime

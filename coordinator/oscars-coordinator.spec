@@ -5,7 +5,7 @@
 %define oscars_home /etc/oscars
 %define log_dir /var/log/oscars
 %define run_dir /var/run/oscars
-%define relnum 6 
+%define relnum 7 
 
 Name:           oscars-%{package_name}
 Version:        0.6.1
@@ -105,8 +105,8 @@ chown oscars:oscars %{oscars_home}/modules/oscars-%{package_name}.enabled
 
 %files
 %defattr(-,oscars,oscars,-)
-%config %{oscars_home}/%{service_name}/conf/*
-%config %{oscars_home}/PCEService/conf/*
+%config(noreplace) %{oscars_home}/%{service_name}/conf/*
+%config(noreplace) %{oscars_home}/PCEService/conf/*
 %{install_base}/target/*
 %{install_base}/bin/*
 /etc/init.d/oscars-%{package_name}
