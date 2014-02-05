@@ -1,39 +1,97 @@
-configure service vpls ${vpls.id} shutdown
+<#assign applyqos = ingqos.applyqos >
+<#assign protect = vpls.has_protect >
+
+
+configure service vpls ${vpls.primary_id} shutdown
 
 <#if sdps??>
 <#list sdps as sdp>
-configure service vpls ${vpls.id} mesh-sdp ${sdp.id}:${vpls.id} shutdown
-configure service vpls ${vpls.id} no mesh-sdp ${sdp.id}:${vpls.id}
+configure service vpls ${vpls.primary_id} spoke-sdp ${sdp.primary_id}:${vpls.primary_id} shutdown
+configure service vpls ${vpls.primary_id} no spoke-sdp ${sdp.primary_id}:${vpls.primary_id}
 </#list>
 </#if>
+<#if protect>
+<#list sdps as sdp>
+configure service vpls ${vpls.protect_id} spoke-sdp ${sdp.protect_id}:${vpls.protect_id} shutdown
+configure service vpls ${vpls.protect_id} no spoke-sdp ${sdp.protect_id}:${vpls.protect_id}
+</#list>
+</#if>
+
+
+
+
 
 <#list ifces as ifce>
-configure service vpls ${vpls.id} sap ${ifce.name}:${ifce.vlan} shutdown
-configure service vpls ${vpls.id} no sap ${ifce.name}:${ifce.vlan}
+configure service vpls ${vpls.primary_id} sap ${ifce.name}:${ifce.vlan} shutdown
+configure service vpls ${vpls.primary_id} no sap ${ifce.name}:${ifce.vlan}
 </#list>
-configure service vpls ${vpls.id} shutdown
-configure service no vpls ${vpls.id}
+
+configure service vpls ${vpls.primary_id} ${vpls.endpoint} shutdown
+configure service vpls ${vpls.primary_id} no ${vpls.endpoint}
+configure service vpls ${vpls.primary_id} shutdown
+configure service no vpls ${vpls.primary_id}
+
 
 <#if sdps??>
 <#list sdps as sdp>
-configure service sdp ${sdp.id} shutdown
-configure service no sdp ${sdp.id}
+configure service sdp ${sdp.primary_id} shutdown
+configure service no sdp ${sdp.primary_id}
+exit all
+</#list>
+<#if protect>
+<#list sdps as sdp>
+configure service sdp ${sdp.protect_id} shutdown
+configure service no sdp ${sdp.protect_id}
+exit all
 </#list>
 </#if>
+exit all
+</#if>
+
+
+
 
 <#if lsps??>
 <#list lsps as lsp>
-configure router mpls lsp "${lsp.name}" shutdown
-configure router mpls no lsp "${lsp.name}"
+configure router mpls lsp "${lsp.primary}" shutdown
+configure router mpls no lsp "${lsp.primary}"
+</#list>
+
+<#if protect>
+<#list lsps as lsp>
+configure router mpls lsp "${lsp.protect}" shutdown
+configure router mpls no lsp "${lsp.protect}"
 </#list>
 </#if>
+exit all
+</#if>
+
+
+
+
 
 <#if paths??>
 <#list paths as path>
 configure router mpls path "${path.name}" shutdown
 configure router mpls no path "${path.name}"
 </#list>
+exit all
 </#if>
 
+
+<#if lsps??>
+configure router interface "${vpls.loopback_ifce}" no address ${vpls.loopback_address}
+configure router interface "${vpls.loopback_ifce}" shutdown
+configure router no interface "${vpls.loopback_ifce}"
+exit all
+</#if>
+
+
+<#if applyqos>
 configure qos no sap-ingress ${ingqos.id}
+configure qos no sap-egress ${egrqos.id}
+exit all
+</#if>
+
+
 

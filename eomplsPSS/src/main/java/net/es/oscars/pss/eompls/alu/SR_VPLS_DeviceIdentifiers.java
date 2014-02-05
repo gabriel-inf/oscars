@@ -2,6 +2,7 @@ package net.es.oscars.pss.eompls.alu;
 
 import net.es.oscars.pss.beans.PSSException;
 import net.es.oscars.pss.eompls.dao.SRLUtils;
+import net.es.oscars.pss.eompls.util.VPLS_Identifier;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -77,21 +78,27 @@ public class SR_VPLS_DeviceIdentifiers {
     }
 
 
-    public static SR_VPLS_DeviceIdentifiers reserve(String gri, String deviceId, Integer preferred, Integer sdpNum) throws PSSException {
+    public static SR_VPLS_DeviceIdentifiers reserve(String gri, String deviceId, VPLS_Identifier vplsId, boolean secondarySdpId) throws PSSException {
         SR_VPLS_DeviceIdentifiers srids = new SR_VPLS_DeviceIdentifiers();
-        if (sdpNum <= 0 || sdpNum > 24) {
-            throw  new PSSException("invalid number of sdps ("+sdpNum+") allowed: 1..24");
-        }
+
         String rangeExpr = "6000-6999";
         String qosScope = deviceId + ":qos";
         String sdpScope = deviceId + ":sdp";
-
+        Integer preferred = vplsId.getVplsId();
         Integer qosId  = SRLUtils.getIdentifier(qosScope, gri, preferred, rangeExpr);
+
+
         List<Integer> sdpIds = new ArrayList<Integer>();
-        for (int i = 0; i < sdpNum; i++) {
-            Integer sdpId = SRLUtils.getIdentifier(sdpScope, gri, preferred, rangeExpr);
+        Integer sdpId = SRLUtils.getIdentifier(sdpScope, gri, preferred, rangeExpr);
+        sdpIds.add(sdpId);
+        log.debug("reserved SDP id: gri: "+gri+" dev: "+deviceId+" sdp id "+sdpId);
+
+        if (secondarySdpId) {
+            sdpId = SRLUtils.getIdentifier(sdpScope, gri, preferred, rangeExpr);
             sdpIds.add(sdpId);
+            log.debug("reserved secondary SDP id: gri: "+gri+" dev: "+deviceId+" sdp id "+sdpId);
         }
+
         srids.setQosId(qosId);
         srids.setSdpIds(sdpIds);
         return srids;

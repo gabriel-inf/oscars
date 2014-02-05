@@ -9,11 +9,8 @@ import net.es.oscars.pss.beans.PSSException;
 import net.es.oscars.pss.beans.PSSRequest;
 import net.es.oscars.pss.config.ConfigHolder;
 import net.es.oscars.pss.enums.ActionType;
-import net.es.oscars.pss.eompls.alu.ALUNameGenerator;
-import net.es.oscars.pss.eompls.alu.SR_VPLS_DeviceIdentifiers;
-import net.es.oscars.pss.eompls.alu.SR_VPLS_ConfigGen;
+import net.es.oscars.pss.eompls.alu.*;
 
-import net.es.oscars.pss.eompls.alu.SR_VPLS_TemplateParams;
 import net.es.oscars.pss.eompls.common.EoMPLSPSSCore;
 import net.es.oscars.pss.eompls.config.EoMPLSConfigHolder;
 import net.es.oscars.pss.eompls.junos.MX_VPLS_ConfigGen;
@@ -45,7 +42,7 @@ import java.util.HashMap;
 public class VPLSTest {
     private Logger log = Logger.getLogger(VPLSTest.class);
 
-    @BeforeClass(groups = { "alu-vpls", "mx-vpls", "vpls", "modify", "mx-vpls-v2", "mx-vpls-v2-res"})
+    @BeforeClass(groups = { "alu-vpls", "mx-vpls", "vpls", "modify", "mx-vpls-v2-tp", "mx-vpls-v2-res", "alu-vpls-v2-res", "alu-vpls-v2-tp", "alu-mx-vpls-v2-res"})
     private void configure() throws ConfigException, PSSException {
         ContextConfig cc = ContextConfig.getInstance(ServiceNames.SVC_PSS);
         cc.loadManifest(new File("src/test/resources/"+ ConfigDefaults.MANIFEST));
@@ -98,24 +95,18 @@ public class VPLSTest {
         String portA = "1/5/2";
         // String portB = "1/5/2";
         String vlanA = "3005";
-        String vlanB = "3006";
         Integer bandwidth = 5000;
 
         VPLS_Identifier gids = VPLS_Identifier.reserve(gri, false);
-        SR_VPLS_DeviceIdentifiers ids = SR_VPLS_DeviceIdentifiers.reserve(gri, "aleph", gids.getVplsId(), 2);
+        SR_VPLS_DeviceIdentifiers ids = SR_VPLS_DeviceIdentifiers.reserve(gri, "aleph", gids, false);
 
         String vplsId = gids.getVplsId().toString();
         String ingQosId = ids.getQosId().toString();
 
         String pathNameA = ng.getPathName(gri)+"-1";
-        String pathNameB = ng.getPathName(gri)+"-2";
         String lspNameA = ng.getLSPName(gri)+"-1";
-        String lspNameB = ng.getLSPName(gri)+"-2";
         String sdpIdA = ids.getSdpIds().get(0).toString();
-
-        String sdpIdB = ids.getSdpIds().get(1).toString();
         String sdpDescA = gri+"-1";
-        String sdpDescB = gri+"-2";
 
         SR_VPLS_TemplateParams params = new SR_VPLS_TemplateParams();
 
@@ -136,12 +127,7 @@ public class VPLSTest {
         ifceA.put("vlan", vlanA);
         ifceA.put("description", gri);
         params.getIfces().add(ifceA);
-        /*
-        HashMap ifceB = new HashMap();
-        ifceB.put("name", portB);
-        ifceB.put("vlan", vlanB);
-        cg.getIfces().add(ifceB);
-        */
+
 
         HashMap pathA = new HashMap();
         pathA.put("name", pathNameA);
@@ -153,19 +139,6 @@ public class VPLSTest {
         hopA1.put("order", "5");
         params.getPaths().add(pathA);
 
-        HashMap pathB = new HashMap();
-        pathB.put("name", pathNameB);
-        ArrayList hopsB = new ArrayList();
-        pathB.put("hops", hopsB);
-        HashMap hopB1 = new HashMap();
-        hopsB.add(hopB1);
-        HashMap hopB2 = new HashMap();
-        hopsB.add(hopB2);
-        hopB1.put("address", "10.32.0.69");
-        hopB1.put("order", "5");
-        hopB2.put("address", "10.32.0.13");
-        hopB2.put("order", "10");
-        params.getPaths().add(pathB);
 
         HashMap lspA = new HashMap();
         lspA.put("name", lspNameA);
@@ -174,29 +147,13 @@ public class VPLSTest {
         lspA.put("path", pathNameA);
         params.getLsps().add(lspA);
 
-        HashMap lspB = new HashMap();
-        lspB.put("name", lspNameB);
-        lspB.put("from", "10.96.0.8");
-        lspB.put("to", "10.96.0.4");
-        lspB.put("path", pathNameB);
-        params.getLsps().add(lspB);
-
 
         HashMap sdpA = new HashMap();
         sdpA.put("id", sdpIdA);
         sdpA.put("description", sdpDescA);
         sdpA.put("far_end", "10.96.0.2");
-        sdpA.put("lsp_name", lspNameB);
+        sdpA.put("lsp_name", lspNameA);
         params.getSdps().add(sdpA);
-
-
-        HashMap sdpB = new HashMap();
-        sdpB.put("id", sdpIdB);
-        sdpB.put("description", sdpDescB);
-        sdpB.put("far_end", "10.96.0.4");
-        sdpB.put("lsp_name", lspNameB);
-        params.getSdps().add(sdpB);
-
 
 
         String setup = cg.generateConfig(params, ActionType.SETUP);
@@ -315,7 +272,7 @@ public class VPLSTest {
     }
 
 
-    @Test(groups = { "mx-vpls-v2" })
+    @Test(groups = { "mx-vpls-v2-tp" })
     private void testJunosVPLS_V2Template() throws PSSException{
 
         String output = "";
@@ -416,8 +373,111 @@ public class VPLSTest {
 
     }
 
+
+    @Test(groups = { "alu-vpls-v2-tp" })
+    private void testAluVPLS_V2Template() throws PSSException, ConfigException {
+        SR_VPLS_V2_ConfigGen cg = new SR_VPLS_V2_ConfigGen ();
+        ALUNameGenerator ng = ALUNameGenerator.getInstance();
+
+        String gri = "es.net-3912";
+        String portA = "1/5/2";
+        // String portB = "1/5/2";
+        String vlanA = "3005";
+        Integer bandwidth = 5000;
+
+        VPLS_Identifier vplsIds = VPLS_Identifier.reserve(gri, true);
+        SR_VPLS_DeviceIdentifiers ids = SR_VPLS_DeviceIdentifiers.reserve(gri, "aleph", vplsIds, true);
+
+        String qosId = ids.getQosId().toString();
+
+        String pathNameA = ng.getPathName(gri)+"-1";
+        String lspNameA = ng.getLSPName(gri)+"-1";
+
+        String sdpId_wrk = ids.getSdpIds().get(0).toString();
+        String sdpId_prt = ids.getSdpIds().get(1).toString();
+        String sdpDescA = gri+"-1";
+
+        SR_VPLS_TemplateParams params = new SR_VPLS_TemplateParams();
+
+
+        params.getVpls().put("description", gri);
+        params.getVpls().put("name", gri);
+        params.getVpls().put("endpoint", gri);
+        params.getVpls().put("has_protect", true);
+        params.getVpls().put("protect_id", vplsIds.getSecondaryVplsId().toString());
+        params.getVpls().put("primary_id", vplsIds.getVplsId().toString());
+        params.getVpls().put("loopback_address", "12.22.34.11");
+        params.getVpls().put("loopback_ifce", "lo0_ifce_name");
+
+
+
+        params.getIngqos().put("id", qosId);
+        params.getIngqos().put("description", gri);
+        params.getIngqos().put("bandwidth", bandwidth);
+        params.getIngqos().put("soft", true);
+        params.getIngqos().put("applyqos", true);
+
+
+        params.getEgrqos().put("id", qosId);
+        params.getEgrqos().put("description", gri);
+
+
+
+        HashMap ifceA = new HashMap();
+        ifceA.put("name", portA);
+        ifceA.put("vlan", vlanA);
+        ifceA.put("description", gri);
+        params.getIfces().add(ifceA);
+        /*
+        HashMap ifceB = new HashMap();
+        ifceB.put("name", portB);
+        ifceB.put("vlan", vlanB);
+        cg.getIfces().add(ifceB);
+        */
+
+        HashMap pathA = new HashMap();
+        pathA.put("name", pathNameA);
+        ArrayList hopsA = new ArrayList();
+        pathA.put("hops", hopsA);
+        HashMap hopA1 = new HashMap();
+        hopsA.add(hopA1);
+        hopA1.put("address", "10.32.0.69");
+        hopA1.put("order", "5");
+        params.getPaths().add(pathA);
+
+
+        HashMap lspA = new HashMap();
+        lspA.put("primary", lspNameA+"_wrk");
+        lspA.put("protect", lspNameA+"_prt");
+        lspA.put("to", "10.96.0.2");
+        lspA.put("path", pathNameA);
+        params.getLsps().add(lspA);
+
+        HashMap sdpA = new HashMap();
+        sdpA.put("primary_id", sdpId_wrk);
+        sdpA.put("protect_id", sdpId_prt);
+        sdpA.put("description", sdpDescA);
+        sdpA.put("protect_description", sdpDescA);
+        sdpA.put("far_end", "10.96.0.2");
+        sdpA.put("primary_lsp_name", lspNameA+"_wrk");
+        sdpA.put("protect_lsp_name", lspNameA+"_wrk");
+        params.getSdps().add(sdpA);
+
+
+
+
+
+        String setup = cg.generateConfig(params, ActionType.SETUP);
+        System.out.println(setup);
+        String teardown = cg.generateConfig(params, ActionType.TEARDOWN);
+        System.out.println(teardown);
+
+
+    }
+
+
     @Test(groups = { "mx-vpls-v2-res" })
-    private void testV2WithResDetails() throws PSSException, ConfigException   {
+    private void testMXV2WithResDetails() throws PSSException, ConfigException   {
         String output;
 
         String srcDeviceId;
@@ -438,7 +498,7 @@ public class VPLSTest {
 
 
         srcDeviceId = EoMPLSUtils.getDeviceId(rd, false);
-        dstDeviceId = EoMPLSUtils.getDeviceId(rd, false);
+        dstDeviceId = EoMPLSUtils.getDeviceId(rd, true);
 
         EoMPLSService svc = new EoMPLSService();
         action.setActionType(ActionType.SETUP);
@@ -455,6 +515,95 @@ public class VPLSTest {
 
     }
 
+
+
+    @Test(groups = { "alu-vpls-v2-res" })
+    private void testALUV2WithResDetails() throws PSSException, ConfigException   {
+        String output;
+
+        String srcDeviceId;
+        String dstDeviceId;
+        ResDetails rd;
+        PSSAction action = new PSSAction();
+        PSSRequest req = new PSSRequest();
+        action.setRequest(req);
+        SetupReqContent srq = new SetupReqContent();
+        TeardownReqContent trq = new TeardownReqContent();
+        req.setSetupReq(srq);
+        req.setTeardownReq(trq);
+        rd = RequestFactory.getALU_ALU();
+        srq.setReservation(rd);
+        trq.setReservation(rd);
+
+        this.addOptConstraints(true, false, true, rd);
+
+
+        srcDeviceId = EoMPLSUtils.getDeviceId(rd, true);
+        dstDeviceId = EoMPLSUtils.getDeviceId(rd, false);
+
+        EoMPLSService svc = new EoMPLSService();
+        action.setActionType(ActionType.SETUP);
+        svc.prepareAction(action, rd);
+
+
+        SR_VPLS_V2_ConfigGen v2cg = new SR_VPLS_V2_ConfigGen();
+
+        log.debug("starting setup ALU-ALU");
+        output     = v2cg.getSetup(action, srcDeviceId);
+        System.out.println(output);
+        output     = v2cg.getSetup(action, dstDeviceId);
+        System.out.println(output);
+
+    }
+
+
+
+    @Test(groups = { "alu-mx-vpls-v2-res" })
+    private void testALUMxV2WithResDetails() throws PSSException, ConfigException   {
+        String output;
+
+        String srcDeviceId;
+        String dstDeviceId;
+        ResDetails rd;
+        PSSAction action = new PSSAction();
+        PSSRequest req = new PSSRequest();
+        action.setRequest(req);
+        SetupReqContent srq = new SetupReqContent();
+        TeardownReqContent trq = new TeardownReqContent();
+        req.setSetupReq(srq);
+        req.setTeardownReq(trq);
+        rd = RequestFactory.getALU_MX();
+        srq.setReservation(rd);
+        trq.setReservation(rd);
+
+        this.addOptConstraints(true, false, true, rd);
+
+
+        srcDeviceId = EoMPLSUtils.getDeviceId(rd, true);
+        dstDeviceId = EoMPLSUtils.getDeviceId(rd, false);
+
+        EoMPLSService svc = new EoMPLSService();
+        SR_VPLS_V2_ConfigGen alucg = new SR_VPLS_V2_ConfigGen();
+        MX_VPLS_V2_ConfigGen mxcg = new MX_VPLS_V2_ConfigGen();
+
+
+        log.debug("starting setup ALU-MX");
+        action.setActionType(ActionType.SETUP);
+        svc.prepareAction(action, rd);
+        output     = alucg.getSetup(action, dstDeviceId);
+        output     += mxcg.getSetup(action, srcDeviceId);
+        System.out.println(output);
+
+        /*
+        log.debug("starting teardown ALU-MX");
+        action.setActionType(ActionType.TEARDOWN);
+        svc.prepareAction(action, rd);
+        output     = alucg.getTeardown(action, dstDeviceId);
+        output     += mxcg.getTeardown(action, srcDeviceId);
+        System.out.println(output);
+        */
+
+    }
 
     private void addOptConstraints(boolean hardPolice, boolean applyQos, boolean protect, ResDetails rd) {
         OptionalConstraintType hp = new OptionalConstraintType();

@@ -164,10 +164,10 @@ public class EoMPLSService implements CircuitService {
         VPLS_RequestParams rp = new VPLS_RequestParams();
         switch (actionType) {
             case SETUP:
-                rp.reserve(gri, res, may_need_secondary_vpls_id);
+                rp.reserve(res, may_need_secondary_vpls_id);
                 break;
             case TEARDOWN:
-                rp.release(gri, res);
+                rp.release(res);
                 break;
         }
 

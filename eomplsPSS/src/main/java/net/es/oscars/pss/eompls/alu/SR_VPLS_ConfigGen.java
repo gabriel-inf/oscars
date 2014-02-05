@@ -107,8 +107,6 @@ public class SR_VPLS_ConfigGen implements DeviceConfigGenerator, PostCommitConfi
         String[] deviceIds =  { srcDeviceId, dstDeviceId };
 
 
-        // TODO: just one SDP for now; fix for multipoint.
-        Integer numSdps = 1;
 
         /*
         for both devices:
@@ -122,7 +120,7 @@ public class SR_VPLS_ConfigGen implements DeviceConfigGenerator, PostCommitConfi
         SR_VPLS_DeviceIdentifiers ids = SR_VPLS_DeviceIdentifiers.retrieve(gri, deviceId);
         if (ids == null) {
             log.info("no saved device identifiers found for gri: "+gri+" device: "+deviceId+", generating now");
-            ids = SR_VPLS_DeviceIdentifiers.reserve(gri, deviceId, gids.getVplsId(), numSdps);
+            ids = SR_VPLS_DeviceIdentifiers.reserve(gri, deviceId, gids, false);
         }
 
         String devSetupConfig = GCUtils.retrieveDeviceConfig(gri, deviceId, ActionType.SETUP);

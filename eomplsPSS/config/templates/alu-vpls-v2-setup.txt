@@ -1,6 +1,6 @@
 <#assign softpolice = ingqos.soft >
 <#assign applyqos = ingqos.applyqos >
-<#assign protect = lsp.has_protect >
+<#assign protect = vpls.has_protect >
 
 
 <#if applyqos>
@@ -45,26 +45,19 @@ configure qos sap-ingress ${ingqos.id} queue 2 rate max cir ${ingqos.bandwidth?s
 <#else>
 configure qos sap-ingress ${ingqos.id} queue 2 rate ${ingqos.bandwidth?string.computer}000 cir ${ingqos.bandwidth?string.computer}000
 </#if>
+
 </#if>
-
-
-
-
-
 exit all
-
 
 
 <#if lsps??>
-configure router interface "${loopback.name}"
-address ${loopback.address}
+configure router interface "${vpls.loopback_ifce}"
+address ${vpls.loopback_address}
 loopback
 no shutdown
+exit all
 </#if>
 
-
-
-exit all
 
 <#if paths??>
 # mpls path
@@ -90,12 +83,8 @@ configure router mpls lsp "${lsp.primary}" no shutdown
 </#list>
 </#if>
 
-
-
-
 <#if protect>
 configure router mpls path "loose" no shutdown
-
 <#list lsps as lsp>
 configure router mpls lsp "${lsp.protect}" shutdown
 configure router mpls lsp "${lsp.protect}" to ${lsp.to}
@@ -110,78 +99,73 @@ configure router mpls lsp "${lsp.protect}" no shutdown
 <#if sdps??>
 <#list sdps as sdp>
 # service distribution point - forwards packets to the MPLS tunnel
-configure service sdp ${sdp.id} mpls create
+configure service sdp ${sdp.primary_id} mpls create
 exit all
-configure service sdp ${sdp.id} shutdown
-configure service sdp ${sdp.id} description "${sdp.description}"
-configure service sdp ${sdp.id} far-end ${sdp.far_end}
-configure service sdp ${sdp.id} lsp "${sdp.primary_lsp_name}"
-configure service sdp ${sdp.id} keep-alive shutdown
-configure service sdp ${sdp.id} no shutdown
+configure service sdp ${sdp.primary_id} shutdown
+configure service sdp ${sdp.primary_id} description "${sdp.description}"
+configure service sdp ${sdp.primary_id} far-end ${sdp.far_end}
+configure service sdp ${sdp.primary_id} lsp "${sdp.primary_lsp_name}"
+configure service sdp ${sdp.primary_id} keep-alive shutdown
+configure service sdp ${sdp.primary_id} no shutdown
+exit all
+</#list>
+
+<#if protect>
+<#list sdps as sdp>
+configure service sdp ${sdp.protect_id} mpls create
+exit all
+configure service sdp ${sdp.protect_id} shutdown
+configure service sdp ${sdp.protect_id} description "${sdp.protect_description}"
+configure service sdp ${sdp.protect_id} far-end ${sdp.far_end}
+configure service sdp ${sdp.protect_id} lsp "${sdp.protect_lsp_name}"
+configure service sdp ${sdp.protect_id} keep-alive shutdown
+configure service sdp ${sdp.protect_id} no shutdown
 exit all
 </#list>
 </#if>
-
-
-
-<#if protect>
-
-<#list sdps as sdp>
-configure service sdp ${sdp.protectid} mpls create
-exit all
-configure service sdp ${sdp.protectid} shutdown
-configure service sdp ${sdp.protectid} description "${sdp.protect_description}"
-configure service sdp ${sdp.protectid} far-end ${sdp.far_end}
-configure service sdp ${sdp.protectid} lsp "${sdp.protect_lsp_name}"
-configure service sdp ${sdp.protectid} keep-alive shutdown
-configure service sdp ${sdp.protectid} no shutdown
-exit all
-
-
-</#list>
 </#if>
 
 
 
 # vpls service
-configure service vpls ${vpls.id} customer 1 create
+configure service vpls ${vpls.primary_id} customer 1 create
 exit all
-configure service vpls ${vpls.id} shutdown
-configure service vpls ${vpls.id} description "${vpls.description}"
-configure service vpls ${vpls.id} service-name "${vpls.name}"
-configure service vpls ${vpls.id} service-mtu 9114
-configure service vpls ${vpls.id} fdb-table-size 4096
-configure service vpls ${vpls.id} stp shutdown
+configure service vpls ${vpls.primary_id} shutdown
+configure service vpls ${vpls.primary_id} description "${vpls.description}"
+configure service vpls ${vpls.primary_id} service-name "${vpls.name}"
+configure service vpls ${vpls.primary_id} service-mtu 9114
+configure service vpls ${vpls.primary_id} fdb-table-size 4096
+configure service vpls ${vpls.primary_id} stp shutdown
 
-configure service vpls ${vpls.id} endpoint ${vpls.endpoint} create
-configure service vpls ${vpls.id} endpoint ${vpls.endpoint} restrict-protected-src discard-frame
-configure service vpls ${vpls.id} endpoint ${vpls.endpoint} no suppress-standby-signaling
+configure service vpls ${vpls.primary_id} endpoint "${vpls.endpoint}" create
+configure service vpls ${vpls.primary_id} endpoint "${vpls.endpoint}" restrict-protected-src discard-frame
+configure service vpls ${vpls.primary_id} endpoint "${vpls.endpoint}" no suppress-standby-signaling
 exit all
 
 
 # saps
 <#list ifces as ifce>
-configure service vpls ${vpls.id} sap ${ifce.name}:${ifce.vlan} create
+configure service vpls ${vpls.primary_id} sap ${ifce.name}:${ifce.vlan} create
 exit all
-configure service vpls ${vpls.id} sap ${ifce.name}:${ifce.vlan} auto-learn-mac-protect
-configure service vpls ${vpls.id} sap ${ifce.name}:${ifce.vlan} restrict-protected-src discard-frame
-configure service vpls ${vpls.id} sap ${ifce.name}:${ifce.vlan} description "${ifce.description}"
+configure service vpls ${vpls.primary_id} sap ${ifce.name}:${ifce.vlan} auto-learn-mac-protect
+configure service vpls ${vpls.primary_id} sap ${ifce.name}:${ifce.vlan} restrict-protected-src discard-frame
+configure service vpls ${vpls.primary_id} sap ${ifce.name}:${ifce.vlan} description "${ifce.description}"
 <#if applyqos>
-configure service vpls ${vpls.id} sap ${ifce.name}:${ifce.vlan} ingress qos ${ingqos.id}
-configure service vpls ${vpls.id} sap ${ifce.name}:${ifce.vlan} egress qos ${egrqos.id}
+configure service vpls ${vpls.primary_id} sap ${ifce.name}:${ifce.vlan} ingress qos ${ingqos.id}
+configure service vpls ${vpls.primary_id} sap ${ifce.name}:${ifce.vlan} egress qos ${egrqos.id}
 </#if>
-configure service vpls ${vpls.id} sap ${ifce.name}:${ifce.vlan} no shutdown
+configure service vpls ${vpls.primary_id} sap ${ifce.name}:${ifce.vlan} no shutdown
 </#list>
 
 
 <#if sdps??>
 # vpls sdps
 <#list sdps as sdp>
-configure service vpls ${vpls.id} spoke-sdp ${sdp.id}:${vpls.id} vc-type vlan endpoint ${vpls.endpoint} create
+configure service vpls ${vpls.primary_id} spoke-sdp ${sdp.primary_id}:${vpls.primary_id} vc-type vlan endpoint ${vpls.endpoint} create
 exit all
-configure service vpls ${vpls.id} spoke-sdp ${sdp.id}:${vpls.id} restrict-protected-src discard-frame
-configure service vpls ${vpls.id} spoke-sdp ${sdp.id}:${vpls.id} precedence primary
-configure service vpls ${vpls.id} spoke-sdp ${sdp.id}:${vpls.id} no shutdown
+configure service vpls ${vpls.primary_id} spoke-sdp ${sdp.primary_id}:${vpls.primary_id} restrict-protected-src discard-frame
+configure service vpls ${vpls.primary_id} spoke-sdp ${sdp.primary_id}:${vpls.primary_id} precedence primary
+configure service vpls ${vpls.primary_id} spoke-sdp ${sdp.primary_id}:${vpls.primary_id} no shutdown
 exit all
 </#list>
 </#if>
@@ -190,15 +174,15 @@ exit all
 <#if protect>
 
 <#list sdps as sdp>
-configure service vpls ${vpls.id} spoke-sdp ${sdp.protectid}:${vpls.protectid} vc-type vlan endpoint ${vpls.endpoint} create
+configure service vpls ${vpls.primary_id} spoke-sdp ${sdp.protect_id}:${vpls.protect_id} vc-type vlan endpoint ${vpls.endpoint} create
 exit all
-configure service vpls ${vpls.id} spoke-sdp ${sdp.protectid}:${vpls.protectid} egress qos 3 port-redirect-group "best-effort-vc" instance 1
-configure service vpls ${vpls.id} spoke-sdp ${sdp.protectid}:${vpls.protectid} restrict-protected-src discard-frame
-configure service vpls ${vpls.id} spoke-sdp ${sdp.protectid}:${vpls.protectid} no shutdown
+configure service vpls ${vpls.primary_id} spoke-sdp ${sdp.protect_id}:${vpls.protect_id} egress qos 3 port-redirect-group "best-effort-vc" instance 1
+configure service vpls ${vpls.primary_id} spoke-sdp ${sdp.protect_id}:${vpls.protect_id} restrict-protected-src discard-frame
+configure service vpls ${vpls.primary_id} spoke-sdp ${sdp.protect_id}:${vpls.protect_id} no shutdown
 exit all
 </#list>
 
 </#if>
 
 
-configure service vpls ${vpls.id} no shutdown
+configure service vpls ${vpls.primary_id} no shutdown

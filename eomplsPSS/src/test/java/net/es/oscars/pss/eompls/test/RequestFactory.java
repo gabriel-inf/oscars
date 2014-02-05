@@ -76,7 +76,8 @@ public class RequestFactory {
 
         return makeResDetails(gri, description , hops, 100);   
     }
-    public static ResDetails getALU_MX(String gri) {
+    public static ResDetails getALU_MX() {
+        String gri = "alu-mx-1";
         String srcEdge      = "urn:ogf:network:testdomain-1:beta:1/1/3:edge";
         String hop1Edge     = "urn:ogf:network:testdomain-1:beta:2/1/1:gamma";
         String hop2Edge     = "urn:ogf:network:testdomain-1:gamma:xe-1/0/1:beta";
@@ -86,16 +87,16 @@ public class RequestFactory {
         ArrayList<HashMap<String, String>> hops = new ArrayList<HashMap<String, String>>();
         HashMap<String, String> srcHop = new HashMap<String, String>();
         srcHop.put("urn", srcEdge);
-        srcHop.put("vlan", "817");
+        srcHop.put("vlan", "212");
         HashMap<String, String> dstHop = new HashMap<String, String>();
         dstHop.put("urn", dstEdge);
-        dstHop.put("vlan", "817");
+        dstHop.put("vlan", "212");
         HashMap<String, String> hop1 = new HashMap<String, String>();
         hop1.put("urn", hop1Edge);
-        hop1.put("vlan", "817");
+        hop1.put("vlan", "212");
         HashMap<String, String> hop2 = new HashMap<String, String>();
         hop2.put("urn", hop2Edge);
-        hop2.put("vlan", "817");
+        hop2.put("vlan", "212");
         
         hops.add(srcHop);
         hops.add(hop1);
@@ -105,26 +106,33 @@ public class RequestFactory {
         return makeResDetails(gri, description , hops, 100);   
     }
     
-    public static ResDetails getALU_ALU(String gri) {
+    public static ResDetails getALU_ALU() {
+        String gri = "alu-alu-2";
         String srcEdge  = "urn:ogf:network:testdomain-1:beta:1/1/3:edge";
         String hop1Edge = "urn:ogf:network:testdomain-1:beta:3/1/1:delta";
         String hop2Edge = "urn:ogf:network:testdomain-1:delta:1/1/1:beta";
         String dstEdge  = "urn:ogf:network:testdomain-1:delta:3/1/1:edge";
         String description = "onehop_BD";
+
         ArrayList<HashMap<String, String>> hops = new ArrayList<HashMap<String, String>>();
+
         HashMap<String, String> srcHop = new HashMap<String, String>();
         srcHop.put("urn", srcEdge);
         srcHop.put("vlan", "1234");
-        HashMap<String, String> dstHop = new HashMap<String, String>();
-        dstHop.put("urn", dstEdge);
-        dstHop.put("vlan", "1234");
+
         HashMap<String, String> hop1 = new HashMap<String, String>();
         hop1.put("urn", hop1Edge);
         hop1.put("vlan", "1234");
+
         HashMap<String, String> hop2 = new HashMap<String, String>();
         hop2.put("urn", hop2Edge);
         hop2.put("vlan", "1234");
-        
+
+        HashMap<String, String> dstHop = new HashMap<String, String>();
+        dstHop.put("urn", dstEdge);
+        dstHop.put("vlan", "1234");
+
+
         hops.add(srcHop);
         hops.add(hop1);
         hops.add(hop2);

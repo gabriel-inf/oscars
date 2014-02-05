@@ -10,6 +10,7 @@ public class SR_VPLS_TemplateParams {
     protected ArrayList sdps = new ArrayList();
     protected HashMap vpls = new HashMap();
     protected HashMap ingqos = new HashMap();
+    protected HashMap egrqos = new HashMap();
 
     public ArrayList getIfces() {
         return ifces;
@@ -57,5 +58,14 @@ public class SR_VPLS_TemplateParams {
 
     public void setIngqos(HashMap ingqos) {
         this.ingqos = ingqos;
+    }
+
+
+    public HashMap getEgrqos() {
+        return egrqos;
+    }
+
+    public void setEgrqos(HashMap egrqos) {
+        this.egrqos = egrqos;
     }
 }

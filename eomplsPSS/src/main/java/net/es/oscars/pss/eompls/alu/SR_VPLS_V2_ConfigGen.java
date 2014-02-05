@@ -1,7 +1,6 @@
 package net.es.oscars.pss.eompls.alu;
 
 
-import net.es.oscars.api.soap.gen.v06.OptionalConstraintType;
 import net.es.oscars.api.soap.gen.v06.PathInfo;
 import net.es.oscars.api.soap.gen.v06.ResDetails;
 import net.es.oscars.api.soap.gen.v06.ReservedConstraintType;
@@ -19,9 +18,7 @@ import net.es.oscars.pss.eompls.api.VplsV2ConfigGenerator;
 import net.es.oscars.pss.eompls.beans.LSP;
 import net.es.oscars.pss.eompls.dao.GCUtils;
 import net.es.oscars.pss.eompls.junos.SDNNameGenerator;
-import net.es.oscars.pss.eompls.util.EoMPLSClassFactory;
-import net.es.oscars.pss.eompls.util.EoMPLSUtils;
-import net.es.oscars.pss.eompls.util.VPLS_Identifier;
+import net.es.oscars.pss.eompls.util.*;
 import net.es.oscars.pss.util.URNParser;
 import net.es.oscars.pss.util.URNParserResult;
 import net.es.oscars.pss.util.VlanGroupConfig;
@@ -111,9 +108,6 @@ public class SR_VPLS_V2_ConfigGen implements DeviceConfigGenerator, PostCommitCo
         String[] deviceIds =  { srcDeviceId, dstDeviceId };
 
 
-        // TODO: just one SDP for now; fix for multipoint.
-        Integer numSdps = 1;
-
         /*
         for both devices:
         - check if identifiers exist
@@ -121,18 +115,25 @@ public class SR_VPLS_V2_ConfigGen implements DeviceConfigGenerator, PostCommitCo
         - generate setup and teardown config (unless it has been already generated)
          */
 
-        VPLS_Identifier gids = VPLS_Identifier.reserve(gri, false);
+        VPLS_RequestParamHolder holder = VPLS_RequestParamHolder.getInstance();
+        VPLS_RequestParams rp = holder.getRequestParams().get(gri);
+        VPLS_Identifier vplsIds = rp.getVplsId();
+        VPLS_DeviceLoopback loopback = rp.getLoopbackMap().get(deviceId);
+        boolean need_secondary_sdp_id = false;
+        if (rp.getParams().isProtection()) {
+            need_secondary_sdp_id = true;
+        }
 
         SR_VPLS_DeviceIdentifiers ids = SR_VPLS_DeviceIdentifiers.retrieve(gri, deviceId);
         if (ids == null) {
             log.info("no saved device identifiers found for gri: "+gri+" device: "+deviceId+", generating now");
-            ids = SR_VPLS_DeviceIdentifiers.reserve(gri, deviceId, gids.getVplsId(), numSdps);
+            ids = SR_VPLS_DeviceIdentifiers.reserve(gri, deviceId, vplsIds, need_secondary_sdp_id);
         }
 
         String devSetupConfig = GCUtils.retrieveDeviceConfig(gri, deviceId, ActionType.SETUP);
         if (devSetupConfig == null) {
             log.info("no saved setup config found for gri: "+gri+" device: "+deviceId+", generating now");
-            SR_VPLS_TemplateParams params = this.getSetupTemplateParams(res, deviceId, gids, ids);
+            SR_VPLS_TemplateParams params = this.getSetupTemplateParams(res, deviceId, vplsIds, ids, loopback);
             devSetupConfig= this.generateConfig(params, ActionType.SETUP);
             GCUtils.storeDeviceConfig(gri, deviceId, ActionType.SETUP, devSetupConfig);
         }
@@ -140,7 +141,7 @@ public class SR_VPLS_V2_ConfigGen implements DeviceConfigGenerator, PostCommitCo
         String devTeardownConfig = GCUtils.retrieveDeviceConfig(gri, deviceId, ActionType.TEARDOWN);
         if (devTeardownConfig == null) {
             log.info("no saved teardown config found for gri: "+gri+" device: "+deviceId+", generating now");
-            SR_VPLS_TemplateParams params = this.getTeardownTemplateParams(res, deviceId, gids, ids);
+            SR_VPLS_TemplateParams params = this.getTeardownTemplateParams(res, deviceId, vplsIds, ids, loopback);
             devTeardownConfig = this.generateConfig(params, ActionType.TEARDOWN);
             GCUtils.storeDeviceConfig(gri, deviceId, ActionType.TEARDOWN, devTeardownConfig);
         }
@@ -165,7 +166,11 @@ public class SR_VPLS_V2_ConfigGen implements DeviceConfigGenerator, PostCommitCo
         ResDetails res = action.getRequest().getTeardownReq().getReservation();
         String gri = res.getGlobalReservationId();
 
-        VPLS_Identifier gids = VPLS_Identifier.release(gri);
+        VPLS_RequestParamHolder holder = VPLS_RequestParamHolder.getInstance();
+        VPLS_RequestParams rp = holder.getRequestParams().get(gri);
+
+        VPLS_Identifier vplsIds = rp.getVplsId();
+        VPLS_DeviceLoopback loopback = rp.getLoopbackMap().get(deviceId);
 
 
         SR_VPLS_DeviceIdentifiers ids = SR_VPLS_DeviceIdentifiers.retrieve(gri, deviceId);
@@ -176,7 +181,7 @@ public class SR_VPLS_V2_ConfigGen implements DeviceConfigGenerator, PostCommitCo
         String teardownConfig = GCUtils.retrieveDeviceConfig(gri, deviceId, ActionType.TEARDOWN);
         if (teardownConfig == null) {
             log.info("no saved teardown config found for gri: "+gri+" device: "+deviceId+", generating now");
-            SR_VPLS_TemplateParams params = this.getTeardownTemplateParams(res, deviceId, gids, ids);
+            SR_VPLS_TemplateParams params = this.getTeardownTemplateParams(res, deviceId, vplsIds, ids, loopback);
             teardownConfig = this.generateConfig(params, ActionType.TEARDOWN);
             GCUtils.storeDeviceConfig(gri, deviceId, ActionType.TEARDOWN, teardownConfig);
         }
@@ -195,11 +200,11 @@ public class SR_VPLS_V2_ConfigGen implements DeviceConfigGenerator, PostCommitCo
         String templateFile = null;
 
         if (phase.equals(ActionType.SETUP)) {
-            templateFile = "alu-vpls-setup.txt";
+            templateFile = "alu-vpls-v2-setup.txt";
         } else if (phase.equals(ActionType.TEARDOWN)) {
-            templateFile = "alu-vpls-teardown.txt";
+            templateFile = "alu-vpls-v2-teardown.txt";
         } else if (phase.equals(ActionType.MODIFY)) {
-            templateFile = "alu-vpls-modify.txt";
+            templateFile = "alu-vpls-v2-modify.txt";
         } else {
             this.onError("invalid phase");
         }
@@ -207,6 +212,7 @@ public class SR_VPLS_V2_ConfigGen implements DeviceConfigGenerator, PostCommitCo
 
         root.put("vpls", params.getVpls());
         root.put("ingqos", params.getIngqos());
+        root.put("egrqos", params.getEgrqos());
         root.put("ifces", params.getIfces());
         root.put("paths", params.getPaths());
         root.put("sdps", params.getSdps());
@@ -219,16 +225,10 @@ public class SR_VPLS_V2_ConfigGen implements DeviceConfigGenerator, PostCommitCo
     private SR_VPLS_TemplateParams getModifyTemplateParams(ResDetails res, SR_VPLS_DeviceIdentifiers ids) throws PSSException  {
         SR_VPLS_TemplateParams params = new SR_VPLS_TemplateParams();
 
-        boolean softPolice = true;
-        for (OptionalConstraintType oct : res.getOptionalConstraint()) {
-            if (oct.getCategory().equals("policing")) {
-                if (oct.getValue().getStringValue().equals("hard")) {
-                    softPolice = false;
-                }
-            }
-        }
+        VPLS_RequestParamHolder holder = VPLS_RequestParamHolder.getInstance();
+        VPLS_RequestParams rp = holder.getRequestParams().get(res.getGlobalReservationId());
 
-
+        boolean softPolice = rp.getParams().isSoftPolice();
 
         ReservedConstraintType rc = res.getReservedConstraint();
         Integer bw = rc.getBandwidth();
@@ -245,7 +245,7 @@ public class SR_VPLS_V2_ConfigGen implements DeviceConfigGenerator, PostCommitCo
 
     }
 
-    private SR_VPLS_TemplateParams getTeardownTemplateParams(ResDetails res, String deviceId, VPLS_Identifier gids, SR_VPLS_DeviceIdentifiers ids) throws PSSException  {
+    private SR_VPLS_TemplateParams getTeardownTemplateParams(ResDetails res, String deviceId, VPLS_Identifier gids, SR_VPLS_DeviceIdentifiers ids, VPLS_DeviceLoopback loopback) throws PSSException  {
         String gri = res.getGlobalReservationId();
 
         ArrayList ifces = new ArrayList();
@@ -254,15 +254,22 @@ public class SR_VPLS_V2_ConfigGen implements DeviceConfigGenerator, PostCommitCo
         ArrayList sdps = new ArrayList();
         HashMap vpls = new HashMap();
         HashMap ingqos = new HashMap();
+        HashMap egrqos = new HashMap();
 
         String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
         String dstDeviceId = EoMPLSUtils.getDeviceId(res, true);
         boolean sameDevice = srcDeviceId.equals(dstDeviceId);
 
-
+        SDNNameGenerator sdng = SDNNameGenerator.getInstance();
         ALUNameGenerator ng = ALUNameGenerator.getInstance();
 
+        VPLS_RequestParamHolder holder = VPLS_RequestParamHolder.getInstance();
+        VPLS_RequestParams rp = holder.getRequestParams().get(res.getGlobalReservationId());
+        String vplsName = sdng.getVplsName(gri, res.getDescription());
 
+        boolean softPolice = rp.getParams().isSoftPolice();
+        boolean applyQos = rp.getParams().isApplyQos();
+        boolean protect = rp.getParams().isProtection();
 
         // fill in scalars
         /*
@@ -293,16 +300,22 @@ public class SR_VPLS_V2_ConfigGen implements DeviceConfigGenerator, PostCommitCo
             Map path = new HashMap();
 
             path.put("name", pathName);
-            lsp.put("name", lspName);
+            lsp.put("primary", lspName+"_wrk");
+            lsp.put("protect", lspName+"_prt");
 
             paths.add(path);
             lsps.add(lsp);
-            for (Integer sdpId : ids.getSdpIds()) {
-                Map sdp = new HashMap();
-                sdp.put("id", sdpId.toString());
-                sdps.add(sdp);
-            }
 
+
+            // SDPs
+            Integer sdpId_wrk = ids.getSdpIds().get(0);
+            HashMap sdp = new HashMap();
+            sdp.put("primary_id", sdpId_wrk.toString());
+            if (protect) {
+                Integer sdpId_prt= ids.getSdpIds().get(1);
+                sdp.put("protect_id", sdpId_prt.toString());
+            }
+            sdps.add(sdp);
         } else {
             paths = null;
             lsps = null;
@@ -310,12 +323,22 @@ public class SR_VPLS_V2_ConfigGen implements DeviceConfigGenerator, PostCommitCo
 
         }
 
+        ingqos.put("applyqos", applyQos);
         ingqos.put("id", ids.getQosId().toString());
-        vpls.put("id", gids.getVplsId().toString());
+        egrqos.put("id", ids.getQosId().toString());
+
+        // protect is the SAME as primary in ALUs
+        vpls.put("primary_id", gids.getVplsId().toString());
+        vpls.put("protect_id", gids.getSecondaryVplsId().toString());
+        vpls.put("loopback_ifce", gri);
+        vpls.put("loopback_address", loopback.getVplsLoopback());
+        vpls.put("endpoint", vplsName);
+        vpls.put("has_protect", protect);
 
         SR_VPLS_TemplateParams params = new SR_VPLS_TemplateParams();
         params.setIfces(ifces);
         params.setIngqos(ingqos);
+        params.setEgrqos(egrqos);
         params.setLsps(lsps);
         params.setPaths(paths);
         params.setSdps(sdps);
@@ -324,7 +347,7 @@ public class SR_VPLS_V2_ConfigGen implements DeviceConfigGenerator, PostCommitCo
         return params;
 
     }
-    private SR_VPLS_TemplateParams getSetupTemplateParams(ResDetails res, String deviceId, VPLS_Identifier gids, SR_VPLS_DeviceIdentifiers ids) throws PSSException  {
+    private SR_VPLS_TemplateParams getSetupTemplateParams(ResDetails res, String deviceId, VPLS_Identifier vplsIds, SR_VPLS_DeviceIdentifiers ids, VPLS_DeviceLoopback loopback) throws PSSException  {
 
         ArrayList ifces = new ArrayList();
         ArrayList paths = new ArrayList();
@@ -332,10 +355,10 @@ public class SR_VPLS_V2_ConfigGen implements DeviceConfigGenerator, PostCommitCo
         ArrayList sdps = new ArrayList();
         HashMap vpls = new HashMap();
         HashMap ingqos = new HashMap();
+        HashMap egrqos = new HashMap();
 
 
         String gri = res.getGlobalReservationId();
-        boolean softPolice = true;
 
         String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
         String dstDeviceId = EoMPLSUtils.getDeviceId(res, true);
@@ -378,20 +401,18 @@ public class SR_VPLS_V2_ConfigGen implements DeviceConfigGenerator, PostCommitCo
         EoMPLSIfceAddressResolver iar = ecf.getEomplsIfceAddressResolver();
         EoMPLSDeviceAddressResolver dar = ecf.getEomplsDeviceAddressResolver();
 
-        for (OptionalConstraintType oct : res.getOptionalConstraint()) {
-            if (oct.getCategory().equals("policing")) {
-                if (oct.getValue().getStringValue().equals("hard")) {
-                    softPolice = false;
-                }
-            }
-        }
+
+        VPLS_RequestParamHolder holder = VPLS_RequestParamHolder.getInstance();
+        VPLS_RequestParams rp = holder.getRequestParams().get(res.getGlobalReservationId());
+
+        boolean softPolice = rp.getParams().isSoftPolice();
+        boolean applyQos = rp.getParams().isApplyQos();
+        boolean protect = rp.getParams().isProtection();
 
 
 
-        // bandwidth in Mbps
-        Long ingQosBandwidth = 1L*bw;
 
-
+        // LSPs, SDPs and paths only for multi-device config
         if (!sameDevice) {
             String lspTargetDeviceId, lspOriginDeviceId;
             boolean reverse = false;
@@ -411,7 +432,7 @@ public class SR_VPLS_V2_ConfigGen implements DeviceConfigGenerator, PostCommitCo
             }
             LSP lspBean = new LSP(deviceId, pi, dar, iar, reverse);
 
-
+            // paths
             int i = 5;
             ArrayList hops = new ArrayList();
             for (String ipaddress : lspBean.getPathAddresses()) {
@@ -426,27 +447,33 @@ public class SR_VPLS_V2_ConfigGen implements DeviceConfigGenerator, PostCommitCo
             path.put("hops", hops);
             paths.add(path);
 
-
-
-            String lspFrom         = dar.getDeviceAddress(lspOriginDeviceId);
             String lspTo           = dar.getDeviceAddress(lspTargetDeviceId);
 
+            // LSPs
             HashMap lsp = new HashMap();
-            lsp.put("from", lspFrom);
             lsp.put("to", lspTo);
-            lsp.put("name", ng.getLSPName(gri));
+            lsp.put("primary", ng.getLSPName(gri)+"_wrk");
             lsp.put("path", ng.getPathName(gri));
+            if (protect) {
+                lsp.put("protect", ng.getLSPName(gri)+"_prt");
+            }
             lsps.add(lsp);
 
+            // SDPs
+            Integer sdpId_wrk = ids.getSdpIds().get(0);
+            HashMap sdp = new HashMap();
+            sdp.put("primary_id", sdpId_wrk.toString());
+            sdp.put("description", gri+"_wrk");
+            sdp.put("far_end", lspTo);
+            sdp.put("primary_lsp_name", ng.getLSPName(gri)+"_wrk");
 
-            for (Integer sdpId : ids.getSdpIds()) {
-                HashMap sdp = new HashMap();
-                sdp.put("id", sdpId.toString());
-                sdp.put("description", gri);
-                sdp.put("far_end", lspTo);
-                sdp.put("lsp_name", ng.getLSPName(gri));
-                sdps.add(sdp);
+            if (protect) {
+                Integer sdpId_prt= ids.getSdpIds().get(1);
+                sdp.put("protect_id", sdpId_prt.toString());
+                sdp.put("protect_description", gri+"_prt");
+                sdp.put("protect_lsp_name", ng.getLSPName(gri)+"_prt");
             }
+            sdps.add(sdp);
 
         } else {
             sdps = null;
@@ -468,21 +495,42 @@ public class SR_VPLS_V2_ConfigGen implements DeviceConfigGenerator, PostCommitCo
               and the sdp.far_end for that should correspond to the lsp.to
         */
 
-        String vplsId = gids.getVplsId().toString();
-        vpls.put("id", vplsId);
 
-        String vplsDesc = sdng.getVplsDescription(gri, ingQosBandwidth*1000000, description);
-        vpls.put("description", vplsDesc);
+        // bandwidth in Mbps
+        Long ingQosBandwidth = 1L*bw;
 
+
+        String vplsId = vplsIds.getVplsId().toString();
+        String vplsDesc = sdng.getVplsDescription(gri, ingQosBandwidth * 1000000, description);
         String vplsName = sdng.getVplsName(gri, description);
+
+        vpls.put("description", vplsDesc);
         vpls.put("name", vplsName);
+        vpls.put("primary_id", vplsId);
+        vpls.put("endpoint", vplsName);
+
+        vpls.put("has_protect", protect);
+        if (!sameDevice) {
+            vpls.put("protect_id", vplsIds.getSecondaryVplsId().toString());
+            vpls.put("loopback_address", loopback.getVplsLoopback());
+            vpls.put("loopback_ifce", gri);
+        }
 
 
+
+
+
+        // qos params
         String qosId  = ids.getQosId().toString();
+        ingqos.put("applyqos", applyQos);
+        ingqos.put("soft", softPolice);
+
         ingqos.put("id", qosId);
         ingqos.put("description", gri);
         ingqos.put("bandwidth", ingQosBandwidth);
-        ingqos.put("soft", softPolice);
+        egrqos.put("id", qosId);
+        egrqos.put("description", gri);
+
 
 
         HashMap<String, ArrayList<SRIfceInfo>> allIfceInfos = this.getDeviceIfceInfo(res);
@@ -501,6 +549,7 @@ public class SR_VPLS_V2_ConfigGen implements DeviceConfigGenerator, PostCommitCo
         SR_VPLS_TemplateParams params = new SR_VPLS_TemplateParams();
         params.setIfces(ifces);
         params.setIngqos(ingqos);
+        params.setEgrqos(egrqos);
         params.setLsps(lsps);
         params.setPaths(paths);
         params.setSdps(sdps);

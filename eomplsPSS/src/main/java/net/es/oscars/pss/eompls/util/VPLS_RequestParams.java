@@ -37,7 +37,9 @@ public class VPLS_RequestParams {
 
 
 
-    public void reserve(String gri, ResDetails res, boolean may_need_secondary_vpls) throws PSSException {
+    public void reserve(ResDetails res, boolean may_need_secondary_vpls) throws PSSException {
+        String gri = res.getGlobalReservationId();
+
         log.debug("gri: "+gri+" - may need sec? "+may_need_secondary_vpls);
 
         params = VPLS_ServiceParams.fromResDetails(res);
@@ -59,7 +61,8 @@ public class VPLS_RequestParams {
     }
 
 
-    public void release(String gri, ResDetails res) throws PSSException {
+    public void release(ResDetails res) throws PSSException {
+        String gri = res.getGlobalReservationId();
 
         params = VPLS_ServiceParams.fromResDetails(res);
         vplsId = VPLS_Identifier.release(gri);
@@ -99,6 +102,7 @@ public class VPLS_RequestParams {
         for (String deviceId : deviceIds) {
             VPLS_DeviceLoopback loopback = VPLS_DeviceLoopback.reserve(gri, deviceId);
             result.put(deviceId, loopback);
+            log.debug("reserved "+deviceId+" loopback: "+loopback);
         }
         return result;
     }

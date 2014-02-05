@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import java.util.List;
 
 public class VPLS_Identifier {
+    public final static Integer NONE = -1;
     private static Logger log = Logger.getLogger(VPLS_Identifier.class);
     protected Integer vplsId;
 
@@ -60,11 +61,13 @@ public class VPLS_Identifier {
                 log.debug("found VPLS id: " + ids.get(0));
                 srids.setVplsId(ids.get(0));
             }
+            srids.setSecondaryVplsId(NONE);
 
             // add one record
             String thisGriScope = gri+":vpls";
             Integer tmpId = SRLUtils.getIdentifier(thisGriScope, gri, 1, "1-100");
             log.debug("saved a trick SRL: "+thisGriScope+" "+tmpId);
+            log.debug("saved primary VPLS id: "+ids.get(0)+ ", no secondary");
 
         } else {
             if (ids == null || ids.size() == 0) {
@@ -75,6 +78,9 @@ public class VPLS_Identifier {
 
                 vplsId = SRLUtils.getIdentifier(vplsScope, gri, null, rangeExpr);
                 srids.setSecondaryVplsId(vplsId);
+
+                log.debug("saved primary VPLS id: "+srids.getVplsId()+ ", secondary: "+srids.getSecondaryVplsId());
+
             } else if (ids.size() > 2) {
                 idString = StringUtils.join(ids, ", ");
                 log.error("more than 2 vpls ids found: [" + idString + "] , getting first two (this should not happen!)");
@@ -92,6 +98,7 @@ public class VPLS_Identifier {
             String protGriScope = gri+":vpls-protect";
             tmpId = SRLUtils.getIdentifier(protGriScope, gri, 1, "1-100");
             log.debug("saved a trick SRL: "+protGriScope+" "+tmpId);
+
 
         }
 

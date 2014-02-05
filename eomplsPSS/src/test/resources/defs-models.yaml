@@ -50,3 +50,12 @@
     - id:               stub
       configGenerator: "net.es.oscars.pss.stub.StubConfigGen"
 
+
+- id: "alu-sr-vpls-v2"
+  services:
+    - id:               eompls
+      configGenerator:  "net.es.oscars.pss.eompls.alu.SR_VPLS_V2_ConfigGen"
+
+    - id:               stub
+      configGenerator: "net.es.oscars.pss.stub.StubConfigGen"
+
