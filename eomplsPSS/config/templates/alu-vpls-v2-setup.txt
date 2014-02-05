@@ -52,7 +52,7 @@ exit all
 
 <#if lsps??>
 configure router interface "${vpls.loopback_ifce}"
-address ${vpls.loopback_address}
+address ${vpls.loopback_address}/32
 loopback
 no shutdown
 exit all
@@ -138,6 +138,7 @@ configure service vpls ${vpls.primary_id} fdb-table-size 4096
 configure service vpls ${vpls.primary_id} stp shutdown
 
 configure service vpls ${vpls.primary_id} endpoint "${vpls.endpoint}" create
+exit all
 configure service vpls ${vpls.primary_id} endpoint "${vpls.endpoint}" restrict-protected-src discard-frame
 configure service vpls ${vpls.primary_id} endpoint "${vpls.endpoint}" no suppress-standby-signaling
 exit all
@@ -161,7 +162,7 @@ configure service vpls ${vpls.primary_id} sap ${ifce.name}:${ifce.vlan} no shutd
 <#if sdps??>
 # vpls sdps
 <#list sdps as sdp>
-configure service vpls ${vpls.primary_id} spoke-sdp ${sdp.primary_id}:${vpls.primary_id} vc-type vlan endpoint ${vpls.endpoint} create
+configure service vpls ${vpls.primary_id} spoke-sdp ${sdp.primary_id}:${vpls.primary_id} vc-type vlan endpoint "${vpls.endpoint}" create
 exit all
 configure service vpls ${vpls.primary_id} spoke-sdp ${sdp.primary_id}:${vpls.primary_id} restrict-protected-src discard-frame
 configure service vpls ${vpls.primary_id} spoke-sdp ${sdp.primary_id}:${vpls.primary_id} precedence primary
@@ -174,7 +175,7 @@ exit all
 <#if protect>
 
 <#list sdps as sdp>
-configure service vpls ${vpls.primary_id} spoke-sdp ${sdp.protect_id}:${vpls.protect_id} vc-type vlan endpoint ${vpls.endpoint} create
+configure service vpls ${vpls.primary_id} spoke-sdp ${sdp.protect_id}:${vpls.protect_id} vc-type vlan endpoint "${vpls.endpoint}" create
 exit all
 configure service vpls ${vpls.primary_id} spoke-sdp ${sdp.protect_id}:${vpls.protect_id} egress qos 3 port-redirect-group "best-effort-vc" instance 1
 configure service vpls ${vpls.primary_id} spoke-sdp ${sdp.protect_id}:${vpls.protect_id} restrict-protected-src discard-frame

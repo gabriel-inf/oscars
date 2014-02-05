@@ -12,8 +12,8 @@ configure service vpls ${vpls.primary_id} no spoke-sdp ${sdp.primary_id}:${vpls.
 </#if>
 <#if protect>
 <#list sdps as sdp>
-configure service vpls ${vpls.protect_id} spoke-sdp ${sdp.protect_id}:${vpls.protect_id} shutdown
-configure service vpls ${vpls.protect_id} no spoke-sdp ${sdp.protect_id}:${vpls.protect_id}
+configure service vpls ${vpls.primary_id} spoke-sdp ${sdp.protect_id}:${vpls.protect_id} shutdown
+configure service vpls ${vpls.primary_id} no spoke-sdp ${sdp.protect_id}:${vpls.protect_id}
 </#list>
 </#if>
 
@@ -26,8 +26,6 @@ configure service vpls ${vpls.primary_id} sap ${ifce.name}:${ifce.vlan} shutdown
 configure service vpls ${vpls.primary_id} no sap ${ifce.name}:${ifce.vlan}
 </#list>
 
-configure service vpls ${vpls.primary_id} ${vpls.endpoint} shutdown
-configure service vpls ${vpls.primary_id} no ${vpls.endpoint}
 configure service vpls ${vpls.primary_id} shutdown
 configure service no vpls ${vpls.primary_id}
 
@@ -80,7 +78,6 @@ exit all
 
 
 <#if lsps??>
-configure router interface "${vpls.loopback_ifce}" no address ${vpls.loopback_address}
 configure router interface "${vpls.loopback_ifce}" shutdown
 configure router no interface "${vpls.loopback_ifce}"
 exit all

@@ -16,7 +16,7 @@ delete routing-instances ${vpls.name}
 
 
 <#if lsps??>
-delete interfaces lo0 family inet address ${vpls.loopback}
+delete interfaces lo0 unit 0 family inet address ${vpls.loopback}
 delete firewall family any filter ${filters.primary}
 
 

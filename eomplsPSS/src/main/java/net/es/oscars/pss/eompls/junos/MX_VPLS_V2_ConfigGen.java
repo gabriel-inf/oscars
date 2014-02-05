@@ -270,8 +270,8 @@ public class MX_VPLS_V2_ConfigGen implements DeviceConfigGenerator, VplsV2Config
         EoMPLSDeviceAddressResolver dar = ecf.getEomplsDeviceAddressResolver();
 
 
-        primaryFilterName       = ng.getFilterName(gri, "primary", description);
-        protectFilterName       = ng.getFilterName(gri, "protect", description);
+        primaryFilterName       = ng.getFilterName(gri, "primary", description)+"_wrk";
+        protectFilterName       = ng.getFilterName(gri, "protect", description)+"_prt";
         statsFilterName         = ng.getFilterName(gri, "stats", description);
         communityName           = ng.getCommunityName(gri, description);
         policyName              = ng.getPolicyName(gri, description);
@@ -558,8 +558,8 @@ public class MX_VPLS_V2_ConfigGen implements DeviceConfigGenerator, VplsV2Config
         log.debug("ifceVlan: "+ifceVlan);
 
 
-        primaryFilterName       = ng.getFilterName(gri, "primary", description);
-        protectFilterName       = ng.getFilterName(gri, "protect", description);
+        primaryFilterName       = ng.getFilterName(gri, "primary", description)+"_wrk";
+        protectFilterName       = ng.getFilterName(gri, "protect", description)+"_prt";
         statsFilterName         = ng.getFilterName(gri, "stats", description);
         communityName           = ng.getCommunityName(gri, description);
         policyName              = ng.getPolicyName(gri, description);

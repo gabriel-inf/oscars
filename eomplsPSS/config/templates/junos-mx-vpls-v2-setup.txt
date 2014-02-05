@@ -52,7 +52,7 @@ top
 # anything below here only for multi-device LSPs
 
 # a new loopback
-edit interfaces lo0 family inet
+edit interfaces lo0 unit 0 family inet
 set address ${vpls.loopback}
 top
 
@@ -102,7 +102,7 @@ set then accept
 top
 edit routing-options
 set forwarding-table export [ ${policy} ]
-
+top
 
 
 
@@ -115,7 +115,7 @@ set psn-tunnel-endpoint ${lsp.to}
 set community ${community.name}
 set encapsulation-type ethernet-vlan
 </#list>
-
+top
 
 
 
@@ -181,8 +181,14 @@ set then install-nexthop lsp ${lsp.protect}
 top
 edit routing-instances ${vpls.name} protocols vpls mesh-group sdp-${vpls.protect}
 set vpls-id ${vpls.protect}
-</#if>
 
+<#list lsps as lsp>
+edit neighbor ${lsp.neighbor}
+set psn-tunnel-endpoint ${lsp.to}
+set community ${community.name}
+set encapsulation-type ethernet-vlan
+</#list>
+</#if>
 </#if>
 
 
@@ -192,5 +198,5 @@ set vpls-id ${vpls.protect}
 </#if>
 
 
-
+top
 commit and-quit

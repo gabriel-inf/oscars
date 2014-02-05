@@ -141,6 +141,8 @@ public class EoMPLSService implements CircuitService {
 
         boolean all_supported = true;
         boolean one_supported = false;
+        boolean one_junos = false;
+        boolean one_alu = false;
         boolean may_need_secondary_vpls_id = false;
 
         for (String deviceId : deviceIds) {
@@ -151,7 +153,10 @@ public class EoMPLSService implements CircuitService {
                 one_supported = true;
             }
             if (implMap.get(deviceId).equals(VplsImplementation.JUNOS)) {
-                may_need_secondary_vpls_id = true;
+                one_junos = true;
+            }
+            if (implMap.get(deviceId).equals(VplsImplementation.ALU)) {
+                one_alu = true;
             }
         }
         if (one_supported && !all_supported) {
@@ -159,6 +164,9 @@ public class EoMPLSService implements CircuitService {
         }
         if (!all_supported) return;
 
+        if (one_alu && one_junos) {
+            may_need_secondary_vpls_id = true;
+        }
 
         VPLS_RequestParamHolder holder = VPLS_RequestParamHolder.getInstance();
         VPLS_RequestParams rp = new VPLS_RequestParams();
