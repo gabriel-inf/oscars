@@ -32,7 +32,7 @@ public class SetupLifecycleTest {
     private Logger log = Logger.getLogger(SetupLifecycleTest.class);
     @Test(groups = { "lifecycle" })
     public void testSetup() throws ConfigException, PSSException {
-        PathTools.setLocalDomainId("foo.net");
+        // PathTools.setLocalDomainId("foo.net");
         
         ContextConfig cc = ContextConfig.getInstance(ServiceNames.SVC_PSS);
         cc.loadManifest(new File("src/test/resources/"+ConfigDefaults.MANIFEST));
@@ -75,11 +75,11 @@ public class SetupLifecycleTest {
         
         
         // A->B single hop
-        resDet = RequestFactory.getALU_MX("foo.net-1991");
+        resDet = RequestFactory.getALU_MX();
         this.testBoth(resDet);
         
         // C->D single hop
-        resDet = RequestFactory.getALU_ALU("foo.net-12");
+        resDet = RequestFactory.getALU_ALU();
         this.testBoth(resDet);
 
         log.debug("simulation.run.end");

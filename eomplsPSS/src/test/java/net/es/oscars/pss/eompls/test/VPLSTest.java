@@ -379,7 +379,7 @@ public class VPLSTest {
         SR_VPLS_V2_ConfigGen cg = new SR_VPLS_V2_ConfigGen ();
         ALUNameGenerator ng = ALUNameGenerator.getInstance();
 
-        String gri = "es.net-3912";
+        String gri = "es.net-1231";
         String portA = "1/5/2";
         // String portB = "1/5/2";
         String vlanA = "3005";
@@ -471,6 +471,9 @@ public class VPLSTest {
         System.out.println(setup);
         String teardown = cg.generateConfig(params, ActionType.TEARDOWN);
         System.out.println(teardown);
+
+        VPLS_Identifier.release(gri);
+        SR_VPLS_DeviceIdentifiers.release(gri, "aleph");
 
 
     }

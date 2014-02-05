@@ -67,7 +67,7 @@ public class VPLS_Identifier {
             String thisGriScope = gri+":vpls";
             Integer tmpId = SRLUtils.getIdentifier(thisGriScope, gri, 1, "1-100");
             log.debug("saved a trick SRL: "+thisGriScope+" "+tmpId);
-            log.debug("saved primary VPLS id: "+ids.get(0)+ ", no secondary");
+            log.debug("saved primary VPLS id: "+srids.getVplsId()+ ", no secondary");
 
         } else {
             if (ids == null || ids.size() == 0) {

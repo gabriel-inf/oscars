@@ -59,7 +59,7 @@ public class InitTest {
           String configFile = cc.getFilePath(ConfigDefaults.CONFIG);
           log.debug("general config file for tests: "+configFile);
           ConfigHolder.loadConfig(configFile);
-          PathTools.setLocalDomainId("foo.net");
+          // PathTools.setLocalDomainId("foo.net");
 
 
       } catch (ConfigException ex) {
