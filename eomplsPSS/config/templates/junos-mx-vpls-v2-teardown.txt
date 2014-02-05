@@ -1,5 +1,5 @@
 <#assign applyqos = policer.applyqos >
-<#assign protect = lsp.protect >
+<#assign protect = vpls.has_protect >
 
 
 configure private
@@ -16,12 +16,12 @@ delete routing-instances ${vpls.name}
 
 
 <#if lsps??>
-delete interfaces lo0 family inet address ${lsp.loopback}
+delete interfaces lo0 family inet address ${vpls.loopback}
 delete firewall family any filter ${filters.primary}
 
 
 <#list lsps as lsp>
-delete protocols mpls label-switched-path ${lsp.name}
+delete protocols mpls label-switched-path ${lsp.primary}
 </#list>
 
 <#list paths as path>

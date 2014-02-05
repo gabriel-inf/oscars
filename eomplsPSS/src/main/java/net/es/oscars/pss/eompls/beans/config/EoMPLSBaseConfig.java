@@ -10,7 +10,8 @@ public class EoMPLSBaseConfig {
     private GenericConfig eomplsDeviceAddressResolve;
     private GenericConfig eomplsIfceAddressResolve;
     private DatabaseConfig database;
-    
+    private LoopbackConfig loopback;
+
     public GenericConfig getEomplsDeviceAddressResolve() {
         return eomplsDeviceAddressResolve;
     }
@@ -33,4 +34,11 @@ public class EoMPLSBaseConfig {
         this.database = database;
     }
 
+    public LoopbackConfig getLoopback() {
+        return loopback;
+    }
+
+    public void setLoopback(LoopbackConfig loopback) {
+        this.loopback = loopback;
+    }
 }

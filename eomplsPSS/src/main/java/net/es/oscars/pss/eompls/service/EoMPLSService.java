@@ -1,9 +1,14 @@
 package net.es.oscars.pss.eompls.service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import net.es.oscars.pss.api.*;
+import net.es.oscars.pss.eompls.api.VplsImplementation;
+import net.es.oscars.pss.eompls.api.VplsV2ConfigGenerator;
+import net.es.oscars.pss.eompls.util.VPLS_RequestParamHolder;
+import net.es.oscars.pss.eompls.util.VPLS_RequestParams;
 import org.apache.log4j.Logger;
 
 import net.es.oscars.api.soap.gen.v06.ResDetails;
@@ -20,7 +25,6 @@ import net.es.oscars.pss.util.ActionUtils;
 import net.es.oscars.pss.util.ClassFactory;
 import net.es.oscars.pss.util.ConnectorUtils;
 import net.es.oscars.utils.soap.ErrorReport;
-import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.sharedConstants.ErrorCodes;
 import net.es.oscars.utils.topology.PathTools;
 
@@ -76,6 +80,8 @@ public class EoMPLSService implements CircuitService {
                     throw new PSSException("invalid actiontype: "+actionType);
             }
 
+            this.prepareAction(action, res);
+
 
             String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
             String dstDeviceId = EoMPLSUtils.getDeviceId(res, true);
@@ -108,6 +114,64 @@ public class EoMPLSService implements CircuitService {
             }
         }
         return results;
+    }
+
+    public void prepareAction(PSSAction action, ResDetails res) throws PSSException {
+        ActionType actionType = action.getActionType();
+        switch (actionType) {
+            case SETUP:
+                break;
+            case TEARDOWN:
+                break;
+            case MODIFY:
+                return;
+            case STATUS:
+                return;
+        }
+
+
+        List<String> deviceIds = new ArrayList<String>();
+        String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
+        String dstDeviceId = EoMPLSUtils.getDeviceId(res, true);
+        deviceIds.add(srcDeviceId);
+        if (!srcDeviceId.equals(dstDeviceId)) deviceIds.add(dstDeviceId);
+
+        String gri = res.getGlobalReservationId();
+        HashMap<String, VplsImplementation> implMap = VPLS_RequestParams.getImplementationMap(deviceIds);
+
+        boolean all_supported = true;
+        boolean one_supported = false;
+        boolean may_need_secondary_vpls_id = false;
+
+        for (String deviceId : deviceIds) {
+            log.debug(deviceId +" implementation: "+implMap.get(deviceId));
+            if (implMap.get(deviceId).equals(VplsImplementation.UNSUPPORTED)) {
+                all_supported = false;
+            } else {
+                one_supported = true;
+            }
+            if (implMap.get(deviceId).equals(VplsImplementation.JUNOS)) {
+                may_need_secondary_vpls_id = true;
+            }
+        }
+        if (one_supported && !all_supported) {
+            throw new PSSException("VPLS implementation mismatch");
+        }
+        if (!all_supported) return;
+
+
+        VPLS_RequestParamHolder holder = VPLS_RequestParamHolder.getInstance();
+        VPLS_RequestParams rp = new VPLS_RequestParams();
+        switch (actionType) {
+            case SETUP:
+                rp.reserve(gri, res, may_need_secondary_vpls_id);
+                break;
+            case TEARDOWN:
+                rp.release(gri, res);
+                break;
+        }
+
+        holder.getRequestParams().put(gri, rp);
     }
 
     private void processPostCommitActionForDevice(PSSAction action, String deviceId) {
@@ -237,7 +301,12 @@ public class EoMPLSService implements CircuitService {
         log.info("sent command!");
         return action;
     }
-    
+
+
+
+
+
+
     public void setConfig(CircuitServiceConfig config) {
     }
 

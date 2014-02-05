@@ -24,27 +24,27 @@ public class RequestFactory {
      */
 
     /*
-    "urn:ogf:network:foo.net:alpha:xe-2/0/0:beta":                  "10.1.0.1"
-    "urn:ogf:network:foo.net:beta:1/1/1:alpha":                     "10.1.0.2"
+    "urn:ogf:network:testdomain-1:alpha:xe-2/0/0:beta":                  "10.1.0.1"
+    "urn:ogf:network:testdomain-1:beta:1/1/1:alpha":                     "10.1.0.2"
 
-    "urn:ogf:network:foo.net:alpha:xe-3/0/0:gamma":                 "10.2.0.1"
-    "urn:ogf:network:foo.net:gamma:xe-3/0/2:alpha":                 "10.2.0.2"
+    "urn:ogf:network:testdomain-1:alpha:xe-3/0/0:gamma":                 "10.2.0.1"
+    "urn:ogf:network:testdomain-1:gamma:xe-3/0/2:alpha":                 "10.2.0.2"
 
-    "urn:ogf:network:foo.net:beta:2/1/1:gamma":                     "10.3.0.1"
-    "urn:ogf:network:foo.net:gamma:xe-1/0/1:beta":                  "10.3.0.2"
+    "urn:ogf:network:testdomain-1:beta:2/1/1:gamma":                     "10.3.0.1"
+    "urn:ogf:network:testdomain-1:gamma:xe-1/0/1:beta":                  "10.3.0.2"
 
-    "urn:ogf:network:foo.net:beta:3/1/1:delta":                     "10.4.0.1"
-    "urn:ogf:network:foo.net:delta:1/1/1:beta":                     "10.4.0.2"
+    "urn:ogf:network:testdomain-1:beta:3/1/1:delta":                     "10.4.0.1"
+    "urn:ogf:network:testdomain-1:delta:1/1/1:beta":                     "10.4.0.2"
      */
 
     public static ResDetails getMX_MX() {
         String gri = "twoHop-768";
-        String srcEdge      = "urn:ogf:network:foo.net:alpha:xe-1/1/0:edge";
-        String hop1Edge     = "urn:ogf:network:foo.net:alpha:xe-2/0/0:beta";
-        String hop2Edge     = "urn:ogf:network:foo.net:beta:1/1/1:alpha";
-        String hop3Edge     = "urn:ogf:network:foo.net:beta:2/1/1:gamma";
-        String hop4Edge     = "urn:ogf:network:foo.net:gamma:xe-1/0/1:beta";
-        String dstEdge      = "urn:ogf:network:foo.net:gamma:xe-7/0/0:edge";
+        String srcEdge      = "urn:ogf:network:testdomain-1:alpha:xe-1/1/0:edge";
+        String hop1Edge     = "urn:ogf:network:testdomain-1:alpha:xe-2/0/0:beta";
+        String hop2Edge     = "urn:ogf:network:testdomain-1:beta:1/1/1:alpha";
+        String hop3Edge     = "urn:ogf:network:testdomain-1:beta:2/1/1:gamma";
+        String hop4Edge     = "urn:ogf:network:testdomain-1:gamma:xe-1/0/1:beta";
+        String dstEdge      = "urn:ogf:network:testdomain-1:gamma:xe-7/0/0:edge";
         String description = "Description: foo.bar 123";
 
         ArrayList<HashMap<String, String>> hops = new ArrayList<HashMap<String, String>>();
@@ -77,10 +77,10 @@ public class RequestFactory {
         return makeResDetails(gri, description , hops, 100);   
     }
     public static ResDetails getALU_MX(String gri) {
-        String srcEdge      = "urn:ogf:network:foo.net:beta:1/1/3:edge";
-        String hop1Edge     = "urn:ogf:network:foo.net:beta:2/1/1:gamma";
-        String hop2Edge     = "urn:ogf:network:foo.net:gamma:xe-1/0/1:beta";
-        String dstEdge      = "urn:ogf:network:foo.net:gamma:xe-7/1/0:edge";
+        String srcEdge      = "urn:ogf:network:testdomain-1:beta:1/1/3:edge";
+        String hop1Edge     = "urn:ogf:network:testdomain-1:beta:2/1/1:gamma";
+        String hop2Edge     = "urn:ogf:network:testdomain-1:gamma:xe-1/0/1:beta";
+        String dstEdge      = "urn:ogf:network:testdomain-1:gamma:xe-7/1/0:edge";
         String description = gri;
         
         ArrayList<HashMap<String, String>> hops = new ArrayList<HashMap<String, String>>();
@@ -106,10 +106,10 @@ public class RequestFactory {
     }
     
     public static ResDetails getALU_ALU(String gri) {
-        String srcEdge  = "urn:ogf:network:foo.net:beta:1/1/3:edge";
-        String hop1Edge = "urn:ogf:network:foo.net:beta:3/1/1:delta";
-        String hop2Edge = "urn:ogf:network:foo.net:delta:1/1/1:beta";
-        String dstEdge  = "urn:ogf:network:foo.net:delta:3/1/1:edge";
+        String srcEdge  = "urn:ogf:network:testdomain-1:beta:1/1/3:edge";
+        String hop1Edge = "urn:ogf:network:testdomain-1:beta:3/1/1:delta";
+        String hop2Edge = "urn:ogf:network:testdomain-1:delta:1/1/1:beta";
+        String dstEdge  = "urn:ogf:network:testdomain-1:delta:3/1/1:edge";
         String description = "onehop_BD";
         ArrayList<HashMap<String, String>> hops = new ArrayList<HashMap<String, String>>();
         HashMap<String, String> srcHop = new HashMap<String, String>();
@@ -138,8 +138,8 @@ public class RequestFactory {
     
     public static ResDetails getSameMX() {
         String gri = "sameDev-333";
-        String srcEdge = "urn:ogf:network:foo.net:alpha:xe-1/1/0:edge";
-        String dstEdge = "urn:ogf:network:foo.net:alpha:xe-2/1/0:edge";
+        String srcEdge = "urn:ogf:network:testdomain-1:alpha:xe-1/1/0:edge";
+        String dstEdge = "urn:ogf:network:testdomain-1:alpha:xe-2/1/0:edge";
         ArrayList<HashMap<String, String>> hops = new ArrayList<HashMap<String, String>>();
         HashMap<String, String> srcHop = new HashMap<String, String>();
         srcHop.put("urn", srcEdge);
@@ -155,8 +155,8 @@ public class RequestFactory {
 
     public static ResDetails getSameALU() {
         String gri = "sameDev-3334";
-        String srcEdge = "urn:ogf:network:foo.net:beta:1/1/3:edge";
-        String dstEdge = "urn:ogf:network:foo.net:beta:3/2:edge";
+        String srcEdge = "urn:ogf:network:testdomain-1:beta:1/1/3:edge";
+        String dstEdge = "urn:ogf:network:testdomain-1:beta:3/2:edge";
         ArrayList<HashMap<String, String>> hops = new ArrayList<HashMap<String, String>>();
         HashMap<String, String> srcHop = new HashMap<String, String>();
         srcHop.put("urn", srcEdge);

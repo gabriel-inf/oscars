@@ -1,6 +1,6 @@
 ---
-    "alpha":    "juniper-mx-vpls"
+    "alpha":    "juniper-mx-vpls-v2"
     "beta":     "alu-sr-vpls"
-    "gamma":    "juniper-mx-vpls"
+    "gamma":    "juniper-mx-vpls-v2"
     "delta":    "alu-sr-vpls"
         

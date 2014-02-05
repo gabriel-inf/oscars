@@ -42,3 +42,11 @@
       configGenerator: "net.es.oscars.pss.stub.StubConfigGen"
 
 
+- id: "juniper-mx-vpls-v2"
+  services:
+    - id:               eompls
+      configGenerator:  "net.es.oscars.pss.eompls.junos.MX_VPLS_V2_ConfigGen"
+
+    - id:               stub
+      configGenerator: "net.es.oscars.pss.stub.StubConfigGen"
+

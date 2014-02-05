@@ -1,7 +1,6 @@
 package net.es.oscars.pss.eompls.junos;
 
 
-import net.es.oscars.api.soap.gen.v06.OptionalConstraintType;
 import net.es.oscars.api.soap.gen.v06.PathInfo;
 import net.es.oscars.api.soap.gen.v06.ResDetails;
 import net.es.oscars.api.soap.gen.v06.ReservedConstraintType;
@@ -12,11 +11,11 @@ import net.es.oscars.pss.beans.config.GenericConfig;
 import net.es.oscars.pss.enums.ActionType;
 import net.es.oscars.pss.eompls.api.EoMPLSDeviceAddressResolver;
 import net.es.oscars.pss.eompls.api.EoMPLSIfceAddressResolver;
+import net.es.oscars.pss.eompls.api.VplsImplementation;
+import net.es.oscars.pss.eompls.api.VplsV2ConfigGenerator;
 import net.es.oscars.pss.eompls.beans.LSP;
+import net.es.oscars.pss.eompls.util.*;
 import net.es.oscars.pss.eompls.dao.GCUtils;
-import net.es.oscars.pss.eompls.util.EoMPLSClassFactory;
-import net.es.oscars.pss.eompls.util.EoMPLSUtils;
-import net.es.oscars.pss.eompls.util.VPLS_Identifier;
 import net.es.oscars.pss.util.URNParser;
 import net.es.oscars.pss.util.URNParserResult;
 import net.es.oscars.utils.soap.OSCARSServiceException;
@@ -25,12 +24,18 @@ import org.apache.log4j.Logger;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneLinkContent;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
-public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
-    private Logger log = Logger.getLogger(MX_VPLS_ConfigGen.class);
+public class MX_VPLS_V2_ConfigGen implements DeviceConfigGenerator, VplsV2ConfigGenerator {
+    private Logger log = Logger.getLogger(MX_VPLS_V2_ConfigGen.class);
 
+    public VplsImplementation getImplementation() {
+        return VplsImplementation.JUNOS;
+    }
 
     public String getConfig(PSSAction action, String deviceId) throws PSSException {
         switch (action.getActionType()) {
@@ -45,10 +50,10 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         }
         throw new PSSException("Invalid action type");
     }
-    
+
     private String getStatus(PSSAction action, String deviceId) throws PSSException {
         ResDetails res = action.getRequest().getSetupReq().getReservation();
-        
+
         String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
         String dstDeviceId = EoMPLSUtils.getDeviceId(res, true);
         boolean sameDevice = srcDeviceId.equals(dstDeviceId);
@@ -57,7 +62,7 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         } else {
             return this.getLSPStatus(action, deviceId);
         }
-        
+
     }
     public String getSetup(PSSAction action, String deviceId) throws PSSException {
         log.debug("getSetup start");
@@ -74,7 +79,7 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         log.debug("getTeardown start");
         return this.onTeardown(action, deviceId);
     }
-    
+
     private String getLSPStatus(PSSAction action, String deviceId)  throws PSSException {
         String templateFile = "junos-mx-lsp-status.txt";
         Map root = new HashMap();
@@ -89,7 +94,7 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         String gri = res.getGlobalReservationId();
         MX_VPLS_TemplateParams params = this.getModifyTemplateParams(res);
         if (params == null) {
-            this.onError("could not generate template parameters for modify!");
+            this.onError("could not generate template parameters for modify! gri: "+gri);
         }
         String devModifyConfig = this.generateConfig(params, ActionType.MODIFY);
         if (devModifyConfig == null ) {
@@ -105,6 +110,9 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         ResDetails res = action.getRequest().getSetupReq().getReservation();
         String gri = res.getGlobalReservationId();
 
+        VPLS_RequestParamHolder holder = VPLS_RequestParamHolder.getInstance();
+        VPLS_RequestParams rp = holder.getRequestParams().get(gri);
+
 
         /*
        for both devices:
@@ -112,13 +120,14 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
        - generate identifiers as needed
        - generate setup and teardown config (unless it has been already generated)
         */
+        VPLS_Identifier gids = rp.getVplsId();
+        VPLS_DeviceLoopback loopback = rp.getLoopbackMap().get(deviceId);
 
-        VPLS_Identifier gids = VPLS_Identifier.reserve(gri, false);
 
         String devSetupConfig = GCUtils.retrieveDeviceConfig(gri, deviceId, ActionType.SETUP);
         if (devSetupConfig == null) {
             log.info("no saved setup config found for gri: "+gri+" device: "+deviceId+", generating now");
-            MX_VPLS_TemplateParams params = this.getSetupTemplateParams(res, deviceId, gids);
+            MX_VPLS_TemplateParams params = this.getSetupTemplateParams(res, deviceId, gids, loopback);
             devSetupConfig= this.generateConfig(params, ActionType.SETUP);
             GCUtils.storeDeviceConfig(gri, deviceId, ActionType.SETUP, devSetupConfig);
         }
@@ -126,7 +135,7 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         String devTeardownConfig = GCUtils.retrieveDeviceConfig(gri, deviceId, ActionType.TEARDOWN);
         if (devTeardownConfig == null) {
             log.info("no saved teardown config found for gri: "+gri+" device: "+deviceId+", generating now");
-            MX_VPLS_TemplateParams params = this.getTeardownTemplateParams(res, deviceId, gids);
+            MX_VPLS_TemplateParams params = this.getTeardownTemplateParams(res, deviceId, gids, loopback);
             devTeardownConfig = this.generateConfig(params, ActionType.TEARDOWN);
             GCUtils.storeDeviceConfig(gri, deviceId, ActionType.TEARDOWN, devTeardownConfig);
         }
@@ -150,12 +159,16 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         ResDetails res = action.getRequest().getTeardownReq().getReservation();
         String gri = res.getGlobalReservationId();
 
-        VPLS_Identifier gids = VPLS_Identifier.release(gri);
+        VPLS_RequestParamHolder holder = VPLS_RequestParamHolder.getInstance();
+        VPLS_RequestParams rp = holder.getRequestParams().get(gri);
+
+        VPLS_Identifier vplsIds = rp.getVplsId();
+        VPLS_DeviceLoopback loopback = rp.getLoopbackMap().get(deviceId);
 
         String teardownConfig = GCUtils.retrieveDeviceConfig(gri, deviceId, ActionType.TEARDOWN);
         if (teardownConfig == null) {
             log.info("no saved teardown config found for gri: "+gri+" device: "+deviceId+", generating now");
-            MX_VPLS_TemplateParams params = this.getTeardownTemplateParams(res, deviceId, gids);
+            MX_VPLS_TemplateParams params = this.getTeardownTemplateParams(res, deviceId, vplsIds, loopback);
             teardownConfig = this.generateConfig(params, ActionType.TEARDOWN);
             GCUtils.storeDeviceConfig(gri, deviceId, ActionType.TEARDOWN, teardownConfig);
         }
@@ -166,13 +179,26 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
     }
 
 
-    private MX_VPLS_TemplateParams getSetupTemplateParams(ResDetails res, String deviceId, VPLS_Identifier ids) throws PSSException  {
+    private MX_VPLS_TemplateParams getSetupTemplateParams(ResDetails res, String deviceId, VPLS_Identifier vplsIds, VPLS_DeviceLoopback loopback) throws PSSException  {
         String description = res.getDescription();
+        String gri = res.getGlobalReservationId();
 
         String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
         String dstDeviceId = EoMPLSUtils.getDeviceId(res, true);
 
         boolean sameDevice = srcDeviceId.equals(dstDeviceId);
+        VPLS_RequestParamHolder holder = VPLS_RequestParamHolder.getInstance();
+        VPLS_RequestParams rp = holder.getRequestParams().get(gri);
+
+        String remoteDeviceId = srcDeviceId;
+
+        if (srcDeviceId.equals(deviceId)) {
+            remoteDeviceId = dstDeviceId;
+        }
+
+        String remoteVplsLoopback = rp.getLoopbackMap().get(remoteDeviceId).getVplsLoopback();
+
+
 
         String policy = "";
         HashMap community = new HashMap();
@@ -182,10 +208,6 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         ArrayList ifces = new ArrayList();
         ArrayList paths = new ArrayList();
         ArrayList lsps = new ArrayList();
-
-
-
-
 
 
         String policyName;
@@ -201,17 +223,21 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         Long policerBurstSizeLimit;
         Long policerBandwidthLimit;
         String statsFilterName;
-        String policingFilterName;
-        boolean softPolice = true;
+        String primaryFilterName;
+        String protectFilterName;
 
-        
+
+
+        VPLS_ServiceParams serviceParams = VPLS_ServiceParams.fromResDetails(res);
+
+
+
         /* *********************** */
         /* BEGIN POPULATING VALUES */
         /* *********************** */
 
         
         SDNNameGenerator ng = SDNNameGenerator.getInstance();
-        String gri = res.getGlobalReservationId();
 
         ReservedConstraintType rc = res.getReservedConstraint();
 
@@ -244,7 +270,8 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         EoMPLSDeviceAddressResolver dar = ecf.getEomplsDeviceAddressResolver();
 
 
-        policingFilterName      = ng.getFilterName(gri, "policing", description);
+        primaryFilterName       = ng.getFilterName(gri, "primary", description);
+        protectFilterName       = ng.getFilterName(gri, "protect", description);
         statsFilterName         = ng.getFilterName(gri, "stats", description);
         communityName           = ng.getCommunityName(gri, description);
         policyName              = ng.getPolicyName(gri, description);
@@ -253,7 +280,7 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         lspName                 = ng.getLSPName(gri, description);
         vplsName                = ng.getVplsName(gri, description);
 
-        String vplsId = ids.getVplsId().toString();
+        String vplsId = vplsIds.getVplsId().toString();
 
         // community is 30000 - 65500
         String oscarsCommunity;
@@ -264,14 +291,6 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         }
         
         communityMembers    = "65000:"+oscarsCommunity+":"+vplsId;
-
-        for (OptionalConstraintType oct : res.getOptionalConstraint()) {
-            if (oct.getCategory().equals("policing")) {
-                if (oct.getValue().getStringValue().equals("hard")) {
-                    softPolice = false;
-                }
-            }
-        }
 
 
         /*
@@ -291,15 +310,34 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         policy = policyName;
         community.put("name", communityName);
         community.put("members", communityMembers);
+
         filters.put("stats", statsFilterName);
-        filters.put("policing", policingFilterName);
+        filters.put("primary", primaryFilterName);
+
         policer.put("name", policerName);
         policer.put("bandwidth_limit", policerBandwidthLimit);
         policer.put("burst_size_limit", policerBurstSizeLimit);
-        policer.put("soft", softPolice);
+        policer.put("soft",serviceParams.isSoftPolice());
+        policer.put("applyqos", serviceParams.isApplyQos());
+
+
         vpls.put("name", vplsName);
         vpls.put("id", vplsId);
+        vpls.put("loopback", loopback.getVplsLoopback());
 
+
+
+
+        if (serviceParams.isProtection()) {
+            filters.put("protect", protectFilterName);
+            vpls.put("has_protect", true);
+            vpls.put("has_two_ids", true);
+            vpls.put("protect", vplsIds.getSecondaryVplsId().toString());
+
+        } else {
+            vpls.put("has_protect", false);
+            vpls.put("has_two_ids", false);
+        }
 
 
         HashMap<String, ArrayList<MXIfceInfo>> allIfceInfos = this.getDeviceIfceInfo(res, lspBandwidth);
@@ -346,7 +384,7 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
             URNParserResult dstRes = URNParser.parseTopoIdent(dstLinkId);
             lspTargetDeviceId = dstRes.getNodeId();
 
-            lspNeighbor         = dar.getDeviceAddress(lspTargetDeviceId);
+            lspNeighbor       = dar.getDeviceAddress(lspTargetDeviceId);
             LSP lspBean = new LSP(deviceId, pi, dar, iar, reverse);
 
             Map path = new HashMap();
@@ -358,17 +396,20 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
             paths.add(path);
 
 
-            lsp.put("name", lspName);
-            lsp.put("from", lspBean.getFrom());
-            lsp.put("to", lspBean.getTo());
+            lsp.put("primary", lspName+"_wrk");
+            lsp.put("protect", lspName+"_prt");
+            lsp.put("to", remoteVplsLoopback);
             lsp.put("neighbor", lspNeighbor);
-            lsp.put("bandwidth", lspBandwidth);
             lsp.put("path", pathName);
 
             lsps.add(lsp);
 
             params.setLsps(lsps);
             params.setPaths(paths);
+
+
+
+
         } else {
             params.setLsps(null);
             params.setPaths(null);
@@ -432,7 +473,7 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
 
     }
 
-    private MX_VPLS_TemplateParams getTeardownTemplateParams(ResDetails res, String deviceId, VPLS_Identifier ids) throws PSSException  {
+    private MX_VPLS_TemplateParams getTeardownTemplateParams(ResDetails res, String deviceId, VPLS_Identifier vplsIds, VPLS_DeviceLoopback loopback) throws PSSException  {
 
         String srcDeviceId = EoMPLSUtils.getDeviceId(res, false);
         String dstDeviceId = EoMPLSUtils.getDeviceId(res, true);
@@ -461,7 +502,8 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
 
         String policerName;
         String statsFilterName;
-        String policingFilterName;
+        String primaryFilterName;
+        String protectFilterName;
 
 
         ReservedConstraintType rc = res.getReservedConstraint();
@@ -516,7 +558,8 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         log.debug("ifceVlan: "+ifceVlan);
 
 
-        policingFilterName      = ng.getFilterName(gri, "policing", description);
+        primaryFilterName       = ng.getFilterName(gri, "primary", description);
+        protectFilterName       = ng.getFilterName(gri, "protect", description);
         statsFilterName         = ng.getFilterName(gri, "stats", description);
         communityName           = ng.getCommunityName(gri, description);
         policyName              = ng.getPolicyName(gri, description);
@@ -524,6 +567,8 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         pathName                = ng.getPathName(gri, description);
         lspName                 = ng.getLSPName(gri, description);
         vplsName                = ng.getVplsName(gri, description);
+
+        VPLS_ServiceParams serviceParams = VPLS_ServiceParams.fromResDetails(res);
 
         /*
         teardown:
@@ -540,9 +585,24 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         policy = policyName;
         community.put("name", communityName);
         filters.put("stats", statsFilterName);
-        filters.put("policing", policingFilterName);
+        filters.put("primary", primaryFilterName);
         policer.put("name", policerName);
+        policer.put("applyqos", serviceParams.isApplyQos());
         vpls.put("name", vplsName);
+        vpls.put("loopback", loopback.getVplsLoopback());
+
+
+
+        if (serviceParams.isProtection()) {
+            filters.put("protect", protectFilterName);
+            vpls.put("has_protect", true);
+            vpls.put("protect", vplsIds.getSecondaryVplsId().toString());
+
+        } else {
+            vpls.put("has_protect", false);
+            vpls.put("has_two_ids", false);
+        }
+
 
         HashMap<String, ArrayList<MXIfceInfo>> allIfceInfos = this.getDeviceIfceInfo(res, lspBandwidth);
         ArrayList<MXIfceInfo> deviceIfceInfos = allIfceInfos.get(deviceId);
@@ -561,7 +621,8 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
             paths.add(path);
 
             Map lsp = new HashMap();
-            lsp.put("name", lspName);
+            lsp.put("primary", lspName+"_wrk");
+            lsp.put("protect", lspName+"_prt");
             lsps.add(lsp);
 
             params.setLsps(lsps);
@@ -636,11 +697,11 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
         String templateFile = null;
 
         if (phase.equals(ActionType.SETUP)) {
-            templateFile = "junos-mx-vpls-setup.txt";
+            templateFile = "junos-mx-vpls-v2-setup.txt";
         } else if (phase.equals(ActionType.TEARDOWN)) {
-            templateFile = "junos-mx-vpls-teardown.txt";
+            templateFile = "junos-mx-vpls-v2-teardown.txt";
         } else if (phase.equals(ActionType.MODIFY)) {
-            templateFile = "junos-mx-vpls-modify.txt";
+            templateFile = "junos-mx-vpls-v2-modify.txt";
         } else {
             this.onError("invalid phase");
         }
@@ -666,5 +727,7 @@ public class MX_VPLS_ConfigGen implements DeviceConfigGenerator {
     public void setConfig(GenericConfig config) throws PSSException {
         // TODO Auto-generated method stub
     }
+
+
 
 }

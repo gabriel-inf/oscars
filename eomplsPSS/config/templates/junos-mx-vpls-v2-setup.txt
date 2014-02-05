@@ -1,6 +1,6 @@
 <#assign softpolice = policer.soft >
 <#assign applyqos = policer.applyqos >
-<#assign protect = lsp.has_protect >
+<#assign protect = vpls.has_protect >
 <#assign has_two_vpls_ids = vpls.has_two_ids >
 
 
@@ -29,7 +29,6 @@ top
 
 
 # vpls instance
-top
 edit routing-instances ${vpls.name}
 set instance-type vpls
 <#list ifces as ifce>
@@ -54,7 +53,7 @@ top
 
 # a new loopback
 edit interfaces lo0 family inet
-set address ${lsp.loopback}
+set address ${vpls.loopback}
 top
 
 # firewall: primary path filter
@@ -178,7 +177,7 @@ set then install-nexthop lsp ${lsp.protect}
 
 
 <#if has_two_vpls_ids>
-# two VPLS ids for ALU interop
+# two VPLS ids for protect
 top
 edit routing-instances ${vpls.name} protocols vpls mesh-group sdp-${vpls.protect}
 set vpls-id ${vpls.protect}

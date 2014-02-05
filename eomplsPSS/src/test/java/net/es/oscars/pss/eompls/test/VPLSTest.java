@@ -1,6 +1,8 @@
 package net.es.oscars.pss.eompls.test;
 
 
+import net.es.oscars.api.soap.gen.v06.OptionalConstraintType;
+import net.es.oscars.api.soap.gen.v06.OptionalConstraintValue;
 import net.es.oscars.api.soap.gen.v06.ResDetails;
 import net.es.oscars.pss.beans.PSSAction;
 import net.es.oscars.pss.beans.PSSException;
@@ -16,9 +18,12 @@ import net.es.oscars.pss.eompls.common.EoMPLSPSSCore;
 import net.es.oscars.pss.eompls.config.EoMPLSConfigHolder;
 import net.es.oscars.pss.eompls.junos.MX_VPLS_ConfigGen;
 import net.es.oscars.pss.eompls.junos.MX_VPLS_TemplateParams;
+import net.es.oscars.pss.eompls.junos.MX_VPLS_V2_ConfigGen;
+import net.es.oscars.pss.eompls.service.EoMPLSService;
 import net.es.oscars.pss.eompls.util.EoMPLSClassFactory;
 import net.es.oscars.pss.eompls.util.EoMPLSUtils;
-import net.es.oscars.pss.eompls.util.VPLS_DomainIdentifiers;
+import net.es.oscars.pss.eompls.util.VPLS_DeviceLoopback;
+import net.es.oscars.pss.eompls.util.VPLS_Identifier;
 import net.es.oscars.pss.soap.gen.ModifyReqContent;
 import net.es.oscars.pss.soap.gen.SetupReqContent;
 import net.es.oscars.pss.soap.gen.TeardownReqContent;
@@ -40,7 +45,7 @@ import java.util.HashMap;
 public class VPLSTest {
     private Logger log = Logger.getLogger(VPLSTest.class);
 
-    @BeforeClass(groups = { "alu-vpls", "mx-vpls", "vpls", "modify" })
+    @BeforeClass(groups = { "alu-vpls", "mx-vpls", "vpls", "modify", "mx-vpls-v2", "mx-vpls-v2-res"})
     private void configure() throws ConfigException, PSSException {
         ContextConfig cc = ContextConfig.getInstance(ServiceNames.SVC_PSS);
         cc.loadManifest(new File("src/test/resources/"+ ConfigDefaults.MANIFEST));
@@ -66,6 +71,8 @@ public class VPLSTest {
         log.debug("db: "+ EoMPLSPSSCore.getInstance().getDbname());
 
     }
+
+
 
     @Test(groups = { "alu-vpls-template"} )
     private void testALUVPLSTemplate() throws PSSException, ConfigException {
@@ -94,7 +101,7 @@ public class VPLSTest {
         String vlanB = "3006";
         Integer bandwidth = 5000;
 
-        VPLS_DomainIdentifiers gids = VPLS_DomainIdentifiers.reserve(gri);
+        VPLS_Identifier gids = VPLS_Identifier.reserve(gri, false);
         SR_VPLS_DeviceIdentifiers ids = SR_VPLS_DeviceIdentifiers.reserve(gri, "aleph", gids.getVplsId(), 2);
 
         String vplsId = gids.getVplsId().toString();
@@ -248,7 +255,7 @@ public class VPLSTest {
         params.getPolicer().put("soft", false);
 
         params.getVpls().put("name", "test_vpls");
-        params.getVpls().put("id", VPLS_DomainIdentifiers.reserve("aa-13132").toString());
+        params.getVpls().put("id", VPLS_Identifier.reserve("aa-13132", false).getVplsId().toString());
 
 
 
@@ -307,8 +314,175 @@ public class VPLSTest {
 
     }
 
-    @Test(groups = { "vpls" })
 
+    @Test(groups = { "mx-vpls-v2" })
+    private void testJunosVPLS_V2Template() throws PSSException{
+
+        String output = "";
+        String gri = "some.gri-1233";
+        VPLS_Identifier dids = VPLS_Identifier.reserve(gri, true);
+        VPLS_DeviceLoopback loopbackA = VPLS_DeviceLoopback.reserve(gri, "device1");
+        System.out.println("loopback: "+ loopbackA.getVplsLoopback());
+        VPLS_DeviceLoopback loopbackB = VPLS_DeviceLoopback.reserve(gri, "device2");
+        System.out.println("loopback: "+ loopbackB.getVplsLoopback());
+
+
+        MX_VPLS_V2_ConfigGen cg = new MX_VPLS_V2_ConfigGen();
+        MX_VPLS_TemplateParams params = new MX_VPLS_TemplateParams();
+
+        /*
+
+        setup:
+        1. policy (string)
+        2. community: name, id
+        3. filters: stats, policing
+        4. policer: name, bandwidth_limit, burst_size_limit
+        5. vpls: name, id
+
+        6. ifces: list_of <name, vlan, description>
+        7. paths: list_of <name, hops>
+                                 hops: list of string >
+        8. lsps: list_of <name, from, to, path, neighbor, bandwidth>
+        */
+
+
+        /*
+        teardown:
+        1. policy (string)
+        2. community: name
+        3. filters: stats, policing
+        4. policer: name
+        5. vpls: name
+
+        6. ifces: list_of <name, vlan>
+        7. paths: list_of <name>
+        8. lsps: list_of <name>
+        */
+
+        params.setPolicy("test_policy");
+
+        params.getCommunity().put("name", "test_community");
+        params.getCommunity().put("members", "3306");
+
+        params.getFilters().put("primary", "primary_filter");
+        params.getFilters().put("protect", "protect_filter");
+        params.getFilters().put("stats",   "stats_filter");
+
+        params.getPolicer().put("name", "test_policer");
+        params.getPolicer().put("bandwidth_limit", 500);
+        params.getPolicer().put("burst_size_limit", 50);
+        params.getPolicer().put("soft", false);
+        params.getPolicer().put("applyqos", false);
+
+        params.getVpls().put("name", "test_vpls");
+        params.getVpls().put("has_two_ids", true);
+        params.getVpls().put("has_protect", true);
+        params.getVpls().put("id", dids.getVplsId().toString());
+        params.getVpls().put("protect", dids.getSecondaryVplsId().toString());
+        params.getVpls().put("loopback", loopbackA.getVplsLoopback());
+
+
+        HashMap ifceA = new HashMap();
+        ifceA.put("name", "xe-11/2/0");
+        ifceA.put("vlan", "3003");
+        ifceA.put("description", "ifceA");
+        params.getIfces().add(ifceA);
+
+
+        HashMap pathA = new HashMap();
+        pathA.put("name", "pathA");
+        ArrayList hopsA = new ArrayList();
+        pathA.put("hops", hopsA);
+        hopsA.add("10.32.0.61");
+        hopsA.add("10.32.0.18");
+
+
+        HashMap lspA = new HashMap();
+        lspA.put("primary", "lspPrimary");
+        lspA.put("protect", "lspProtect");
+        lspA.put("from", "10.96.0.2");
+        lspA.put("to", "10.32.0.18");
+        lspA.put("neighbor", "10.96.0.4");
+        lspA.put("path", "pathA");
+        lspA.put("bandwidth", 500);
+        params.getLsps().add(lspA);
+
+
+        String setup = cg.generateConfig(params, ActionType.SETUP);
+        System.out.println(setup);
+        String teardown = cg.generateConfig(params, ActionType.TEARDOWN);
+        System.out.println(teardown);
+
+
+    }
+
+    @Test(groups = { "mx-vpls-v2-res" })
+    private void testV2WithResDetails() throws PSSException, ConfigException   {
+        String output;
+
+        String srcDeviceId;
+        String dstDeviceId;
+        ResDetails rd;
+        PSSAction action = new PSSAction();
+        PSSRequest req = new PSSRequest();
+        action.setRequest(req);
+        SetupReqContent srq = new SetupReqContent();
+        TeardownReqContent trq = new TeardownReqContent();
+        req.setSetupReq(srq);
+        req.setTeardownReq(trq);
+        rd = RequestFactory.getMX_MX();
+        srq.setReservation(rd);
+        trq.setReservation(rd);
+
+        this.addOptConstraints(true, false, true, rd);
+
+
+        srcDeviceId = EoMPLSUtils.getDeviceId(rd, false);
+        dstDeviceId = EoMPLSUtils.getDeviceId(rd, false);
+
+        EoMPLSService svc = new EoMPLSService();
+        action.setActionType(ActionType.SETUP);
+        svc.prepareAction(action, rd);
+
+
+        MX_VPLS_V2_ConfigGen v2cg = new MX_VPLS_V2_ConfigGen();
+
+        log.debug("starting setup MX-MX");
+        output     = v2cg.getSetup(action, srcDeviceId);
+        System.out.println(output);
+        output     = v2cg.getSetup(action, dstDeviceId);
+        System.out.println(output);
+
+    }
+
+
+    private void addOptConstraints(boolean hardPolice, boolean applyQos, boolean protect, ResDetails rd) {
+        OptionalConstraintType hp = new OptionalConstraintType();
+        hp.setCategory("policing");
+        hp.setValue(new OptionalConstraintValue());
+        if (hardPolice) hp.getValue().setStringValue("hard");
+        else hp.getValue().setStringValue("soft");
+
+        rd.getOptionalConstraint().add(hp);
+
+        OptionalConstraintType qos = new OptionalConstraintType();
+        qos.setCategory("apply-qos");
+        qos.setValue(new OptionalConstraintValue());
+        if (applyQos) qos.getValue().setStringValue("true");
+        else qos.getValue().setStringValue("false");
+        rd.getOptionalConstraint().add(qos);
+
+        OptionalConstraintType prot = new OptionalConstraintType();
+        prot.setCategory("protection");
+        prot.setValue(new OptionalConstraintValue());
+        if (protect) prot.getValue().setStringValue("loose-secondary-path");
+        else prot.getValue().setStringValue("none");
+        rd.getOptionalConstraint().add(prot);
+
+
+    }
+
+    @Test(groups = { "vpls" })
     public void testWithResDetails() throws PSSException, ConfigException  {
 
         String output;

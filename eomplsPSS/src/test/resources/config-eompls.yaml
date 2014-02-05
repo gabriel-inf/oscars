@@ -16,3 +16,5 @@ database:
     username: 'oscars'
     password: 'mypass'
 
+loopback:
+    cidr: "10.100.0.0/24"

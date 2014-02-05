@@ -14,6 +14,8 @@ import net.es.oscars.pss.enums.ActionStatus;
 import net.es.oscars.pss.enums.ActionType;
 import net.es.oscars.pss.eompls.api.EoMPLSDeviceAddressResolver;
 import net.es.oscars.pss.eompls.api.EoMPLSIfceAddressResolver;
+import net.es.oscars.pss.eompls.api.VplsImplementation;
+import net.es.oscars.pss.eompls.api.VplsV2ConfigGenerator;
 import net.es.oscars.pss.eompls.beans.LSP;
 import net.es.oscars.pss.eompls.dao.GCUtils;
 import net.es.oscars.pss.eompls.junos.SDNNameGenerator;
@@ -30,17 +32,19 @@ import org.apache.log4j.Logger;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneLinkContent;
 
-import java.lang.String;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class SR_VPLS_ConfigGen implements DeviceConfigGenerator, PostCommitConfigGen {
-    private Logger log = Logger.getLogger(SR_VPLS_ConfigGen.class);
-    public SR_VPLS_ConfigGen() throws ConfigException, PSSException {
+public class SR_VPLS_V2_ConfigGen implements DeviceConfigGenerator, PostCommitConfigGen, VplsV2ConfigGenerator {
+    private Logger log = Logger.getLogger(SR_VPLS_V2_ConfigGen.class);
+    public SR_VPLS_V2_ConfigGen() throws ConfigException, PSSException {
         VlanGroupConfig.configure();
 
+    }
+    public VplsImplementation getImplementation() {
+        return VplsImplementation.ALU;
     }
 
     public String getPostCommitConfig(PSSAction action, String deviceId) {
