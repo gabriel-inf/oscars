@@ -516,12 +516,7 @@ public class SR_VPLS_V2_ConfigGen implements DeviceConfigGenerator, PostCommitCo
 
         vpls.put("has_protect", protect);
         if (!sameDevice) {
-            if (vplsIds.getSecondaryVplsId().equals(VPLS_Identifier.NONE)) {
-                vpls.put("protect_id", vplsIds.getVplsId().toString());
-            } else {
-                vpls.put("protect_id", vplsIds.getSecondaryVplsId().toString());
-            }
-
+            vpls.put("protect_id", vplsIds.getSecondaryVplsId().toString());
             vpls.put("loopback_address", loopback.getVplsLoopback());
             vpls.put("loopback_ifce", gri);
         }

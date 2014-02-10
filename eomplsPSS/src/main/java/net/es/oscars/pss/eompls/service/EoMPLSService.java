@@ -141,7 +141,6 @@ public class EoMPLSService implements CircuitService {
 
         boolean all_supported = true;
         boolean one_supported = false;
-        boolean one_junos = false;
         boolean one_alu = false;
         boolean may_need_secondary_vpls_id = false;
 
@@ -152,9 +151,6 @@ public class EoMPLSService implements CircuitService {
             } else {
                 one_supported = true;
             }
-            if (implMap.get(deviceId).equals(VplsImplementation.JUNOS)) {
-                one_junos = true;
-            }
             if (implMap.get(deviceId).equals(VplsImplementation.ALU)) {
                 one_alu = true;
             }
@@ -164,7 +160,7 @@ public class EoMPLSService implements CircuitService {
         }
         if (!all_supported) return;
 
-        if (one_alu && one_junos) {
+        if (one_alu) {
             may_need_secondary_vpls_id = true;
         }
 
