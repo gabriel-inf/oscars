@@ -331,8 +331,15 @@ public class MX_VPLS_V2_ConfigGen implements DeviceConfigGenerator, VplsV2Config
         if (serviceParams.isProtection()) {
             filters.put("protect", protectFilterName);
             vpls.put("has_protect", true);
-            vpls.put("has_two_ids", true);
-            vpls.put("protect", vplsIds.getSecondaryVplsId().toString());
+            if (vplsIds.getSecondaryVplsId().equals(VPLS_Identifier.NONE)) {
+                vpls.put("has_two_ids", false);
+                vpls.put("protect", vplsIds.getSecondaryVplsId().toString());
+
+            } else {
+                vpls.put("has_two_ids", true);
+                vpls.put("protect", vplsIds.getSecondaryVplsId().toString());
+
+            }
 
         } else {
             vpls.put("has_protect", false);

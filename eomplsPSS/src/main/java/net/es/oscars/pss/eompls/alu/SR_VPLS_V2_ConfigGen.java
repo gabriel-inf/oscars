@@ -245,7 +245,7 @@ public class SR_VPLS_V2_ConfigGen implements DeviceConfigGenerator, PostCommitCo
 
     }
 
-    private SR_VPLS_TemplateParams getTeardownTemplateParams(ResDetails res, String deviceId, VPLS_Identifier gids, SR_VPLS_DeviceIdentifiers ids, VPLS_DeviceLoopback loopback) throws PSSException  {
+    private SR_VPLS_TemplateParams getTeardownTemplateParams(ResDetails res, String deviceId, VPLS_Identifier vplsIds, SR_VPLS_DeviceIdentifiers ids, VPLS_DeviceLoopback loopback) throws PSSException  {
         String gri = res.getGlobalReservationId();
 
         ArrayList ifces = new ArrayList();
@@ -327,9 +327,14 @@ public class SR_VPLS_V2_ConfigGen implements DeviceConfigGenerator, PostCommitCo
         ingqos.put("id", ids.getQosId().toString());
         egrqos.put("id", ids.getQosId().toString());
 
-        // protect is the SAME as primary in ALUs
-        vpls.put("primary_id", gids.getVplsId().toString());
-        vpls.put("protect_id", gids.getSecondaryVplsId().toString());
+        vpls.put("primary_id", vplsIds.getVplsId().toString());
+
+        if (vplsIds.getSecondaryVplsId().equals(VPLS_Identifier.NONE)) {
+            vpls.put("protect_id", vplsIds.getVplsId().toString());
+        } else {
+            vpls.put("protect_id", vplsIds.getSecondaryVplsId().toString());
+        }
+
         vpls.put("loopback_ifce", gri);
         vpls.put("loopback_address", loopback.getVplsLoopback());
         vpls.put("endpoint", vplsName);
@@ -511,7 +516,12 @@ public class SR_VPLS_V2_ConfigGen implements DeviceConfigGenerator, PostCommitCo
 
         vpls.put("has_protect", protect);
         if (!sameDevice) {
-            vpls.put("protect_id", vplsIds.getSecondaryVplsId().toString());
+            if (vplsIds.getSecondaryVplsId().equals(VPLS_Identifier.NONE)) {
+                vpls.put("protect_id", vplsIds.getVplsId().toString());
+            } else {
+                vpls.put("protect_id", vplsIds.getSecondaryVplsId().toString());
+            }
+
             vpls.put("loopback_address", loopback.getVplsLoopback());
             vpls.put("loopback_ifce", gri);
         }
