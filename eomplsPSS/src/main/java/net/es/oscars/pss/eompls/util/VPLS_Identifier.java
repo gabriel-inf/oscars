@@ -124,7 +124,7 @@ public class VPLS_Identifier {
         String thisGriScope = gri+":vpls";
         srlIds = SRLUtils.getExistingIdentifiers(thisGriScope, gri);
         if (srlIds == null || srlIds.size() == 0) {
-            throw new PSSException("no existing identifiers for gri scope: "+thisGriScope);
+            log.debug("no existing identifiers for gri scope: "+thisGriScope);
         } else {
             // release one
             log.debug("releasing a trick SRL: "+thisGriScope+" "+srlIds.get(0));

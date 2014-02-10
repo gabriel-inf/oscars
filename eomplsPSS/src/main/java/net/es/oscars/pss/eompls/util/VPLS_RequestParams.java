@@ -102,7 +102,7 @@ public class VPLS_RequestParams {
         for (String deviceId : deviceIds) {
             VPLS_DeviceLoopback loopback = VPLS_DeviceLoopback.reserve(gri, deviceId);
             result.put(deviceId, loopback);
-            log.debug("reserved "+deviceId+" loopback: "+loopback);
+            log.debug("reserved "+deviceId+" loopback: "+loopback.getVplsLoopback());
         }
         return result;
     }
