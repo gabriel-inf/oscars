@@ -651,12 +651,16 @@ public class VLSRConnector implements Connector {
      * @return the ingress or egress link description as an int
      *
      */
-    private int getLinkDescr(CtrlPlaneLinkContent link) {
+    private int getLinkDescr(CtrlPlaneLinkContent link) throws PSSException {
         String linkDescr = link.getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getVlanRangeAvailability();
         if (linkDescr == null) {
             return -1;
         } else {
+            try {
             return Integer.parseInt(linkDescr);
+            } catch (Exception ex) {
+                throw new PSSException("Expected specific VLAN tag or 'any' but got " + linkDescr);
+            }
         }
     }
 }

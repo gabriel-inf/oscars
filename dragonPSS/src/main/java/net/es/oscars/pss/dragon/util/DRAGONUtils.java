@@ -219,17 +219,23 @@ public class DRAGONUtils {
     public static ArrayList<String> getPathEro(CtrlPlanePathContent path, boolean isSubnet)
             throws PSSException{
         ArrayList<String> ero = new ArrayList<String>();
-        List<CtrlPlaneHopContent> hops = null;
-        try {
-            hops = PathTools.getLocalHops(path, PathTools.getLocalDomainId());
-        } catch (OSCARSServiceException e1) {
-            throw new PSSException("Error extracting local path: " + e1.getMessage());
-        }
 
-        int ctr = 1; // don't add first hop
-        // don't care about the last edge hop
-        while (ctr < hops.size()-1) {
-            CtrlPlaneHopContent hop = hops.get(ctr);
+        String localDomainId = PathTools.getLocalDomainId();
+        CtrlPlaneLinkContent ingLink = null;
+        CtrlPlaneLinkContent egrLink = null;
+        try {
+            ingLink = PathTools.getIngressLink(localDomainId, path);
+            egrLink = PathTools.getEgressLink(localDomainId, path);
+        } catch (Exception e) {
+            throw new PSSException("unable to resolve end point urn from resvDetails");
+        }
+ 
+        List<CtrlPlaneHopContent> hops = path.getHop();
+        for (CtrlPlaneHopContent hop: hops) {
+            if (hop.getLink().equals(ingLink))
+                continue;
+            else if (hop.getLink().equals(egrLink))
+                break;
             try {
                 if (!PathTools.getLocalDomainId().equals(NMWGParserUtil.normalizeURN(NMWGParserUtil.getURN(hop, NMWGParserUtil.DOMAIN_TYPE)))) {
                     continue;
@@ -247,7 +253,6 @@ public class DRAGONUtils {
             /* Skip hops that are DTLs and not subnets or vice versa (XOR) */
             if (((!isSubnet) && portId.startsWith("DTL")) || (isSubnet &&
                 (!portId.startsWith("DTL")))) {
-                ctr++;
                 continue;
             }
 
@@ -260,7 +265,6 @@ public class DRAGONUtils {
             }
             ero.add(linkId);
             log.info((isSubnet ? "SUBNET" : "") + "ERO: " + linkId);
-            ctr++;
         }
         if(ero.size() == 0){
             return null;

@@ -51,7 +51,7 @@ public class DRAGONService implements CircuitService {
             try {
                 conn.setupPath(res);
                 action.setStatus(ActionStatus.SUCCESS);
-            } catch (PSSException e) {
+            } catch (Exception e) {
                 action.setStatus(ActionStatus.FAIL);
                 ClassFactory.getInstance().getWorkflow().update(action);
                 coordNotify.process(action);
@@ -79,7 +79,7 @@ public class DRAGONService implements CircuitService {
             try {
                 conn.teardownPath(res);
                 action.setStatus(ActionStatus.SUCCESS);
-            } catch (PSSException e) {
+            } catch (Exception e) {
                 action.setStatus(ActionStatus.FAIL);
                 ClassFactory.getInstance().getWorkflow().update(action);
                 coordNotify.process(action);
@@ -113,7 +113,7 @@ public class DRAGONService implements CircuitService {
                 // TODO: also check destination vlsr status
                 else
                     action.setStatus(ActionStatus.FAIL); // UNKNOWN ?
-            } catch (PSSException e) {
+            } catch (Exception e) {
                 action.setStatus(ActionStatus.FAIL);
                 ClassFactory.getInstance().getWorkflow().update(action);
                 coordNotify.process(action);
