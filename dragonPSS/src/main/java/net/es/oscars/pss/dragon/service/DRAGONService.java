@@ -55,7 +55,7 @@ public class DRAGONService implements CircuitService {
                 action.setStatus(ActionStatus.FAIL);
                 ClassFactory.getInstance().getWorkflow().update(action);
                 coordNotify.process(action);
-                throw e;
+                throw new PSSException(e.getMessage());
             }
             results.add(action);
             ClassFactory.getInstance().getWorkflow().update(action);
@@ -83,7 +83,7 @@ public class DRAGONService implements CircuitService {
                 action.setStatus(ActionStatus.FAIL);
                 ClassFactory.getInstance().getWorkflow().update(action);
                 coordNotify.process(action);
-                throw e;
+                throw new PSSException(e.getMessage());
             }
             results.add(action);
             ClassFactory.getInstance().getWorkflow().update(action);
@@ -117,7 +117,7 @@ public class DRAGONService implements CircuitService {
                 action.setStatus(ActionStatus.FAIL);
                 ClassFactory.getInstance().getWorkflow().update(action);
                 coordNotify.process(action);
-                throw e;
+                throw new PSSException(e.getMessage());
             }
             results.add(action);
             ClassFactory.getInstance().getWorkflow().update(action);
