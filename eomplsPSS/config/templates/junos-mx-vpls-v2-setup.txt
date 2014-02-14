@@ -48,6 +48,9 @@ top
 
 
 
+
+
+
 <#if lsps??>
 # anything below here only for multi-device LSPs
 
@@ -56,13 +59,42 @@ edit interfaces lo0 unit 0 family inet
 set address ${vpls.loopback}
 top
 
-# firewall: primary path filter
+### firewall: primary path filter - only counts by default
 edit firewall family any filter ${filters.primary} term oscars then
 set count oscars
-set loss-priority low
-set forwarding-class expedited-forwarding-vc
 set accept
 top
+
+<#if applyqos>
+#### QoS feature
+edit firewall family any filter ${filters.primary}
+set loss-priority low
+set forwarding-class best-effort-vc
+top
+
+top
+# firewall: primary path policer
+edit firewall policer ${policer.name}
+set if-exceeding bandwidth-limit ${policer.bandwidth_limit?string.computer}
+set if-exceeding burst-size-limit ${policer.burst_size_limit?string.computer}
+
+<#if softpolice>
+set then loss-priority high
+<#else>
+set then discard
+</#if>
+top
+
+# add the policer to the primary filter
+edit firewall family any filter ${filters.primary} term oscars then
+set policer ${policer.name}
+top
+
+#### End QoS feature
+</#if>
+
+
+
 
 
 # paths
@@ -122,30 +154,6 @@ top
 
 
 
-<#if applyqos>
-#### QoS feature
-
-# firewall: primary path policer
-edit firewall policer ${policer.name}
-set if-exceeding bandwidth-limit ${policer.bandwidth_limit?string.computer}
-set if-exceeding burst-size-limit ${policer.burst_size_limit?string.computer}
-
-<#if softpolice>
-set then loss-priority high
-<#else>
-set then discard
-</#if>
-top
-
-# add the policer to the filter
-edit firewall family any filter ${filters.primary} term oscars then
-set policer ${policer.name}
-top
-</#if>
-
-
-
-
 
 <#if protect>
 #### Loose Path Protection feature
@@ -189,6 +197,7 @@ set community ${community.name}
 set encapsulation-type ethernet-vlan
 </#list>
 </#if>
+### end Loose Path Protection feature
 </#if>
 
 
