@@ -58,7 +58,10 @@ public class VPLS_DeviceLoopback {
         List<Integer> ids = SRLUtils.releaseIdentifiers(loopbackScope, newGri);
 
 
+
         VPLS_DeviceLoopback devIds = new VPLS_DeviceLoopback();
+        if (ids.size() == 0) return devIds;
+
         Integer offset = ids.get(0);
         LoopbackConfig lc = EoMPLSConfigHolder.getInstance().getEomplsBaseConfig().getLoopback();
         String cidr = lc.getCidr();
