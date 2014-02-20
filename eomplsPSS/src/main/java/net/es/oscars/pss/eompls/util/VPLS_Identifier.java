@@ -161,6 +161,9 @@ public class VPLS_Identifier {
                 log.debug("found vpls ids: " + vplsIds.get(0) +" "+ vplsIds.get(1)+" but not releasing yet");
             }
         } else {
+            if (srlIds == null) {
+                log.debug("already released for scope: "+vplsScope+" gri: "+gri);
+            }
             if (srlIds.size() == 1) {
                 vplsIds = SRLUtils.releaseIdentifiers(vplsScope, gri);
                 srids.setVplsId(vplsIds.get(0));
