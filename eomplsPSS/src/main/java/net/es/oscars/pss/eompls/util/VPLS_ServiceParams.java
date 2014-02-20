@@ -43,18 +43,28 @@ public class VPLS_ServiceParams {
             if (oct.getCategory().equals("policing")) {
                 if (oct.getValue().getStringValue().equals("hard")) {
                     params.setSoftPolice(false);
-                } else {
+                } else if (oct.getValue().getStringValue().equals("soft")) {
                     params.setSoftPolice(true);
+                } else {
+                    log.error("invalid softpolice value:"+oct.getValue().getStringValue());
                 }
             }
             if (oct.getCategory().equals("apply-qos")) {
                 if (oct.getValue().getStringValue().equals("true")) {
                     params.setApplyQos(true);
+                } else if (oct.getValue().getStringValue().equals("false")) {
+                    params.setApplyQos(false);
+                } else {
+                    log.error("invalid apply-qos value:"+oct.getValue().getStringValue());
                 }
             }
             if (oct.getCategory().equals("protection")) {
                 if (oct.getValue().getStringValue().equals("loose-secondary-path")) {
                     params.setProtection(true);
+                } else if (oct.getValue().getStringValue().equals("none")) {
+                    params.setProtection(false);
+                } else {
+                    log.error("invalid protection value:"+oct.getValue().getStringValue());
                 }
             }
         }
