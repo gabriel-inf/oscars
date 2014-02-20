@@ -12,6 +12,7 @@ package edu.internet2.ion.ionui.servlets;
  */
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.InputStreamReader;
 import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -22,6 +23,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
+import java.net.URL;
+import java.net.MalformedURLException;
+import java.util.HashMap;
+import java.util.Map;
+import au.com.bytecode.opencsv.CSVReader;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -70,28 +76,6 @@ import net.es.oscars.wbui.servlets.ServletCore;
 import net.es.oscars.wbui.servlets.ServletUtils;
 import net.es.oscars.wbui.servlets.CheckSessionReply;
 
-
-
-//commented below for ion porting
-/*
-import net.es.oscars.ConfigFinder;
-import net.es.oscars.PropHandler;
-import net.es.oscars.bss.BSSException;
-import net.es.oscars.bss.Reservation;
-import net.es.oscars.bss.topology.Layer2Data;
-import net.es.oscars.bss.topology.Layer3Data;
-import net.es.oscars.bss.topology.MPLSData;
-import net.es.oscars.bss.topology.Path;
-import net.es.oscars.bss.topology.PathElem;
-import net.es.oscars.bss.topology.PathElemParam;
-import net.es.oscars.bss.topology.PathElemParamSwcap;
-import net.es.oscars.bss.topology.PathElemParamType;
-import net.es.oscars.bss.topology.PathType;
-import net.es.oscars.rmi.RmiUtils;
-import net.es.oscars.rmi.bss.BssRmiInterface;
-import net.es.oscars.servlets.ServletUtils;
-import net.es.oscars.servlets.UserSession;
-*/
 import net.sf.json.JSONObject;
 
 import net.es.oscars.utils.validator.DataValidator; // add for endpoints
@@ -99,6 +83,7 @@ import net.es.oscars.utils.validator.DataValidator; // add for endpoints
 public class IONCreateReservation extends HttpServlet{
 //public class IONCreateReservation extends CreateReservation {
     private Logger log = Logger.getLogger(IONCreateReservation.class);
+    private String dataUrl;
     
     public void init(){
     	if(!DBUtil.loadJDBCDriver()){
@@ -115,6 +100,9 @@ public class IONCreateReservation extends HttpServlet{
 		log.error("Exception trying to initialise PS Host lookup" + oscarsServiceExcep);
 	}
 	// end check for LS
+
+     	Map<String,Object> endPointsData = IONUIUtils.getEndpointURL();
+ 	this.dataUrl = (String) endPointsData.get("endpointData.url");
     }
     
     public void doGet(HttpServletRequest request, HttpServletResponse response) 
@@ -122,16 +110,6 @@ public class IONCreateReservation extends HttpServlet{
         String methodName= "CreateReservation";
         PrintWriter out = response.getWriter();
         
-        //authenticate the reservation
-        /* comment for porting
-        UserSession userSession = new UserSession();
-        String userName = userSession.checkSession(out, request, methodName);
-        if (userName == null) {
-            return;
-        }
-        */
-        
-        //new addition for porting
         String transId  = PathTools.getLocalDomainId() + "-IONUI-" + UUID.randomUUID().toString();
         OSCARSNetLogger netLogger = new OSCARSNetLogger();
         netLogger.init(ServiceNames.SVC_IONUI,transId);
@@ -161,30 +139,6 @@ public class IONCreateReservation extends HttpServlet{
         response.setContentType("application/json");
         HashMap<String, Object> outputMap = new HashMap<String, Object>();
 
-        /*
-        Reservation resv = null;
-        Path requestedPath = null;
-        try {
-            resv = this.toReservation(userName, request);
-            requestedPath = this.handlePath(request);
-            resv.setPath(requestedPath);
-        } catch (BSSException e) {
-            ServletUtils.handleFailure(out, log, e, methodName);
-            return;
-        }
-        
-        String gri = null;
-        try {
-            BssRmiInterface rmiClient =
-                RmiUtils.getBssRmiClient(methodName, log);
-            gri = rmiClient.createReservation(resv, userName);
-        } catch (Exception ex) {
-            ServletUtils.handleFailure(out, log, ex, methodName);
-            return;
-        }
-                
-        */ //commenting for ION porting, to replace with block below
-        
         List<AttributeType> userAttributes = sessionReply.getAttributes();
         SubjectAttributes subjectAttrs = new SubjectAttributes();
         List<AttributeType> reqAttrs = subjectAttrs.getSubjectAttribute();
@@ -254,67 +208,11 @@ public class IONCreateReservation extends HttpServlet{
         this.doGet(request, response);
     }
 
-    /*
-    private Reservation
-        toReservation(String userName, HttpServletRequest request)
-           throws BSSException {
-
-        String strParam = null;
-        Long bandwidth = null;
-        Long seconds = 0L;
-
-        Reservation resv = new Reservation();
-        resv.setLogin(userName);
-
-        // necessary type conversions performed here; validation done in
-        // ReservationManager
-        strParam = request.getParameter("startSeconds");
-        if (strParam != null && !strParam.trim().equals("")) {
-            seconds = Long.parseLong(strParam.trim());
-        } else {
-            throw new BSSException("error: start time is a required parameter");
-        }
-        resv.setStartTime(seconds);
-
-        strParam = request.getParameter("endSeconds");
-        if (strParam != null && !strParam.trim().equals("")) {
-            seconds = Long.parseLong(strParam.trim());
-        } else {
-            throw new BSSException("error: end time is a required parameter");
-        }
-        resv.setEndTime(seconds);
-
-        strParam = request.getParameter("bandwidth");
-        if (strParam != null && !strParam.trim().equals("")) {
-            bandwidth = Long.valueOf(strParam.trim()) * 1000000L;
-        } else {
-            throw new BSSException("error: bandwidth is a required parameter.");
-        }
-        resv.setBandwidth(bandwidth);
-
-        String description = "";
-        strParam = request.getParameter("description");
-        if (strParam != null && !strParam.trim().equals("")) {
-            description = strParam.trim();
-        }
-
-        strParam = request.getParameter("productionType");
-        // if not blank, check box indicating production circuit was checked
-        if (strParam != null && !strParam.trim().equals("")) {
-            this.log.info("production reservation created");
-            description = "[PRODUCTION CIRCUIT] " + description;
-        } else {
-            this.log.debug("non-production circuit");
-        }
-        resv.setDescription(description);
-        return resv;
-    }
-*/ //commenting to replace with below
-    
     private ResCreateContent
     toReservation(String userName, HttpServletRequest request)
        throws OSCARSServiceException {
-    this.log.debug("toReservation:start");
+        this.log.debug("toReservation:start");
+
 
     String strParam = null;
     Integer bandwidth = null;
@@ -413,6 +311,36 @@ public class IONCreateReservation extends HttpServlet{
         } else {
             throw new OSCARSServiceException("error:  destination is a required parameter");
         }
+
+        // replace the names with friendly names if needed        
+        Map<String, String> friendlyNameMap = new HashMap<String, String>();
+
+        CSVReader csvReader = null;
+        try {
+          URL dataUrl = new URL(this.dataUrl);
+          csvReader = new CSVReader(new InputStreamReader(dataUrl.openStream()));
+          String [] record = null;
+          while((record = csvReader.readNext()) != null){
+              friendlyNameMap.put(record[0], record[1]);
+          }
+        }catch (MalformedURLException e) {
+            this.log.error(e.getMessage());
+        } catch (Exception e) {
+            this.log.error(e.getMessage());
+        }
+
+        this.log.error("Source: "+source);
+        if (friendlyNameMap.get(source) != null) { 
+            source = friendlyNameMap.get(source);
+            this.log.error("New Source: "+source);
+        }
+
+        this.log.error("Dest: "+destination);
+        if (friendlyNameMap.get(destination) != null) { 
+            destination = friendlyNameMap.get(destination);
+            this.log.error("New Dest: "+destination);
+        }
+
         CtrlPlanePathContent path = new CtrlPlanePathContent ();
         List<CtrlPlaneHopContent> pathHops = path.getHop();
         strParam = request.getParameter("explicitPath");

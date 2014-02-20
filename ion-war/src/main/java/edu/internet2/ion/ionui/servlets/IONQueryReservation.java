@@ -2,6 +2,7 @@ package edu.internet2.ion.ionui.servlets;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.InputStreamReader;
 //import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -12,7 +13,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 import java.util.UUID;
-
+import java.net.URL;
+import java.net.MalformedURLException;
+import au.com.bytecode.opencsv.CSVReader;
+ 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -61,6 +65,7 @@ import net.es.oscars.common.soap.gen.OSCARSFaultReport;
 
 public class IONQueryReservation extends QueryReservation{
     private Logger log = Logger.getLogger(IONQueryReservation.class);
+    private String dataUrl;
     
     public void init(){
     	if(!DBUtil.loadJDBCDriver()){
@@ -68,6 +73,9 @@ public class IONQueryReservation extends QueryReservation{
             return;
         }
         log.debug("JDBC driver loaded");
+    	Map<String,Object> endPointsData = IONUIUtils.getEndpointURL();
+	this.dataUrl = (String) endPointsData.get("endpointData.url");
+        this.log.error("Data URL: "+this.dataUrl);
     }
     
     public void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -163,7 +171,8 @@ public class IONQueryReservation extends QueryReservation{
             ServletUtils.handleFailure(out, this.log, oscarsExcep, methodName);
             return;
         }
-        
+
+
         if (resDetails.getStatus() == null) {
             outputMap.put("status", "Reservation details for " + gri);
         } else {
@@ -210,11 +219,55 @@ public class IONQueryReservation extends QueryReservation{
             outputMap.put("favorite", fav);
             log.warn("---FAV??"+ fav); 
         } catch (SQLException e) {
-            this.log.error(e.getMessage());
+            this.log.error("SQL Exception: "+e.getMessage());
         } finally{
             DBUtil.closeConnection(conn);
         }
-        
+
+        this.log.error("Now we're doing the friendly name lookup");
+
+        // replace the names with friendly names if needed        
+        Map<String, String> friendlyNameMap = new HashMap<String, String>();
+
+        CSVReader csvReader = null;
+        try {
+          this.log.error("Data URL: "+this.dataUrl);
+          URL dataUrl = new URL(this.dataUrl);
+          csvReader = new CSVReader(new InputStreamReader(dataUrl.openStream()));
+          String [] record = null;
+          while((record = csvReader.readNext()) != null){
+              log.error("Adding mapping: "+record[1]+" -> "+record[0]);
+              friendlyNameMap.put(record[1], record[0]);
+          }
+        }catch (MalformedURLException e) {
+            this.log.error("Malformed URL: "+e.getMessage());
+        } catch (Exception e) {
+            this.log.error(e.getMessage());
+        }
+ 
+        log.error("Source Name: "+outputMap.get("sourceNameReplace"));
+        if (outputMap.get("sourceNameReplace") != null && 
+            friendlyNameMap.get(outputMap.get("sourceNameReplace")) != null) {
+            outputMap.put("sourceNameReplace", friendlyNameMap.get(outputMap.get("sourceNameReplace")));
+        }
+        else if (outputMap.get("sourceReplace") != null && 
+            friendlyNameMap.get(outputMap.get("sourceReplace")) != null) {
+            outputMap.put("sourceReplace", friendlyNameMap.get(outputMap.get("sourceReplace")));
+        }
+
+        log.error("Source Name: "+outputMap.get("sourceNameReplace"));
+
+        log.warn("Destination Name: "+outputMap.get("destinationNameReplace"));
+        if (outputMap.get("destinationNameReplace") != null && 
+            friendlyNameMap.get(outputMap.get("destinationNameReplace")) != null) {
+            outputMap.put("destinationNameReplace", friendlyNameMap.get(outputMap.get("destinationNameReplace")));
+        }
+        else if (outputMap.get("destinationReplace") != null && 
+            friendlyNameMap.get(outputMap.get("destinationReplace")) != null) {
+            outputMap.put("destinationReplace", friendlyNameMap.get(outputMap.get("destinationReplace")));
+        }
+        log.warn("Destination Name: "+outputMap.get("destinationNameReplace"));
+
         outputMap.put("method", methodName);
         outputMap.put("success", Boolean.TRUE);
         JSONObject jsonObject = JSONObject.fromObject(outputMap);
