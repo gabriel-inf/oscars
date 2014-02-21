@@ -3,7 +3,6 @@
 <#assign protect = vpls.has_protect >
 
 
-<#if applyqos>
 exit all
 configure qos sap-ingress ${ingqos.id} create
 exit all
@@ -13,15 +12,18 @@ configure qos sap-ingress ${ingqos.id} queue 1 create
 exit all
 configure qos sap-ingress ${ingqos.id} queue 2 create
 exit all
+configure qos sap-ingress ${ingqos.id} queue 3 create
+exit all
 configure qos sap-ingress ${ingqos.id} queue 11 multipoint create
 exit all
 configure qos sap-ingress ${ingqos.id} fc "ef" create
 exit all
 configure qos sap-ingress ${ingqos.id} fc "ef" queue 2
 exit all
-configure qos sap-ingress ${ingqos.id} default-fc ef
+configure qos sap-ingress ${ingqos.id} fc "l1" create
 exit all
-
+configure qos sap-ingress ${ingqos.id} fc "l1" queue 3
+exit all
 
 configure qos sap-egress ${egrqos.id} create
 exit all
@@ -29,24 +31,48 @@ configure qos sap-egress ${egrqos.id} description "${egrqos.description}"
 exit all
 configure qos sap-egress ${egrqos.id} queue 1 create
 exit all
-configure qos sap-egress ${egrqos.id} queue 2 create
+configure qos sap-egress ${egrqos.id} queue 2 expedite create
 exit all
-configure qos sap-egress ${egrqos.id} queue 2 percent-rate 100.00 cir 100.00 port-limit
+configure qos sap-egress ${egrqos.id} queue 3 best-effort create
 exit all
 configure qos sap-egress ${egrqos.id} fc "ef" create
 exit all
 configure qos sap-egress ${egrqos.id} fc "ef" queue 2
 exit all
+configure qos sap-egress ${egrqos.id} fc "l1" create
+exit all
+configure qos sap-egress ${egrqos.id} fc "l1" queue 3
+exit all
 
+
+
+
+
+<#if applyqos>
+configure qos sap-ingress  ${ingqos.id} default-fc "ef"
 
 
 <#if softpolice>
 configure qos sap-ingress ${ingqos.id} queue 2 rate max cir ${ingqos.bandwidth?string.computer}000
+configure qos sap-egress ${egrqos.id} queue 2 rate max cir ${ingqos.bandwidth?string.computer}000
 <#else>
 configure qos sap-ingress ${ingqos.id} queue 2 rate ${ingqos.bandwidth?string.computer}000 cir ${ingqos.bandwidth?string.computer}000
+configure qos sap-egress ${egrqos.id} queue 2 rate ${ingqos.bandwidth?string.computer}000 cir ${ingqos.bandwidth?string.computer}000
 </#if>
 
+<#if protect>
+configure qos sap-egress ${egrqos.id} queue 3 rate max cir 1000
 </#if>
+
+<#else>
+# not applyqos
+configure qos sap-ingress ${ingqos.id} default-fc "l1"
+configure qos sap-ingress ${ingqos.id} queue 3 rate max cir 0
+configure qos sap-egress ${egrqos.id} queue 3 rate max cir 0
+
+</#if>
+# end if applyqos
+
 exit all
 
 
