@@ -84,11 +84,9 @@ exit all
 </#if>
 
 
-<#if applyqos>
 configure qos no sap-ingress ${ingqos.id}
 configure qos no sap-egress ${egrqos.id}
 exit all
-</#if>
 
 
 
