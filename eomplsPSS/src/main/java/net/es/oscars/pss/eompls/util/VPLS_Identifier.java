@@ -163,8 +163,7 @@ public class VPLS_Identifier {
         } else {
             if (srlIds == null) {
                 log.debug("already released for scope: "+vplsScope+" gri: "+gri);
-            }
-            if (srlIds.size() == 1) {
+            } else if (srlIds.size() == 1) {
                 vplsIds = SRLUtils.releaseIdentifiers(vplsScope, gri);
                 srids.setVplsId(vplsIds.get(0));
                 idString = StringUtils.join(vplsIds, ", ");
