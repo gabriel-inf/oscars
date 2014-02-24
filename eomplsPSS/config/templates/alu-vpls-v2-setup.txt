@@ -177,10 +177,8 @@ exit all
 configure service vpls ${vpls.primary_id} sap ${ifce.name}:${ifce.vlan} auto-learn-mac-protect
 configure service vpls ${vpls.primary_id} sap ${ifce.name}:${ifce.vlan} restrict-protected-src discard-frame
 configure service vpls ${vpls.primary_id} sap ${ifce.name}:${ifce.vlan} description "${ifce.description}"
-<#if applyqos>
 configure service vpls ${vpls.primary_id} sap ${ifce.name}:${ifce.vlan} ingress qos ${ingqos.id}
 configure service vpls ${vpls.primary_id} sap ${ifce.name}:${ifce.vlan} egress qos ${egrqos.id}
-</#if>
 configure service vpls ${vpls.primary_id} sap ${ifce.name}:${ifce.vlan} no shutdown
 </#list>
 
