@@ -1,0 +1,6 @@
+#!/bin/sh 
+#usage idc-circuitlist
+#  -Djavax.net.debug=all will dump the ssl messages
+vers=`cat $OSCARS_DIST/VERSION`
+java -Done-jar.main.class=net.es.oscars.tools.monitoring.common.CicuitListCLI -jar $OSCARS_DIST/tools/target/tools-$vers.one-jar.jar -c $OSCARS_HOME/Tools/conf/circuitlist.yaml -l $OSCARS_HOME/Tools/conf/circuitlist.log4j.properties
+

@@ -5,7 +5,7 @@
 %define oscars_home /etc/oscars
 %define log_dir /var/log/oscars
 %define run_dir /var/run/oscars
-%define relnum 1 
+%define relnum 2 
 
 Name:           oscars-%{package_name}
 Version:        0.6.1
@@ -60,6 +60,8 @@ install -m 755 bin/parseManifest.sh %{buildroot}/%{install_base}/bin/
 #Run exportconfig
 mkdir -p %{buildroot}/%{oscars_home}/%{service_name}/conf
 cp %{package_name}/config/manifest.yaml %{buildroot}/%{oscars_home}/%{service_name}/conf/manifest.yaml
+cp %{package_name}/config/circuitlist.yaml %{buildroot}/%{oscars_home}/%{service_name}/conf/circuitlist.yaml
+cp %{package_name}/config/circuitlist.log4j.properties %{buildroot}/%{oscars_home}/%{service_name}/conf/circuitlist.log4j.properties
 
 #Update scripts in bin to point to default one-jar
 perl -e 's/^vers=/#vers=/g' -pi $(find %{buildroot}/%{install_base}/bin -type f)

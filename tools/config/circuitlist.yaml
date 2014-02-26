@@ -1,0 +1,9 @@
+dataSources:
+ - type: "oscars-circuits"
+   oscarsUrl: "https://localhost:9001/OSCARS"
+   keystore: "/etc/oscars/keystores/oscars.jks"
+   keystoreUser: "mykey"
+   keystorePassword: "changeit"
+
+outputters:
+ - type: "json"
