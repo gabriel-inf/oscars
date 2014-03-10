@@ -4,18 +4,17 @@ import java.util.List;
 
 import javax.xml.bind.JAXBElement;
 
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.ConnectionStatesType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.DataPlaneStatusType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.QueryRecursiveResultCriteriaType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.QueryRecursiveResultType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.QuerySummaryResultCriteriaType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.QuerySummaryResultType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.ScheduleType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.types.ServiceExceptionType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.types.TypeValuePairType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.point2point.EthernetVlanType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.types.OrderedStpType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.types.StpType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.ConnectionStatesType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.DataPlaneStatusType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.QueryRecursiveResultCriteriaType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.QueryRecursiveResultType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.QuerySummaryResultCriteriaType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.QuerySummaryResultType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.ScheduleType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.types.ServiceExceptionType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.types.TypeValuePairType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.services.point2point.P2PServiceBaseType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.services.types.OrderedStpType;
 
 /**
  * Outputs results using a human-readable text format
@@ -107,47 +106,42 @@ public class QueryPrettyOutputter implements QueryOutputter{
     }
 
     private void outputCritAny(List<Object> any) {
-        EthernetVlanType evts = null;
+        P2PServiceBaseType p2p = null;
         for (Object o : any) {
-            if (o instanceof EthernetVlanType ) {
-                evts = (EthernetVlanType) o;
+            if (o instanceof P2PServiceBaseType ) {
+                p2p = (P2PServiceBaseType) o;
             } else {
                 try {
-                    JAXBElement<EthernetVlanType> payload = (JAXBElement<EthernetVlanType>) o;
-                    evts = payload.getValue();
+                    JAXBElement<P2PServiceBaseType> payload = (JAXBElement<P2PServiceBaseType>) o;
+                    p2p = payload.getValue();
                 } catch (ClassCastException ex) {
-                    evts = null;
+                    p2p = null;
                 }
 
             }
         }
-        if(evts != null){
-            System.out.println("\tCapacity: " + evts.getCapacity());
-            if(evts.getSourceSTP() != null){
-                System.out.println("\tSource STP:");
-                outputSTP(evts.getSourceSTP());
+
+        if(p2p != null){
+            System.out.println("\tCapacity: " + p2p.getCapacity());
+            if(p2p.getSourceSTP() != null){
+                System.out.println("\tSource STP: " + p2p.getSourceSTP());
             }
-            if(evts.getSourceSTP() != null){
-                System.out.println("\tDestination STP:");
-                outputSTP(evts.getDestSTP());
+            if(p2p.getSourceSTP() != null){
+                System.out.println("\tDestination STP: " + p2p.getDestSTP());
             }
-            System.out.println("\tSource VLAN: " + evts.getSourceVLAN());
-            System.out.println("\tDestination VLAN: " + evts.getDestVLAN());
-            if(evts.getDirectionality() != null){
-                System.out.println("\tDirectionality: " + evts.getDirectionality().value());
+            if(p2p.getDirectionality() != null){
+                System.out.println("\tDirectionality: " + p2p.getDirectionality().value());
             }
-            if(evts.getEro() != null && evts.getEro().getOrderedSTP() != null &&
-                    !evts.getEro().getOrderedSTP().isEmpty()){
+            if(p2p.getEro() != null && p2p.getEro().getOrderedSTP() != null &&
+                    !p2p.getEro().getOrderedSTP().isEmpty()){
                 System.out.println("\tERO:");
-                for(OrderedStpType hop: evts.getEro().getOrderedSTP()){
+                for(OrderedStpType hop: p2p.getEro().getOrderedSTP()){
                     System.out.println("\t\tOrder:" + hop.getOrder());
-                    outputSTP(hop.getStp());
+                    System.out.println("STP: "+hop.getStp());
                     System.out.println();
                 }
             }
-            System.out.println("\tBurst Size: " + evts.getBurstsize());
-            System.out.println("\tMTU: " + evts.getMtu());
-            System.out.println("\tSymmetric Path: " + evts.isSymmetricPath());
+            System.out.println("\tSymmetric Path: " + p2p.isSymmetricPath());
         }
         
     }
@@ -180,23 +174,6 @@ public class QueryPrettyOutputter implements QueryOutputter{
         }
         
     }
-    
-    private void outputSTP(StpType sourceSTP) {
-        System.out.println("\t\tNetwork ID:" + sourceSTP.getNetworkId());
-        System.out.println("\t\tLocal ID:" + sourceSTP.getLocalId());
-        if(sourceSTP.getLabels() != null && 
-                sourceSTP.getLabels().getAttribute() != null && 
-                !sourceSTP.getLabels().getAttribute().isEmpty()){
-            System.out.println("\t\tLabels:");
-            for(TypeValuePairType attr : sourceSTP.getLabels().getAttribute()){
-                System.out.println("\t\t\tType: " + attr.getType());
-                if(attr.getValue() != null && !attr.getValue().isEmpty()){
-                    for(String val : attr.getValue()){
-                        System.out.println("\t\t\tValue: " + val);
-                    }
-                }
-            }
-        }
 
-    }
+
 }

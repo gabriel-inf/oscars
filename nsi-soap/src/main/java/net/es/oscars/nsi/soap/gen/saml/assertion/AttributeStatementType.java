@@ -7,7 +7,9 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
+import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.headers.SessionSecurityAttrType;
 
 
 /**
@@ -33,6 +35,9 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AttributeStatementType", propOrder = {
     "attributeOrEncryptedAttribute"
+})
+@XmlSeeAlso({
+    SessionSecurityAttrType.class
 })
 public class AttributeStatementType
     extends StatementAbstractType

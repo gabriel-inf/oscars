@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <groupId>net.es.oscars</groupId>
     <artifactId>nsi-soap</artifactId>
-    <version>2013_07_r99</version>
+    <version>2014_03_r117</version>
 
     <modelVersion>4.0.0</modelVersion>
     <properties>
@@ -60,19 +60,19 @@
 
                                                 <extraarg>-autoNameResolution</extraarg>
                                                 <extraarg>-p</extraarg>
-                                                <extraarg>http://schemas.ogf.org/nsi/2013/07/services/point2point=net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.point2point</extraarg>
+                                                <extraarg>http://schemas.ogf.org/nsi/2013/12/services/point2point=net.es.oscars.nsi.soap.gen.nsi_2_0_r117.services.point2point</extraarg>
                                                 <extraarg>-p</extraarg>
-                                                <extraarg>http://schemas.ogf.org/nsi/2013/07/services/types=net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.types</extraarg>
+                                                <extraarg>http://schemas.ogf.org/nsi/2013/12/services/types=net.es.oscars.nsi.soap.gen.nsi_2_0_r117.services.types</extraarg>
                                                 <extraarg>-p</extraarg>
-                                                <extraarg>http://schemas.ogf.org/nsi/2013/07/framework/types=net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.types</extraarg>
+                                                <extraarg>http://schemas.ogf.org/nsi/2013/12/framework/types=net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.types</extraarg>
                                                 <extraarg>-p</extraarg>
-                                                <extraarg>http://schemas.ogf.org/nsi/2013/07/framework/headers=net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.headers</extraarg>
+                                                <extraarg>http://schemas.ogf.org/nsi/2013/12/framework/headers=net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.headers</extraarg>
                                                 <extraarg>-p</extraarg>
-                                                <extraarg>http://schemas.ogf.org/nsi/2013/07/connection/interface=net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.ifce</extraarg>
+                                                <extraarg>http://schemas.ogf.org/nsi/2013/12/connection/interface=net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.ifce</extraarg>
                                                 <extraarg>-p</extraarg>
-                                                <extraarg>http://schemas.ogf.org/nsi/2013/07/connection/types=net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types</extraarg>
+                                                <extraarg>http://schemas.ogf.org/nsi/2013/12/connection/types=net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types</extraarg>
                                                 <extraarg>-p</extraarg>
-                                                <extraarg>http://schemas.ogf.org/nsi/2013/07/connection/provider=net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.provider</extraarg>
+                                                <extraarg>http://schemas.ogf.org/nsi/2013/12/connection/provider=net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.provider</extraarg>
                                                 <extraarg>-p</extraarg>
                                                 <extraarg>urn:oasis:names:tc:SAML:2.0:assertion=net.es.oscars.nsi.soap.gen.saml.assertion</extraarg>
                                                 <extraarg>-p</extraarg>
@@ -85,7 +85,7 @@
                                                 <bindingFile>${basedir}/schema/NsiBindings.xml</bindingFile>
                                             </bindingFiles>
 
-                                            <wsdl>${basedir}/schema/2013_07/ConnectionService/ogf_nsi_connection_provider_v2_0.wsdl</wsdl>
+                                            <wsdl>${basedir}/schema/r117/ConnectionService/ogf_nsi_connection_provider_v2_0.wsdl</wsdl>
                                             c                                        </wsdlOption>
                                     </wsdlOptions>
                                 </configuration>
@@ -109,19 +109,19 @@
                                                 <extraarg>jaxws21</extraarg>
                                                 <extraarg>-autoNameResolution</extraarg>
                                                 <extraarg>-p</extraarg>
-                                                <extraarg>http://schemas.ogf.org/nsi/2013/07/services/point2point=net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.point2point</extraarg>
+                                                <extraarg>http://schemas.ogf.org/nsi/2013/12/services/point2point=net.es.oscars.nsi.soap.gen.nsi_2_0_r117.services.point2point</extraarg>
                                                 <extraarg>-p</extraarg>
-                                                <extraarg>http://schemas.ogf.org/nsi/2013/07/services/types=net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.types</extraarg>
+                                                <extraarg>http://schemas.ogf.org/nsi/2013/12/services/types=net.es.oscars.nsi.soap.gen.nsi_2_0_r117.services.types</extraarg>
                                                 <extraarg>-p</extraarg>
-                                                <extraarg>http://schemas.ogf.org/nsi/2013/07/framework/types=net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.types</extraarg>
+                                                <extraarg>http://schemas.ogf.org/nsi/2013/12/framework/types=net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.types</extraarg>
                                                 <extraarg>-p</extraarg>
-                                                <extraarg>http://schemas.ogf.org/nsi/2013/07/framework/headers=net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.headers</extraarg>
+                                                <extraarg>http://schemas.ogf.org/nsi/2013/12/framework/headers=net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.headers</extraarg>
                                                 <extraarg>-p</extraarg>
-                                                <extraarg>http://schemas.ogf.org/nsi/2013/07/connection/interface=net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.ifce</extraarg>
+                                                <extraarg>http://schemas.ogf.org/nsi/2013/12/connection/interface=net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.ifce</extraarg>
                                                 <extraarg>-p</extraarg>
-                                                <extraarg>http://schemas.ogf.org/nsi/2013/07/connection/types=net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types</extraarg>
+                                                <extraarg>http://schemas.ogf.org/nsi/2013/12/connection/types=net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types</extraarg>
                                                 <extraarg>-p</extraarg>
-                                                <extraarg>http://schemas.ogf.org/nsi/2013/07/connection/requester=net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.requester</extraarg>
+                                                <extraarg>http://schemas.ogf.org/nsi/2013/12/connection/requester=net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.requester</extraarg>
                                                 <extraarg>-p</extraarg>
                                                 <extraarg>urn:oasis:names:tc:SAML:2.0:assertion=net.es.oscars.nsi.soap.gen.saml.assertion</extraarg>
                                                 <extraarg>-p</extraarg>
@@ -131,7 +131,7 @@
 
                                             </extraargs>
 
-                                            <wsdl>${basedir}/schema/2013_07/ConnectionService/ogf_nsi_connection_requester_v2_0.wsdl</wsdl>
+                                            <wsdl>${basedir}/schema/r117/ConnectionService/ogf_nsi_connection_requester_v2_0.wsdl</wsdl>
                                             <bindingFiles>
                                                 <bindingFile>${basedir}/schema/NsiBindings.xml</bindingFile>
                                             </bindingFiles>
@@ -159,19 +159,19 @@
 
                                                 <extraarg>-autoNameResolution</extraarg>
                                                 <extraarg>-p</extraarg>
-                                                <extraarg>http://schemas.ogf.org/nsi/2013/07/services/point2point=net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.point2point</extraarg>
+                                                <extraarg>http://schemas.ogf.org/nsi/2013/12/services/point2point=net.es.oscars.nsi.soap.gen.nsi_2_0_r117.services.point2point</extraarg>
                                                 <extraarg>-p</extraarg>
-                                                <extraarg>http://schemas.ogf.org/nsi/2013/07/services/types=net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.types</extraarg>
+                                                <extraarg>http://schemas.ogf.org/nsi/2013/12/services/types=net.es.oscars.nsi.soap.gen.nsi_2_0_r117.services.types</extraarg>
                                                 <extraarg>-p</extraarg>
-                                                <extraarg>http://schemas.ogf.org/nsi/2013/07/framework/types=net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.types</extraarg>
+                                                <extraarg>http://schemas.ogf.org/nsi/2013/12/framework/types=net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.types</extraarg>
                                                 <extraarg>-p</extraarg>
-                                                <extraarg>http://schemas.ogf.org/nsi/2013/07/framework/headers=net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.headers</extraarg>
+                                                <extraarg>http://schemas.ogf.org/nsi/2013/12/framework/headers=net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.headers</extraarg>
                                                 <extraarg>-p</extraarg>
-                                                <extraarg>http://schemas.ogf.org/nsi/2013/07/connection/interface=net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.ifce</extraarg>
+                                                <extraarg>http://schemas.ogf.org/nsi/2013/12/connection/interface=net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.ifce</extraarg>
                                                 <extraarg>-p</extraarg>
-                                                <extraarg>http://schemas.ogf.org/nsi/2013/07/connection/types=net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types</extraarg>
+                                                <extraarg>http://schemas.ogf.org/nsi/2013/12/connection/types=net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types</extraarg>
                                                 <extraarg>-p</extraarg>
-                                                <extraarg>http://schemas.ogf.org/nsi/2013/07/connection/requester=net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.requester</extraarg>
+                                                <extraarg>http://schemas.ogf.org/nsi/2013/12/connection/requester=net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.requester</extraarg>
                                                 <extraarg>-p</extraarg>
                                                 <extraarg>urn:oasis:names:tc:SAML:2.0:assertion=net.es.oscars.nsi.soap.gen.saml.assertion</extraarg>
                                                 <extraarg>-p</extraarg>
@@ -181,7 +181,7 @@
 
                                             </extraargs>
 
-                                            <wsdl>${basedir}/schema/2013_07/ConnectionService/p2p_service.wsdl</wsdl>
+                                            <wsdl>${basedir}/schema/r117/ConnectionService/p2p_service.wsdl</wsdl>
                                             <bindingFiles>
                                                 <bindingFile>${basedir}/schema/NsiBindings.xml</bindingFile>
                                             </bindingFiles>
