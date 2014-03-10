@@ -14,7 +14,7 @@ import net.es.oscars.nsibridge.prov.DB_Util;
 import net.es.oscars.nsibridge.prov.NSI_SM_Holder;
 import net.es.oscars.nsibridge.prov.NSI_Util;
 import net.es.oscars.nsibridge.prov.RequestHolder;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.ifce.ServiceException;
 import net.es.oscars.nsibridge.task.*;
 import net.es.oscars.utils.task.TaskException;
 import net.es.oscars.utils.task.sched.Workflow;

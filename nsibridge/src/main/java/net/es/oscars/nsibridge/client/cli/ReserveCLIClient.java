@@ -14,22 +14,20 @@ import net.es.oscars.nsibridge.client.ClientUtil;
 import net.es.oscars.nsibridge.client.cli.handlers.ReserveHandler;
 import net.es.oscars.nsi.soap.util.output.ReserveOutputter;
 import net.es.oscars.nsi.soap.util.output.ReservePrettyOutputter;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.provider.ConnectionProviderPort;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.ReservationRequestCriteriaType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.ScheduleType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.types.TypeValuePairType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.point2point.EthernetVlanType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.point2point.ObjectFactory;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.types.DirectionalityType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.types.StpType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.provider.ConnectionProviderPort;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.ReservationRequestCriteriaType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.ScheduleType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.headers.CommonHeaderType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.services.point2point.P2PServiceBaseType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.services.point2point.ObjectFactory;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.services.types.DirectionalityType;
 
 /**
  * Client to create or modify a reservation
  */
 public class ReserveCLIClient {
     final static long DEFAULT_DURATION = 15*60*1000;//15 minutes
-    final static String DEFAULT_SERVICE_TYPE = "http://services.ogf.org/nsi/2013/07/descriptions/EVTS.A-GOLE";
+    final static String DEFAULT_SERVICE_TYPE = "http://services.ogf.org/nsi/2013/12/descriptions/EVTS.A-GOLE";
     
     public static void main(String[] args){
       //initialize input variables
@@ -44,12 +42,11 @@ public class ReserveCLIClient {
         ScheduleType schedule = new ScheduleType();
         criteria.setSchedule(schedule);
         ObjectFactory objFactory = new ObjectFactory();
-        EthernetVlanType evType = new EthernetVlanType();
-        criteria.getAny().add(objFactory.createEvts(evType));
-        StpType sourceSTP = new StpType();
-        StpType destSTP = new StpType();
-        evType.setSourceSTP(sourceSTP);
-        evType.setDestSTP(destSTP);
+        P2PServiceBaseType p2pType = new P2PServiceBaseType();
+        criteria.getAny().add(objFactory.createP2Ps(p2pType));
+
+
+
         criteria.setServiceType(DEFAULT_SERVICE_TYPE);
         ReserveOutputter outputter = new ReservePrettyOutputter();
         
@@ -61,14 +58,8 @@ public class ReserveCLIClient {
                 acceptsAll(Arrays.asList("r", "reply-url"), "the URL to which the provider should reply").withRequiredArg().ofType(String.class);
                 acceptsAll(Arrays.asList("l", "listener"), "Starts listener at reply-url. Should be given location of the bus configuration file.").withRequiredArg().ofType(String.class);
                 acceptsAll(Arrays.asList("f", "bus-file"), "bus file that describes charateristics of HTTP(S) connections").withRequiredArg().ofType(String.class);
-                acceptsAll(Arrays.asList("src-net"), "required. network portion of source STP").withRequiredArg().ofType(String.class);
-                acceptsAll(Arrays.asList("src-local"), "required. local portion of source STP").withRequiredArg().ofType(String.class);
-                acceptsAll(Arrays.asList("src-label"), "Comma separated list of source STP labels with label key separated by colon from value (e.g. VLAN:100,MYLABEL:2)").withRequiredArg().ofType(String.class);
-                acceptsAll(Arrays.asList("src-vlan"), "VLAN to assign to the source STP").withRequiredArg().ofType(Integer.class);
-                acceptsAll(Arrays.asList("dst-net"), "required. network portion of destination STP").withRequiredArg().ofType(String.class);
-                acceptsAll(Arrays.asList("dst-local"), "required. local portion of destination STP").withRequiredArg().ofType(String.class);
-                acceptsAll(Arrays.asList("dst-label"), "Comma separated list of destination STP labels with label key separated by colon from value (e.g. VLAN:100,MYLABEL:2)").withRequiredArg().ofType(String.class);
-                acceptsAll(Arrays.asList("dst-vlan"), "VLAN to assign to the destination STP").withRequiredArg().ofType(Integer.class);
+                acceptsAll(Arrays.asList("src-stp"), "required. network portion of source STP").withRequiredArg().ofType(String.class);
+                acceptsAll(Arrays.asList("dst-stp"), "required. network portion of destination STP").withRequiredArg().ofType(String.class);
                 acceptsAll(Arrays.asList("b", "begin"), "start time of reservation as Unix timestamp (default: the current time)").withRequiredArg().ofType(Long.class);
                 acceptsAll(Arrays.asList("e", "end"), "end time of reservation as Unix timestamp (default: 15 minutes after the start time)").withRequiredArg().ofType(Long.class);
                 acceptsAll(Arrays.asList("t", "service-type"), "the service type of the request").withRequiredArg().ofType(String.class);
@@ -125,72 +116,19 @@ public class ReserveCLIClient {
                 globalReservationId = (String)opts.valueOf("g");
             }
             
-            if(opts.has("src-net")){
-                sourceSTP.setNetworkId((String)opts.valueOf("src-net"));
+            if(opts.has("src-stp")){
+                p2pType.setSourceSTP((String)opts.valueOf("src-stp"));
             }else{
-                System.err.println("Missing required option src-net");
+                System.err.println("Missing required option src-stp");
                 System.exit(1);
             }
-            
-            if(opts.has("src-local")){
-                sourceSTP.setLocalId((String)opts.valueOf("src-local"));
+            if(opts.has("dst-stp")){
+                p2pType.setDestSTP((String)opts.valueOf("dst-stp"));
             }else{
-                System.err.println("Missing required option src-local");
+                System.err.println("Missing required option dst-stp");
                 System.exit(1);
             }
-            
-            if(opts.has("src-labels")){
-                String[] labels = ((String)opts.valueOf("src-labels")).split(",");
-                for(String label : labels){
-                    String[] lblParts = label.split(":");
-                    if(lblParts.length != 2){
-                        System.err.println("Invalid label " + label);
-                        System.exit(1);
-                    }
-                    TypeValuePairType tvpLabel = new TypeValuePairType();
-                    tvpLabel.setType(lblParts[0]);
-                    tvpLabel.getValue().add(lblParts[1]);
-                    sourceSTP.getLabels().getAttribute().add(tvpLabel );
-                }
-            }
-            
-            if(opts.has("src-vlan")){
-                evType.setSourceVLAN((Integer)opts.valueOf("src-vlan"));
-            }
-            
-            if(opts.has("dst-net")){
-                destSTP.setNetworkId((String)opts.valueOf("dst-net"));
-            }else{
-                System.err.println("Missing required option dst-net");
-                System.exit(1);
-            }
-            
-            if(opts.has("dst-local")){
-                destSTP.setLocalId((String)opts.valueOf("dst-local"));
-            }else{
-                System.err.println("Missing required option dst-local");
-                System.exit(1);
-            }
-            
-            if(opts.has("dst-labels")){
-                String[] labels = ((String)opts.valueOf("dst-labels")).split(",");
-                for(String label : labels){
-                    String[] lblParts = label.split(":");
-                    if(lblParts.length != 2){
-                        System.err.println("Invalid label " + label);
-                        System.exit(1);
-                    }
-                    TypeValuePairType tvpLabel = new TypeValuePairType();
-                    tvpLabel.setType(lblParts[0]);
-                    tvpLabel.getValue().add(lblParts[1]);
-                    destSTP.getLabels().getAttribute().add(tvpLabel );
-                }
-            }
-            
-            if(opts.has("dst-vlan")){
-                evType.setDestVLAN((Integer)opts.valueOf("dst-vlan"));
-            }
-            
+
             if(opts.has("b")){
                 schedule.setStartTime(ClientUtil.unixtimeToXMLGregCal(((Long)opts.valueOf("b")) * 1000L));
             }else{
@@ -204,12 +142,12 @@ public class ReserveCLIClient {
             }
             
             if(opts.has("c")){
-                evType.setCapacity((Long)opts.valueOf("c"));
+                p2pType.setCapacity((Long)opts.valueOf("c"));
             }
             
             if(opts.has("direction")){
                 try{
-                    evType.setDirectionality(DirectionalityType.valueOf((String)opts.valueOf("direction")));
+                    p2pType.setDirectionality(DirectionalityType.valueOf((String)opts.valueOf("direction")));
                 }catch(Exception e){
                     System.err.println("Invalid direction: " + opts.valueOf("direction"));
                     System.exit(1);
@@ -217,9 +155,9 @@ public class ReserveCLIClient {
             }
             
             if(opts.has("asymmetric")){
-                evType.setSymmetricPath(false);
+                p2pType.setSymmetricPath(false);
             }else{
-                evType.setSymmetricPath(true);
+                p2pType.setSymmetricPath(true);
             }
             
             if(opts.has("t")){

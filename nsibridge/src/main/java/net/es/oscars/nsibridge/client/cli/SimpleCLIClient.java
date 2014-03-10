@@ -8,9 +8,9 @@ import net.es.oscars.nsibridge.client.ClientUtil;
 import net.es.oscars.nsibridge.client.cli.handlers.SimpleOpHandler;
 import net.es.oscars.nsi.soap.util.output.SimpleOpOutputter;
 import net.es.oscars.nsi.soap.util.output.SimpleOpPrettyOutputter;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.provider.ConnectionProviderPort;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.ifce.ServiceException;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.provider.ConnectionProviderPort;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.headers.CommonHeaderType;
 
 import javax.xml.ws.Holder;
 import java.io.IOException;

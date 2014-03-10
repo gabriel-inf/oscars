@@ -7,9 +7,9 @@ import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.config.TimingConfig;
 import net.es.oscars.nsibridge.ifces.CallbackMessages;
 import net.es.oscars.nsibridge.oscars.OscarsStates;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.*;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.point2point.EthernetVlanType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.ifce.ServiceException;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.*;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.services.point2point.P2PServiceBaseType;
 import net.es.oscars.nsibridge.state.life.NSI_Life_SM;
 import net.es.oscars.nsibridge.state.life.NSI_Life_State;
 import net.es.oscars.nsibridge.state.life.NSI_Life_TH;
@@ -88,27 +88,27 @@ public class DB_Util {
         }
 
         ReservationRequestCriteriaType crit = rt.getCriteria();
-        EthernetVlanType evts = null;
+        P2PServiceBaseType p2pt = null;
         for (Object o : crit.getAny()) {
-            if (o instanceof EthernetVlanType ) {
-                evts = (EthernetVlanType) o;
+            if (o instanceof P2PServiceBaseType ) {
+                p2pt = (P2PServiceBaseType) o;
             } else {
                 try {
 
-                    JAXBElement<EthernetVlanType> payload = (JAXBElement<EthernetVlanType>) o;
-                    evts = payload.getValue();
+                    JAXBElement<P2PServiceBaseType> payload = (JAXBElement<P2PServiceBaseType>) o;
+                    p2pt = payload.getValue();
                 } catch (ClassCastException ex) {
                     log.error(ex);
-                    evts = null;
+                    p2pt = null;
                 }
             }
         }
 
-        if (evts == null) {
-            throw new ServiceException("Missing EthernetVlanType element!");
+        if (p2pt == null) {
+            throw new ServiceException("Missing P2PServiceBaseType element!");
         }
 
-        Long capacity = evts.getCapacity();
+        Long capacity = p2pt.getCapacity();
 
         rr.setCapacity(capacity);
         rr.setStartTime(crit.getSchedule().getStartTime().toGregorianCalendar().getTime());

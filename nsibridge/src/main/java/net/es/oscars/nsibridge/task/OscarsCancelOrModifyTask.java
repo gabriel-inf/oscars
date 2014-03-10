@@ -7,7 +7,7 @@ import net.es.oscars.nsibridge.config.TimingConfig;
 import net.es.oscars.nsibridge.oscars.*;
 import net.es.oscars.nsibridge.prov.DB_Util;
 import net.es.oscars.nsibridge.prov.TranslationException;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.ifce.ServiceException;
 import net.es.oscars.utils.task.RunState;
 import net.es.oscars.utils.task.TaskException;
 import org.apache.log4j.Logger;

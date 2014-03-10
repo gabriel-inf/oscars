@@ -7,12 +7,12 @@ import net.es.oscars.nsibridge.beans.QueryRequest;
 import net.es.oscars.nsibridge.client.ClientUtil;
 
 import net.es.oscars.nsibridge.prov.*;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.requester.ConnectionRequesterPort;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.QueryRecursiveResultType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.QuerySummaryConfirmedType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.types.ServiceExceptionType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.ifce.ServiceException;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.requester.ConnectionRequesterPort;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.QueryRecursiveResultType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.QuerySummaryConfirmedType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.headers.CommonHeaderType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.types.ServiceExceptionType;
 import org.apache.log4j.Logger;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
@@ -53,9 +53,9 @@ public class QueryRecursiveJob implements Job  {
             serviceEx.setText(ex.getMessage());
             serviceEx.setErrorId("500");
             try {
-                client.queryRecursiveFailed(serviceEx, request.getInHeader(), new  Holder<CommonHeaderType>());
-                log.info("Recursive query failed sent to " + request.getInHeader().getReplyTo() + 
-                        ", corr id: "+ request.getInHeader().getCorrelationId());
+                client.error(serviceEx, request.getInHeader(), new Holder<CommonHeaderType>());
+                log.info("Recursive query failed error sent to " + request.getInHeader().getReplyTo() +
+                         ", corr id: "+ request.getInHeader().getCorrelationId());
             } catch (ServiceException e) {
                 log.error("Could not send recursive query failure message: " + ex.getMessage());
             }

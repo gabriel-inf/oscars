@@ -3,7 +3,7 @@
         "networkId":        "urn:ogf:network:es.net:2013",
         "nsaId":            "urn:ogf:network:nsa:esnet",
         "protocolVersion":  "application/vdn.ogf.nsi.cs.v2.provider+soap",
-        "serviceType":      "http://services.ogf.org/nsi/2013/07/descriptions/EVTS.A-GOLE",
+        "serviceType":      "http://services.ogf.org/nsi/2013/12/descriptions/EVTS.A-GOLE",
         "stps": [
             {
                 "stpId":        "urn:ogf:network:es.net:2012:bi-es-startap",

@@ -6,7 +6,7 @@ import net.es.oscars.nsibridge.beans.db.ResvRecord;
 import net.es.oscars.nsibridge.oscars.OscarsStates;
 import net.es.oscars.nsibridge.oscars.OscarsUtil;
 import net.es.oscars.nsibridge.prov.DB_Util;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.ifce.ServiceException;
 import org.apache.log4j.Logger;
 
 public class OscarsSetupTask extends OscarsTask  {

@@ -2,6 +2,7 @@ package net.es.oscars.nsibridge.prov;
 
 import net.es.oscars.api.soap.gen.v06.*;
 import net.es.oscars.common.soap.gen.SubjectAttributes;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.services.point2point.P2PServiceBaseType;
 import net.es.oscars.nsibridge.beans.ResvRequest;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.beans.db.ResvRecord;
@@ -10,27 +11,9 @@ import net.es.oscars.nsibridge.config.nsa.NsaConfig;
 import net.es.oscars.nsibridge.config.nsa.NsaConfigProvider;
 import net.es.oscars.nsibridge.config.nsa.StpConfig;
 import net.es.oscars.nsibridge.oscars.OscarsProxy;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.ChildRecursiveType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.ChildSummaryType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.ConnectionStatesType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.DataPlaneStatusType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.LifecycleStateEnumType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.ProvisionStateEnumType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.QueryRecursiveResultCriteriaType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.QueryRecursiveResultType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.QuerySummaryConfirmedType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.QuerySummaryResultCriteriaType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.QuerySummaryResultType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.ReservationRequestCriteriaType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.ReservationStateEnumType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.ScheduleType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.point2point.EthernetVlanType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.point2point.ObjectFactory;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.types.DirectionalityType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.types.OrderedStpType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.types.StpListType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.types.StpType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.*;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.services.point2point.ObjectFactory;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.services.types.*;
 import net.es.oscars.nsibridge.state.life.NSI_Life_SM;
 import net.es.oscars.nsibridge.state.prov.NSI_Prov_SM;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_SM;
@@ -66,26 +49,26 @@ public class NSI_OSCARS_Translation {
         log.debug("modify gri: "+oscarsGri);
 
         ReservationRequestCriteriaType crit = req.getReserveType().getCriteria();
-        EthernetVlanType evts = null;
+        P2PServiceBaseType p2pType = null;
         for (Object o : crit.getAny()) {
-            if (o instanceof EthernetVlanType ) {
-                evts = (EthernetVlanType) o;
+            if (o instanceof P2PServiceBaseType ) {
+                p2pType = (P2PServiceBaseType) o;
             } else {
                 try {
-                    JAXBElement<EthernetVlanType> payload = (JAXBElement<EthernetVlanType>) o;
-                    evts = payload.getValue();
+                    JAXBElement<P2PServiceBaseType> payload = (JAXBElement<P2PServiceBaseType>) o;
+                    p2pType = payload.getValue();
                 } catch (ClassCastException ex) {
-                    evts = null;
+                    p2pType = null;
                 }
 
             }
         }
 
-        if (evts == null) {
-            throw new TranslationException("no evts element!");
+        if (p2pType == null) {
+            throw new TranslationException("no P2PServiceBaseType element!");
         }
 
-        Long capacity = evts.getCapacity();
+        Long capacity = p2pType.getCapacity();
         int bandwidth = capacity.intValue();
 
         Long startTime = crit.getSchedule().getStartTime().toGregorianCalendar().getTimeInMillis() / 1000;
@@ -147,26 +130,26 @@ public class NSI_OSCARS_Translation {
 
         rc.setDescription(req.getReserveType().getDescription());
 
-        EthernetVlanType evts = null;
+        P2PServiceBaseType p2pType = null;
         for (Object o : crit.getAny()) {
-            if (o instanceof EthernetVlanType ) {
-                evts = (EthernetVlanType) o;
+            if (o instanceof P2PServiceBaseType ) {
+                p2pType = (P2PServiceBaseType) o;
             } else {
                 try {
-                    JAXBElement<EthernetVlanType> payload = (JAXBElement<EthernetVlanType>) o;
-                    evts = payload.getValue();
+                    JAXBElement<P2PServiceBaseType> payload = (JAXBElement<P2PServiceBaseType>) o;
+                    p2pType = payload.getValue();
                 } catch (ClassCastException ex) {
-                    evts = null;
+                    p2pType = null;
                 }
 
             }
         }
 
-        if (evts == null) {
-            throw new TranslationException("no evts element!");
+        if (p2pType == null) {
+            throw new TranslationException("no P2PServiceBaseType element!");
         }
 
-        Long capacity = evts.getCapacity();
+        Long capacity = p2pType.getCapacity();
         int bandwidth = capacity.intValue();
 
 
@@ -174,25 +157,27 @@ public class NSI_OSCARS_Translation {
         urc.setStartTime(crit.getSchedule().getStartTime().toGregorianCalendar().getTimeInMillis() / 1000);
         urc.setEndTime(crit.getSchedule().getEndTime().toGregorianCalendar().getTimeInMillis() / 1000);
 
-        String srcNetworkId = evts.getSourceSTP().getNetworkId();
-        String dstNetworkId = evts.getDestSTP().getNetworkId();
+        String srcStp = p2pType.getSourceSTP();
+        String dstStp = p2pType.getDestSTP();
+
+        String srcNetworkId = STPUtil.getNetworkId(srcStp);
+        String dstNetworkId = STPUtil.getNetworkId(dstStp);
 
         if (srcNetworkId == null || !srcNetworkId.equals(localNetworkId())) {
-            log.error("Invalid source networkId!");
+            log.error("Invalid source networkId: "+srcNetworkId);
         }
         if (dstNetworkId == null || !dstNetworkId.equals(localNetworkId())) {
-            log.error("Invalid dest networkId!");
+            log.error("Invalid dest networkId: "+dstNetworkId);
         }
 
-        String srcStp = evts.getSourceSTP().getLocalId();
-        String dstStp = evts.getDestSTP().getLocalId();
+        String srcLocal = STPUtil.getLocalId(srcStp);
+        String dstLocal = STPUtil.getLocalId(dstStp);
 
+        StpConfig srcStpCfg = findStp(srcLocal);
+        StpConfig dstStpCfg = findStp(dstLocal);
 
-        StpConfig srcStpCfg = findStp(srcStp);
-        StpConfig dstStpCfg = findStp(dstStp);
-
-        String nsiSrcVlan = ""+evts.getSourceVLAN();
-        String nsiDstVlan = ""+evts.getDestVLAN();
+        String nsiSrcVlan = STPUtil.getVlanRange(srcStp);
+        String nsiDstVlan = STPUtil.getVlanRange(dstStp);
         nsiLog = "nsi gri: "+req.getReserveType().getGlobalReservationId()+"\n";
         nsiLog += "nsi connId: "+req.getReserveType().getConnectionId()+"\n";
         nsiLog += "src stp: "+srcStp+" vlan: "+nsiSrcVlan+"\n";
@@ -414,65 +399,67 @@ public class NSI_OSCARS_Translation {
         criteriaType.setSchedule(scheduleType);
         
         //Set P2P fields
-        EthernetVlanType evtsType = new EthernetVlanType();
-        evtsType.setCapacity(bandwidth);
-        evtsType.setDirectionality(DirectionalityType.BIDIRECTIONAL); //change if oscars extended in future
-        evtsType.setSymmetricPath(true);//change if oscars extended in future
-        StpType sourceStp = new StpType();
-        StpType destStp = new StpType();
-        
+        P2PServiceBaseType p2pType = new P2PServiceBaseType();
+        p2pType.setCapacity(bandwidth);
+        p2pType.setDirectionality(DirectionalityType.BIDIRECTIONAL); //change if oscars extended in future
+        p2pType.setSymmetricPath(true);//change if oscars extended in future
+
+        String srcStp = "urn:ogf:network:";
+        String dstStp = "urn:ogf:network:";
+
         String nsaId = findNsaId();
         if(nsaId != null){
-            sourceStp.setNetworkId(localNetworkId());
-            destStp.setNetworkId(localNetworkId());
+            srcStp += localNetworkId();
+            dstStp += localNetworkId();
         }
         if(pathInfo.getPath() != null &&  pathInfo.getPath().getHop() != null && pathInfo.getPath().getHop().size() >= 2){
             List<CtrlPlaneHopContent> hops = pathInfo.getPath().getHop();
-            sourceStp.setLocalId(findStpByOSCARSId(NMWGParserUtil.getURN(hops.get(0))).getStpId());
+            srcStp += ":"+ findStpByOSCARSId(NMWGParserUtil.getURN(hops.get(0))).getStpId();
+
             if(PathTools.isVlanHop(hops.get(0))){
                 String srcVlan = hops.get(0).getLink().getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getVlanRangeAvailability();;
-                evtsType.setSourceVLAN(Integer.valueOf(srcVlan));
+                srcStp += "?vlan="+srcVlan;
             }
             
-            destStp.setLocalId(findStpByOSCARSId(NMWGParserUtil.getURN(hops.get(hops.size() - 1))).getStpId());
+            dstStp += ":"+ findStpByOSCARSId(NMWGParserUtil.getURN(hops.get(hops.size() - 1))).getStpId();
             if(PathTools.isVlanHop(hops.get(hops.size() - 1))){
-                String destVlan = hops.get(hops.size() - 1).getLink().getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getVlanRangeAvailability();;
-                evtsType.setDestVLAN(Integer.valueOf(destVlan));
+                String dstVlan = hops.get(hops.size() - 1).getLink().getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getVlanRangeAvailability();;
+                dstStp += "?vlan="+dstVlan;
             }
 
             //set ero
             StpListType ero = new StpListType();
-            evtsType.setEro(ero);
+            p2pType.setEro(ero);
             for(int i = 1; i < hops.size() - 2; i++){
                 OrderedStpType ordStp = new OrderedStpType();
-                StpType hopStp = new StpType();
+                String hopStp = "urn:ogf:network:";
                 if(nsaId != null){
-                    hopStp.setNetworkId(localNetworkId());
+                    hopStp += localNetworkId();
                 }
-                hopStp.setLocalId(findStpByOSCARSId(NMWGParserUtil.getURN(hops.get(i))).getStpId());
+                hopStp += ":"+findStpByOSCARSId(NMWGParserUtil.getURN(hops.get(i))).getStpId();
                 ordStp.setOrder(i);
                 ordStp.setStp(hopStp);
                 ero.getOrderedSTP().add(ordStp);
             }
         }else if(pathInfo.getLayer2Info() != null){
-            sourceStp.setLocalId(findStpByOSCARSId(pathInfo.getLayer2Info().getSrcEndpoint()).getStpId());
+            srcStp += ":"+ findStpByOSCARSId(pathInfo.getLayer2Info().getSrcEndpoint()).getStpId();
             if(pathInfo.getLayer2Info().getSrcVtag() != null && pathInfo.getLayer2Info().getSrcVtag().getValue() != null){
                 String srcVlan = pathInfo.getLayer2Info().getSrcVtag().getValue();
-                evtsType.setSourceVLAN(Integer.valueOf(srcVlan));
+                srcStp += "?vlan="+srcVlan;
             }
             
-            destStp.setLocalId(findStpByOSCARSId(pathInfo.getLayer2Info().getDestEndpoint()).getStpId());
+            dstStp += ":"+ findStpByOSCARSId(pathInfo.getLayer2Info().getDestEndpoint()).getStpId();
             if(pathInfo.getLayer2Info().getDestVtag() != null && pathInfo.getLayer2Info().getDestVtag().getValue() != null){
                 String dstVlan = pathInfo.getLayer2Info().getDestVtag().getValue();
-                evtsType.setDestVLAN(Integer.valueOf(dstVlan));
+                dstStp += "?vlan="+dstVlan;
             }
         }else{
             throw new TranslationException("OSCARS reservation has no path or Layer2Info set so cannot determine STPs");
         }
-        evtsType.setSourceSTP(sourceStp);
-        evtsType.setDestSTP(destStp);
+        p2pType.setSourceSTP(srcStp);
+        p2pType.setDestSTP(dstStp);
         ObjectFactory objFactory = new ObjectFactory();
-        criteriaType.getAny().add(objFactory.createEvts(evtsType));
+        criteriaType.getAny().add(objFactory.createP2Ps(p2pType));
         
         return criteriaType;
     }

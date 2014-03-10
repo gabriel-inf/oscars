@@ -1,7 +1,7 @@
 package net.es.oscars.nsibridge.beans.db;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.LifecycleStateEnumType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.ProvisionStateEnumType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.ReservationStateEnumType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.LifecycleStateEnumType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.ProvisionStateEnumType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.ReservationStateEnumType;
 
 import javax.persistence.*;
 import java.lang.Long;

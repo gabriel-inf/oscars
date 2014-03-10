@@ -12,14 +12,15 @@ import net.es.oscars.nsibridge.config.TimingConfig;
 import net.es.oscars.nsibridge.config.nsa.JsonNsaConfigProvider;
 import net.es.oscars.nsibridge.config.nsa.NSAStubConfig;
 import net.es.oscars.nsibridge.config.nsa.NsaConfig;
+import net.es.oscars.nsibridge.config.nsa.NsaConfigProvider;
 import net.es.oscars.nsibridge.ifces.CallbackMessages;
 import net.es.oscars.nsibridge.prov.*;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.requester.ConnectionRequesterPort;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.*;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.types.ServiceExceptionType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.types.TypeValuePairListType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.ifce.ServiceException;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.requester.ConnectionRequesterPort;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.*;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.headers.CommonHeaderType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.types.ServiceExceptionType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.types.TypeValuePairListType;
 import net.es.oscars.utils.task.Task;
 import net.es.oscars.utils.task.TaskException;
 import org.apache.log4j.Logger;
@@ -272,7 +273,10 @@ public class SendNSIMessageTask extends Task  {
                         st = NSI_Util.makeServiceException(connId, corrId);
 
                         TypeValuePairListType tvl = new TypeValuePairListType();
-                        port.errorEvent(connId, notificationId.intValue(), cal, nr.getEventType(), tvl, st, outHeader, outHolder);
+
+                        NsaConfigProvider ncp = (NsaConfigProvider) ax.getBean("nsaConfigProvider");
+                        String nsaId = ncp.getConfig("local").getNsaId();
+                        port.errorEvent(connId, notificationId.intValue(), cal, nr.getEventType(), connId, nsaId, tvl, st, outHeader, outHolder);
                     } catch (ServiceException ex) {
                         log.error(ex.getMessage(), ex);
 

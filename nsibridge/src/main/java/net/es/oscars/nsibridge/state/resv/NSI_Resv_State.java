@@ -1,7 +1,7 @@
 package net.es.oscars.nsibridge.state.resv;
 
 import net.es.oscars.nsibridge.ifces.SM_State;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.ReservationStateEnumType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.ReservationStateEnumType;
 
 
 public class NSI_Resv_State implements SM_State {

@@ -1,6 +1,6 @@
 package net.es.oscars.nsibridge.client.cli;
 
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.requester.ConnectionRequesterPort;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.requester.ConnectionRequesterPort;
 
 import org.apache.cxf.bus.spring.SpringBusFactory;
 
@@ -31,7 +31,7 @@ public class CLIListener {
         }
         props.put("jaxb.additionalContextClasses",
                         new Class[] {
-                            net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.point2point.ObjectFactory.class
+                            net.es.oscars.nsi.soap.gen.nsi_2_0_r117.services.point2point.ObjectFactory.class
                         });
         sf.setProperties(props);
 

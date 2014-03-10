@@ -1,7 +1,7 @@
 package net.es.oscars.nsibridge.state.prov;
 
 import net.es.oscars.nsibridge.ifces.SM_State;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.ProvisionStateEnumType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.ProvisionStateEnumType;
 
 
 public class NSI_Prov_State implements SM_State {

@@ -20,7 +20,7 @@
         <selenium.version>2.35.0</selenium.version>
         <oscars.version>0.0.1-SNAPSHOT</oscars.version>
 
-        <nsi-soap.version>2013_07_r99</nsi-soap.version>
+        <nsi-soap.version>2014_03_r117</nsi-soap.version>
 
         <skipTests>false</skipTests>
         <cucumber.options>--strict</cucumber.options>
