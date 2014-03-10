@@ -3,7 +3,7 @@ package net.es.oscars.nsibridge.test.cuke;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import net.es.oscars.nsibridge.beans.ResvRequest;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.point2point.EthernetVlanType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.services.point2point.P2PServiceBaseType;
 import net.es.oscars.nsibridge.test.req.NSIRequestFactory;
 
 import javax.xml.datatype.DatatypeFactory;
@@ -95,8 +95,8 @@ public class HelperSteps {
 
     @When("^I set the capacity to (\\d+)$")
     public void I_set_the_capacity_to(int arg1) throws Throwable {
-        EthernetVlanType evt = (EthernetVlanType) resvRequest.getReserveType().getCriteria().getAny().get(0);
-        evt.setCapacity(arg1);
+        P2PServiceBaseType p2pType = (P2PServiceBaseType) resvRequest.getReserveType().getCriteria().getAny().get(0);
+        p2pType.setCapacity(arg1);
 
     }
 

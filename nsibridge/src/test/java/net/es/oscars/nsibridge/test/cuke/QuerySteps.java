@@ -7,10 +7,10 @@ import net.es.oscars.nsibridge.beans.SimpleRequest;
 import net.es.oscars.nsibridge.beans.SimpleRequestType;
 import net.es.oscars.nsibridge.common.PersistenceHolder;
 import net.es.oscars.nsibridge.prov.RequestHolder;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.ConnectionStatesType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.QuerySummaryConfirmedType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.QueryType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.ConnectionStatesType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.QuerySummaryConfirmedType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.QueryType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.headers.CommonHeaderType;
 import net.es.oscars.nsibridge.soap.impl.ConnectionProvider;
 import net.es.oscars.nsibridge.test.req.NSIRequestFactory;
 

@@ -3,15 +3,15 @@ import net.es.oscars.nsibridge.beans.QueryRequest;
 import net.es.oscars.nsibridge.beans.ResvRequest;
 import net.es.oscars.nsibridge.beans.SimpleRequest;
 import net.es.oscars.nsibridge.beans.SimpleRequestType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.*;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.types.*;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.*;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.services.types.*;
 
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.point2point.*;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.services.point2point.*;
 
 
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.types.TypeValuePairListType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.types.TypeValuePairType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.headers.CommonHeaderType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.types.TypeValuePairListType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.types.TypeValuePairType;
 import net.es.oscars.nsibridge.test.cuke.HelperSteps;
 
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -55,8 +55,8 @@ public class NSIRequestFactory {
         ResvRequest req = new ResvRequest();
         ReservationRequestCriteriaType crit = new ReservationRequestCriteriaType();
         // PathType pt = new PathType();
-        StpType srcStp = new StpType();
-        StpType dstStp = new StpType();
+        String srcStp = "urn:ogf:network:es.net:2013:chi-80?vlan=500";
+        String dstStp = "urn:ogf:network:es.net:2013:ps-80?vlan=400";
         ScheduleType sch = new ScheduleType();
 
         XMLGregorianCalendar sTime = asXMLGregorianCalendar(sDate);
@@ -65,20 +65,13 @@ public class NSIRequestFactory {
 
         sch.setStartTime(sTime);
         sch.setEndTime(eTime);
-        srcStp.setNetworkId("urn:ogf:network:es.net:2013");
-        srcStp.setLocalId("urn:ogf:network:stp:esnet.ets:chi-80");
 
-        dstStp.setLocalId("urn:ogf:network:stp:esnet.ets:ps-80");
-        dstStp.setNetworkId("urn:ogf:network:es.net:2013");
-
-        EthernetVlanType evtp = new EthernetVlanType();
-        crit.getAny().add(evtp);
-        evtp.setCapacity(100);
-        evtp.setDirectionality(DirectionalityType.BIDIRECTIONAL);
-        evtp.setSourceSTP(srcStp);
-        evtp.setDestSTP(dstStp);
-        evtp.setSourceVLAN(400);
-        evtp.setDestVLAN(500);
+        P2PServiceBaseType p2pType = new P2PServiceBaseType();
+        crit.getAny().add(p2pType);
+        p2pType.setCapacity(100);
+        p2pType.setDirectionality(DirectionalityType.BIDIRECTIONAL);
+        p2pType.setSourceSTP(srcStp);
+        p2pType.setDestSTP(dstStp);
 
 
         crit.setSchedule(sch);
