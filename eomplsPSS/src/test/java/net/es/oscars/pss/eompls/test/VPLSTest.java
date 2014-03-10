@@ -403,6 +403,7 @@ public class VPLSTest {
         params.getVpls().put("description", gri);
         params.getVpls().put("name", gri);
         params.getVpls().put("endpoint", gri);
+        params.getVpls().put("is_endpoint", true);
         params.getVpls().put("has_protect", true);
         params.getVpls().put("protect_id", vplsIds.getSecondaryVplsId().toString());
         params.getVpls().put("primary_id", vplsIds.getVplsId().toString());

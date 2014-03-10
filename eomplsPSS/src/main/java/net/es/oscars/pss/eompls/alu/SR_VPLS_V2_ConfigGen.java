@@ -414,7 +414,7 @@ public class SR_VPLS_V2_ConfigGen implements DeviceConfigGenerator, PostCommitCo
         boolean applyQos = rp.getParams().isApplyQos();
         boolean protect = rp.getParams().isProtection();
 
-
+        boolean isEndpoint = false;
 
 
         // LSPs, SDPs and paths only for multi-device config
@@ -480,6 +480,27 @@ public class SR_VPLS_V2_ConfigGen implements DeviceConfigGenerator, PostCommitCo
             }
             sdps.add(sdp);
 
+            VplsImplementation otherImpl;
+            List<String> deviceIds = new ArrayList<String>();
+            deviceIds.add(srcDeviceId);
+            deviceIds.add(dstDeviceId);
+            HashMap<String, VplsImplementation> implMap = VPLS_RequestParams.getImplementationMap(deviceIds);
+            if (reverse) {
+                otherImpl = implMap.get(srcDeviceId);
+            } else {
+                otherImpl = implMap.get(dstDeviceId);
+            }
+
+            // both ALU: just forward direction should get is_endpoint
+            if (otherImpl.equals(VplsImplementation.ALU) && !reverse) {
+                isEndpoint = true;
+            // just one is ALU: isEndpoint is true
+            } else {
+
+                isEndpoint = true;
+            }
+
+
         } else {
             sdps = null;
             paths = null;
@@ -513,6 +534,7 @@ public class SR_VPLS_V2_ConfigGen implements DeviceConfigGenerator, PostCommitCo
         vpls.put("name", vplsName);
         vpls.put("primary_id", vplsId);
         vpls.put("endpoint", vplsName);
+        vpls.put("is_endpoint", isEndpoint);
 
         vpls.put("has_protect", protect);
         if (!sameDevice) {
