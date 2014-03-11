@@ -8,13 +8,13 @@ public class STPUtil {
 
     public static String getVlanRange(String stp) throws TranslationException {
         checkStp(stp);
-        String[] stpParts = StringUtils.split(stp, "?");
-        if (stpParts.length <= 2) {
+        String[] stpParts = StringUtils.split(stp, "\\?");
+        if (stpParts.length < 2) {
             throw new TranslationException("no labels (VLAN or otherwise) for stp "+stp);
         }
         boolean foundVlan = false;
         String vlanRange = "";
-        for (int i = 1; i <= stpParts.length; i++) {
+        for (int i = 1; i < stpParts.length; i++) {
             String labelAndValue = stpParts[i];
             String[] lvParts = StringUtils.split(labelAndValue, "=");
             if (lvParts == null || lvParts.length == 0) {
@@ -50,18 +50,14 @@ public class STPUtil {
             throw new TranslationException("unable to determine networkId for STP: "+stp);
         }
         // urn:ogf:network:NETWORK_ID:LOCAL_ID?label=value
-        return urnParts[4];
+        return urnParts[3];
     }
 
     public static String getLocalId(String stp) throws TranslationException {
         String urn = getUrn(stp);
-
-        String[] urnParts = StringUtils.split(urn, ":");
-        if (urnParts.length <= 5) {
-            throw new TranslationException("unable to determine local id for STP: "+stp);
-        }
-        // urn:ogf:network:NETWORK_ID:LOCAL_ID?label=value
-        return urnParts[5];
+        String networkId = getNetworkId(urn);
+        String localId = stp.replace("urn:ogf:network:"+networkId, "");
+        return localId;
     }
 
     public static String getUrn(String stp) throws TranslationException {

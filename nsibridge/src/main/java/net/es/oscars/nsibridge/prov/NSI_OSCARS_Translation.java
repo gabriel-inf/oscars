@@ -170,11 +170,11 @@ public class NSI_OSCARS_Translation {
             log.error("Invalid dest networkId: "+dstNetworkId);
         }
 
-        String srcLocal = STPUtil.getLocalId(srcStp);
-        String dstLocal = STPUtil.getLocalId(dstStp);
+        String srcUrn = STPUtil.getUrn(srcStp);
+        String dstUrn = STPUtil.getUrn(dstStp);
 
-        StpConfig srcStpCfg = findStp(srcLocal);
-        StpConfig dstStpCfg = findStp(dstLocal);
+        StpConfig srcStpCfg = findStp(srcUrn);
+        StpConfig dstStpCfg = findStp(dstUrn);
 
         String nsiSrcVlan = STPUtil.getVlanRange(srcStp);
         String nsiDstVlan = STPUtil.getVlanRange(dstStp);
@@ -239,11 +239,14 @@ public class NSI_OSCARS_Translation {
         rc.getOptionalConstraint().add(oct);
 
 
-
-        oscarsLog = "osc src: "+pi.getLayer2Info().getSrcEndpoint();
-        oscarsLog += "osc dst: "+pi.getLayer2Info().getDestEndpoint();
         log.debug(nsiLog);
+
+
+        oscarsLog = "oscars src: ["+pi.getLayer2Info().getSrcEndpoint()+"]";
         log.debug(oscarsLog);
+        oscarsLog = "oscars dst: ["+pi.getLayer2Info().getDestEndpoint()+"]";
+        log.debug(oscarsLog);
+
 
 
         return rc;

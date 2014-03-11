@@ -1,6 +1,6 @@
 {
     "local": {
-        "networkId":        "urn:ogf:network:es.net:2013",
+        "networkId":        "es.net",
         "nsaId":            "urn:ogf:network:nsa:esnet",
         "protocolVersion":  "application/vdn.ogf.nsi.cs.v2.provider+soap",
         "serviceType":      "http://services.ogf.org/nsi/2013/12/descriptions/EVTS.A-GOLE",

@@ -5,7 +5,7 @@
 %define oscars_home /etc/oscars
 %define log_dir /var/log/oscars
 %define run_dir /var/run/oscars
-%define relnum 10 
+%define relnum 11
 
 Name:           oscars-%{package_name}
 Version:        0.6.1
