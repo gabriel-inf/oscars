@@ -492,11 +492,17 @@ public class SR_VPLS_V2_ConfigGen implements DeviceConfigGenerator, PostCommitCo
             }
 
             // both ALU: just forward direction should get is_endpoint
-            if (otherImpl.equals(VplsImplementation.ALU) && !reverse) {
-                isEndpoint = true;
-            // just one is ALU: isEndpoint is true
+            if (otherImpl.equals(VplsImplementation.ALU)) {
+                if (!reverse) {
+                    log.debug("other implementation is an ALU, forward direction, isEndpoint is true");
+                    isEndpoint = true;
+                } else if (reverse) {
+                    log.debug("other implementation is an ALU, reverse direction, isEndpoint is false");
+                    isEndpoint = false;
+                }
             } else {
-
+                log.debug("other implementation is not an ALU, isEndpoint is true");
+                // just one is ALU: isEndpoint is true
                 isEndpoint = true;
             }
 
