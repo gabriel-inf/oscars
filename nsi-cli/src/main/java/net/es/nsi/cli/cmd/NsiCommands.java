@@ -9,16 +9,15 @@ import net.es.nsi.cli.config.ProviderProfile;
 import net.es.nsi.cli.config.ResvProfile;
 import net.es.nsi.cli.core.CliInternalException;
 import net.es.nsi.cli.client.ClientUtil;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.provider.ConnectionProviderPort;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.QueryType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.ReservationRequestCriteriaType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.ScheduleType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.point2point.EthernetVlanType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.point2point.ObjectFactory;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.types.DirectionalityType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.types.StpType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.ifce.ServiceException;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.provider.ConnectionProviderPort;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.QueryType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.ReservationRequestCriteriaType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.ScheduleType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.headers.CommonHeaderType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.services.point2point.P2PServiceBaseType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.services.point2point.ObjectFactory;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.services.types.DirectionalityType;
 import org.apache.cxf.endpoint.Client;
 import org.apache.cxf.frontend.ClientProxy;
 import org.apache.cxf.transport.http.HTTPConduit;
@@ -337,26 +336,18 @@ public class NsiCommands implements CommandMarker {
             ex.printStackTrace();
             return "error";
         }
-        EthernetVlanType evType = new EthernetVlanType();
+        P2PServiceBaseType p2pType = new P2PServiceBaseType();
         ObjectFactory objFactory = new ObjectFactory();
-        rct.getAny().add(objFactory.createEvts(evType));
-        StpType sourceSTP = new StpType();
-        sourceSTP.setNetworkId(rp.getSrcNet());
-        sourceSTP.setLocalId(rp.getSrcStp());
+        rct.getAny().add(objFactory.createP2Ps(p2pType));
 
-        StpType destSTP = new StpType();
-        destSTP.setNetworkId(rp.getDstNet());
-        destSTP.setLocalId(rp.getDstStp());
 
-        evType.setSourceSTP(sourceSTP);
-        evType.setDestSTP(destSTP);
 
-        evType.setSourceVLAN(rp.getSrcVlan());
-        evType.setDestVLAN(rp.getDstVlan());
+        p2pType.setSourceSTP(rp.getSrcStp());
+        p2pType.setDestSTP(rp.getDstStp());
 
-        evType.setCapacity(rp.getBandwidth());
-        evType.setDirectionality(DirectionalityType.BIDIRECTIONAL);
-        evType.setSymmetricPath(true);
+        p2pType.setCapacity(rp.getBandwidth());
+        p2pType.setDirectionality(DirectionalityType.BIDIRECTIONAL);
+        p2pType.setSymmetricPath(true);
 
         try {
             port.reserve(connHolder, gri, description, rct, header, outHolder);

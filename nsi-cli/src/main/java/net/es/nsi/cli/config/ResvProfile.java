@@ -12,12 +12,8 @@ public class ResvProfile {
     protected String name;
     protected String gri;
     protected String description;
-    protected String srcNet;
-    protected String dstNet;
     protected String srcStp;
     protected String dstStp;
-    protected Integer srcVlan;
-    protected Integer dstVlan;
     protected Integer bandwidth;
     protected Integer version = 0;
     protected Date startTime = new Date();
@@ -33,12 +29,8 @@ public class ResvProfile {
         out += "\n  v:           "+version;
         out += "\n  startTime:   "+startTime;
         out += "\n  endTime:     "+endTime;
-        out += "\n  src: net:    "+srcNet;
-        out += "\n       stp:    "+srcStp;
-        out += "\n       vlan:   "+srcVlan;
-        out += "\n  dst: net:    "+dstNet;
-        out += "\n       stp:    "+dstStp;
-        out += "\n       vlan:   "+dstVlan;
+        out += "\n  src: stp:    "+srcStp;
+        out += "\n  dst: stp:    "+dstStp;
         out += "\n";
         return out;
     }
@@ -60,22 +52,6 @@ public class ResvProfile {
         this.name = name;
     }
 
-    public String getSrcNet() {
-        return srcNet;
-    }
-
-    public void setSrcNet(String srcNet) {
-        this.srcNet = srcNet;
-    }
-
-    public String getDstNet() {
-        return dstNet;
-    }
-
-    public void setDstNet(String dstNet) {
-        this.dstNet = dstNet;
-    }
-
     public String getSrcStp() {
         return srcStp;
     }
@@ -90,22 +66,6 @@ public class ResvProfile {
 
     public void setDstStp(String dstStp) {
         this.dstStp = dstStp;
-    }
-
-    public Integer getSrcVlan() {
-        return srcVlan;
-    }
-
-    public void setSrcVlan(Integer srcVlan) {
-        this.srcVlan = srcVlan;
-    }
-
-    public Integer getDstVlan() {
-        return dstVlan;
-    }
-
-    public void setDstVlan(Integer dstVlan) {
-        this.dstVlan = dstVlan;
     }
 
     public Integer getBandwidth() {

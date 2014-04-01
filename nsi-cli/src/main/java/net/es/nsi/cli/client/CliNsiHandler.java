@@ -3,12 +3,12 @@ package net.es.nsi.cli.client;
 import net.es.nsi.cli.cmd.NsiCliState;
 import net.es.oscars.nsi.soap.util.output.QueryOutputter;
 import net.es.oscars.nsi.soap.util.output.QueryPrettyOutputter;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.ifce.ServiceException;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.requester.ConnectionRequesterPort;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.types.*;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.types.ServiceExceptionType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.types.TypeValuePairListType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.ifce.ServiceException;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.requester.ConnectionRequesterPort;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.*;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.headers.CommonHeaderType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.types.ServiceExceptionType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.types.TypeValuePairListType;
 import org.apache.log4j.Logger;
 
 import javax.jws.WebParam;
@@ -22,20 +22,7 @@ public class CliNsiHandler implements ConnectionRequesterPort {
     public CliNsiHandler() {
         log.debug("initialized handler");
     }
-    @Override
-    public void querySummaryFailed(
-            @WebParam(name = "serviceException", targetNamespace = "")
-                ServiceExceptionType serviceException,
-            @WebParam(name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true)
-                CommonHeaderType header,
-            @WebParam(mode = WebParam.Mode.OUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true)
-                Holder<CommonHeaderType> header1)
-                    throws ServiceException {
-        String out = "";
-        out += "\nReceived a querySummaryFailed\n";
-        System.out.println(out);
-        queryOutputter.outputFailed(serviceException);
-    }
+
 
     @Override
     public void querySummaryConfirmed(
@@ -53,20 +40,7 @@ public class CliNsiHandler implements ConnectionRequesterPort {
 
     }
 
-    @Override
-    public void queryRecursiveFailed(
-            @WebParam(name = "serviceException", targetNamespace = "")
-                ServiceExceptionType serviceException,
-            @WebParam(name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true)
-                CommonHeaderType header,
-            @WebParam(mode = WebParam.Mode.OUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true)
-                Holder<CommonHeaderType> header1)
-                    throws ServiceException {
-        String out = "";
-        out += "\nReceived a queryRecursiveFailed\n";
-        System.out.println(out);
-        queryOutputter.outputFailed(serviceException);
-    }
+
 
     @Override
     public void queryRecursiveConfirmed(
@@ -95,38 +69,33 @@ public class CliNsiHandler implements ConnectionRequesterPort {
         queryOutputter.outputFailed(serviceException);
     }
 
+
     @Override
-    public void errorEvent(
-            @WebParam(name = "connectionId", targetNamespace = "") String connectionId,
-            @WebParam(name = "notificationId", targetNamespace = "") int notificationId,
-            @WebParam(name = "timeStamp", targetNamespace = "") XMLGregorianCalendar timeStamp,
-            @WebParam(name = "event", targetNamespace = "") EventEnumType event,
-            @WebParam(name = "additionalInfo", targetNamespace = "") TypeValuePairListType additionalInfo,
-            @WebParam(name = "serviceException", targetNamespace = "") ServiceExceptionType serviceException,
-            @WebParam(name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true)
-                CommonHeaderType header,
-            @WebParam(mode = WebParam.Mode.OUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true)
-                Holder<CommonHeaderType> header1)
-                    throws ServiceException {
+    public void errorEvent(String connectionId,
+                           long notificationId,
+                           XMLGregorianCalendar timeStamp,
+                           EventEnumType event,
+                           String originatingConnectionId,
+                           String originatingNSA,
+                           TypeValuePairListType additionalInfo,
+                           ServiceExceptionType serviceException,
+                           CommonHeaderType header,
+                           Holder<CommonHeaderType> header1) throws ServiceException {
         String out = "";
         out += "\nReceived an errorEvent for connectionId: "+connectionId+"\n";
         System.out.println(out);
         queryOutputter.outputFailed(serviceException);
     }
-
     @Override
-    public void messageDeliveryTimeout(
-            @WebParam(name = "connectionId", targetNamespace = "") String connectionId,
-            @WebParam(name = "notificationId", targetNamespace = "") int notificationId,
-            @WebParam(name = "timeStamp", targetNamespace = "") XMLGregorianCalendar timeStamp,
-            @WebParam(name = "correlationId", targetNamespace = "") String correlationId,
-            @WebParam(name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true)
-                CommonHeaderType header,
-            @WebParam(mode = WebParam.Mode.OUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true)
-                Holder<CommonHeaderType> header1)
-                    throws ServiceException {
+    public void messageDeliveryTimeout(String connectionId,
+                                       long notificationId,
+                                       XMLGregorianCalendar timeStamp,
+                                       String correlationId,
+                                       CommonHeaderType header,
+                                       Holder<CommonHeaderType> header1) throws ServiceException {
         System.out.println("\nReceived messageDeliveryTimeout for connectionId: "+connectionId+"\n");
     }
+
 
     @Override
     public void reserveConfirmed(
@@ -144,21 +113,21 @@ public class CliNsiHandler implements ConnectionRequesterPort {
         NsiCliState.getInstance().setConfirmed(connectionId, true);
     }
 
+
     @Override
-    public void reserveTimeout(
-            @WebParam(name = "connectionId", targetNamespace = "") String connectionId,
-            @WebParam(name = "notificationId", targetNamespace = "") int notificationId,
-            @WebParam(name = "timeStamp", targetNamespace = "") XMLGregorianCalendar timeStamp,
-            @WebParam(name = "timeoutValue", targetNamespace = "") int timeoutValue,
-            @WebParam(name = "originatingConnectionId", targetNamespace = "") String originatingConnectionId,
-            @WebParam(name = "originatingNSA", targetNamespace = "") String originatingNSA,
-            @WebParam(name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) CommonHeaderType header,
-            @WebParam(mode = WebParam.Mode.OUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> header1)
-                throws ServiceException {
+    public void reserveTimeout(String connectionId,
+                               long notificationId,
+                               XMLGregorianCalendar timeStamp,
+                               int timeoutValue,
+                               String originatingConnectionId,
+                               String originatingNSA,
+                               CommonHeaderType header,
+                               Holder<CommonHeaderType> header1) throws ServiceException {
         System.out.println("\nReceived reserveTimeout for connectionId: "+connectionId+" (was set as current)\n");
         NsiCliState.getInstance().setConnectionId(connectionId);
         NsiCliState.getInstance().setConfirmed(connectionId, false);
     }
+
 
     @Override
     public void reserveFailed(
@@ -199,6 +168,14 @@ public class CliNsiHandler implements ConnectionRequesterPort {
         System.out.println("\nReceived reserveCommitFailed for connectionId: "+connectionId+" (was set as current)\n");
         NsiCliState.getInstance().setConnectionId(connectionId);
         NsiCliState.getInstance().setCommitted(connectionId, false);
+    }
+
+
+    @Override
+    public void queryResultConfirmed(List<QueryResultResponseType> result,
+                                     CommonHeaderType header,
+                                     Holder<CommonHeaderType> header1) throws ServiceException {
+
     }
 
     @Override
@@ -254,17 +231,12 @@ public class CliNsiHandler implements ConnectionRequesterPort {
     }
 
     @Override
-    public void dataPlaneStateChange(
-            @WebParam(name = "connectionId", targetNamespace = "") String connectionId,
-            @WebParam(name = "notificationId", targetNamespace = "") int notificationId,
-            @WebParam(name = "timeStamp", targetNamespace = "") XMLGregorianCalendar timeStamp,
-            @WebParam(name = "dataPlaneStatus", targetNamespace = "") DataPlaneStatusType dataPlaneStatus,
-            @WebParam(name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true)
-                CommonHeaderType header,
-            @WebParam(mode = WebParam.Mode.OUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true)
-                Holder<CommonHeaderType> header1)
-                    throws ServiceException {
-
+    public void dataPlaneStateChange(String connectionId,
+                                     long notificationId,
+                                     XMLGregorianCalendar timeStamp,
+                                     DataPlaneStatusType dataPlaneStatus,
+                                     CommonHeaderType header,
+                                     Holder<CommonHeaderType> header1) throws ServiceException {
         String statusStr = "";
         statusStr += "version: "+dataPlaneStatus.getVersion();
         if (dataPlaneStatus.isActive()) {
@@ -283,16 +255,7 @@ public class CliNsiHandler implements ConnectionRequesterPort {
         NsiCliState.getInstance().setConnectionId(connectionId);
     }
 
-    @Override
-    public void queryNotificationFailed(
-            @WebParam(name = "serviceException", targetNamespace = "") ServiceExceptionType serviceException,
-            @WebParam(name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) CommonHeaderType header,
-            @WebParam(mode = WebParam.Mode.OUT, name = "nsiHeader", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/framework/headers", header = true) Holder<CommonHeaderType> header1)
-                throws ServiceException {
-        String out = "";
-        out += "\nReceived queryNotificationFailed\n";
-        queryOutputter.outputFailed(serviceException);
-    }
+
     @Override
     public GenericAcknowledgmentType queryNotificationConfirmed(
             @WebParam(partName = "queryNotificationConfirmed", name = "queryNotificationConfirmed", targetNamespace = "http://schemas.ogf.org/nsi/2013/07/connection/types")

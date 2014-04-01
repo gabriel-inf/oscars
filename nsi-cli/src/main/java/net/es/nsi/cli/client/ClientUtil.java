@@ -1,9 +1,9 @@
 
 package net.es.nsi.cli.client;
 
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.provider.ConnectionProviderPort;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.requester.ConnectionRequesterPort;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.framework.headers.CommonHeaderType;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.provider.ConnectionProviderPort;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.requester.ConnectionRequesterPort;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.headers.CommonHeaderType;
 import net.es.nsi.cli.config.ClientConfig;
 import net.es.nsi.cli.config.SpringContext;
 import org.apache.cxf.Bus;
@@ -61,7 +61,7 @@ public class ClientUtil {
         }
         props.put("jaxb.additionalContextClasses",
                 new Class[] {
-                        net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.point2point.ObjectFactory.class
+                        net.es.oscars.nsi.soap.gen.nsi_2_0_r117.services.point2point.ObjectFactory.class
                 });
         fb.setProperties(props);
 
@@ -111,7 +111,7 @@ public class ClientUtil {
         }
         props.put("jaxb.additionalContextClasses",
                 new Class[] {
-                        net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.point2point.ObjectFactory.class
+                        net.es.oscars.nsi.soap.gen.nsi_2_0_r117.services.point2point.ObjectFactory.class
                 });
         fb.setProperties(props);
 

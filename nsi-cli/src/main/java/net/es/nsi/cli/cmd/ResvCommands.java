@@ -164,12 +164,8 @@ public class ResvCommands implements CommandMarker {
             @CliOption(key = { "g" },  mandatory = false, help = "gri") final String gri,
             @CliOption(key = { "d" },  mandatory = false, help = "description") final String description,
 
-            @CliOption(key = { "sn" }, mandatory = false, help = "src network") final String srcNet,
-            @CliOption(key = { "dn" }, mandatory = false, help = "dst network") final String dstNet,
             @CliOption(key = { "ss" }, mandatory = false, help = "src stp") final String srcStp,
-            @CliOption(key = { "ds" }, mandatory = false, help = "dst stp") final String dstStp,
-            @CliOption(key = { "sv" }, mandatory = false, help = "src vlan") final Integer srcVlan,
-            @CliOption(key = { "dv" }, mandatory = false, help = "dst vlan") final Integer dstVlan
+            @CliOption(key = { "ds" }, mandatory = false, help = "dst stp") final String dstStp
     ) {
         ResvProfile currentProfile = NsiCliState.getInstance().getResvProfile();
 
@@ -181,12 +177,8 @@ public class ResvCommands implements CommandMarker {
         if (version != null)    currentProfile.setVersion(version);
 
 
-        if (srcVlan != null)    currentProfile.setSrcVlan(srcVlan);
-        if (srcNet != null)     currentProfile.setSrcNet(srcNet);
         if (srcStp != null)     currentProfile.setSrcStp(srcStp);
 
-        if (dstVlan != null)    currentProfile.setDstVlan(dstVlan);
-        if (dstNet != null)     currentProfile.setDstNet(dstNet);
         if (dstStp != null)     currentProfile.setDstStp(dstStp);
 
         if (startTime != null)  currentProfile.setStartTime(startTime);

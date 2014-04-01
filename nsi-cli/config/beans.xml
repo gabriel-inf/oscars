@@ -18,12 +18,8 @@
 
     <bean id="defaultResv" class="net.es.nsi.cli.config.ResvProfile" scope="singleton">
         <property name="name" value="default" />
-        <property name="srcNet" value="urn:ogf:network:somenetwork" />
-        <property name="dstNet" value="urn:ogf:network:othernetwork" />
-        <property name="srcStp" value="urn:ogf:network:somenetwork:somestp" />
-        <property name="dstStp" value="urn:ogf:network:othernetwork:otherstp" />
-        <property name="srcVlan" value="333" />
-        <property name="dstVlan" value="333" />
+        <property name="srcStp" value="urn:ogf:network:somenetwork:somestp?vlan=333" />
+        <property name="dstStp" value="urn:ogf:network:othernetwork:otherstp?vlan=333" />
         <property name="bandwidth" value="1" />
     </bean>
 

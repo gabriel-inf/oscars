@@ -1,6 +1,6 @@
 package net.es.nsi.cli.client;
 
-import net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.connection.requester.ConnectionRequesterPort;
+import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.requester.ConnectionRequesterPort;
 import org.apache.cxf.interceptor.LoggingInInterceptor;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
@@ -49,7 +49,7 @@ public class RequesterPortHolder {
         }
         props.put("jaxb.additionalContextClasses",
                 new Class[] {
-                        net.es.oscars.nsi.soap.gen.nsi_2_0_2013_07.services.point2point.ObjectFactory.class
+                        net.es.oscars.nsi.soap.gen.nsi_2_0_r117.services.point2point.ObjectFactory.class
                 });
         fb.setProperties(props);
 
