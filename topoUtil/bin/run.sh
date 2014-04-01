@@ -5,7 +5,7 @@ javaFlags="-Xmx256m "
 javaFlags="$javaFlags -Djava.net.preferIPv4Stack=true "
 javaFlags="$javaFlags -Dcom.sun.xml.bind.v2.runtime.JAXBContextImpl.fastBoot=true "
 javaFlags="$javaFlags -Dorg.apache.cxf.JDKBugHacks.defaultUsesCaches=true "
-javaFlags="$javaFlags -Dlogback.configurationFile=networkSpec/logback.xml"
+javaFlags="$javaFlags -Dlogback.configurationFile=config/logback.xml"
 
 jarFile="target/topoUtil-1.0.one-jar.jar"
 
