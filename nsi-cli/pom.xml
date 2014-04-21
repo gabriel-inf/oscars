@@ -6,20 +6,15 @@
 
     <groupId>net.es.oscars</groupId>
     <artifactId>nsi-cli</artifactId>
-    <version>1.0</version>
+    <version>1.1</version>
     <properties>
         <spring.shell.version>1.1.0.M1</spring.shell.version>
-        <cucumber.options>--strict</cucumber.options>
         <java.version>1.6</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <spring.version>3.2.3.RELEASE</spring.version>
         <hibernate.version>4.2.4.Final</hibernate.version>
         <hsqldb.version>2.3.0</hsqldb.version>
-        <nsi-soap.version>2014_03_r117</nsi-soap.version>
-        <slf4j.version>1.7.5</slf4j.version>
-        <cxf.version>2.7.6</cxf.version>
-        <log4j.version>1.2.17</log4j.version>
+        <nsi-client.version>1.0</nsi-client.version>
 
     </properties>
 
@@ -64,58 +59,14 @@
     </repositories>
 
     <dependencies>
-        <!-- logging -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>${slf4j.version}</version>
-        </dependency>
 
         <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>${log4j.version}</version>
+            <groupId>net.es.oscars</groupId>
+            <artifactId>nsi-client</artifactId>
+            <version>${nsi-client.version}</version>
         </dependency>
 
-
-        <!-- CXF -->
-
-        <dependency>
-            <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-rt-frontend-jaxws</artifactId>
-            <version>${cxf.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-rt-transports-http</artifactId>
-            <version>${cxf.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-rt-transports-http-jetty</artifactId>
-            <version>${cxf.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-rt-bindings-soap</artifactId>
-            <version>${cxf.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-rt-ws-policy</artifactId>
-            <version>${cxf.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-rt-ws-security</artifactId>
-            <version>${cxf.version}</version>
-        </dependency>
-
-
-
+        <!-- natural time parsing -->
 
         <dependency>
             <groupId>com.joestelmach</groupId>
@@ -123,31 +74,7 @@
             <version>0.7</version>
         </dependency>
 
-        <dependency>
-            <groupId>commons-beanutils</groupId>
-            <artifactId>commons-beanutils</artifactId>
-            <version>1.8.3</version>
-        </dependency>
-
-        <dependency>
-            <groupId>commons-collections</groupId>
-            <artifactId>commons-collections</artifactId>
-            <version>3.2.1</version>
-            <scope>runtime</scope>
-
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-core</artifactId>
-            <version>${spring.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-            <version>${spring.version}</version>
-        </dependency>
-
+        <!-- CLI -->
         <dependency>
             <groupId>org.springframework.shell</groupId>
             <artifactId>spring-shell</artifactId>
@@ -171,11 +98,6 @@
 
 
 
-        <dependency>
-            <groupId>net.es.oscars</groupId>
-            <artifactId>nsi-soap</artifactId>
-            <version>${nsi-soap.version}</version>
-        </dependency>
 
     </dependencies>
 
@@ -228,11 +150,6 @@
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <systemPropertyVariables>
-                        <cucumber.options>${cucumber.options}</cucumber.options>
-                    </systemPropertyVariables>
-                </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>

@@ -6,10 +6,10 @@
         <provider>org.hibernate.ejb.HibernatePersistence</provider>
         <class>net.es.nsi.cli.config.ResvProfile</class>
         <class>net.es.nsi.cli.config.DefaultProfiles</class>
-        <class>net.es.nsi.cli.config.ProviderProfile</class>
-        <class>net.es.nsi.cli.config.RequesterProfile</class>
-        <class>net.es.nsi.cli.config.NsiAuth</class>
-        <class>net.es.nsi.cli.config.ProviderServer</class>
+        <class>net.es.nsi.cli.config.CliProviderProfile</class>
+        <class>net.es.nsi.cli.config.CliRequesterProfile</class>
+        <class>net.es.nsi.cli.config.CliProviderServer</class>
+        <class>net.es.nsi.cli.config.CliNsiAuth</class>
         <properties>
             <property name="hibernate.ejb.cfgfile" value="hibernate.xml"/>
         </properties>

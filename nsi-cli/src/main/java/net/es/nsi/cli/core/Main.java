@@ -1,18 +1,15 @@
 package net.es.nsi.cli.core;
 
 
-import net.es.nsi.cli.client.CLI_ListenerHolder;
-import net.es.nsi.cli.client.CliNsiHandler;
 import net.es.nsi.cli.cmd.NsiBootstrap;
 import net.es.nsi.cli.cmd.NsiCliState;
-import net.es.nsi.cli.config.DefaultProfiles;
-import net.es.nsi.cli.config.ProviderProfile;
-import net.es.nsi.cli.config.RequesterProfile;
-import net.es.nsi.cli.config.ResvProfile;
+import net.es.nsi.cli.config.*;
 import net.es.nsi.cli.db.DB_Util;
-import net.es.nsi.cli.client.CLIListener;
-import net.es.nsi.cli.config.SpringContext;
-import net.es.nsi.cli.client.RequesterPortHolder;
+import net.es.nsi.client.types.NsiCallbackHandler;
+import net.es.nsi.client.util.ListenerHolder;
+import net.es.nsi.client.util.NsiRequesterPort;
+import net.es.nsi.client.util.NsiRequesterPortListener;
+import net.es.nsi.client.util.RequesterPortHolder;
 import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 
@@ -75,7 +72,7 @@ public class Main {
                 System.exit(1);
             }
 
-            RequesterProfile rqp = DB_Util.getRequesterProfile(name);
+            CliRequesterProfile rqp = DB_Util.getRequesterProfile(name);
             if (rqp == null) {
                 System.err.println("could not load requester profile from DB for name:" +name);
                 System.exit(1);
@@ -86,10 +83,13 @@ public class Main {
             if (full) {
 
                 log.info("Starting listener... ");
-                CLIListener listener = CLI_ListenerHolder.getInstance().getListeners().get("default");
+                NsiRequesterPortListener listener = ListenerHolder.getInstance().getListeners().get("default");
                 if (listener == null) {
-                    listener = new CLIListener(rqp.getUrl(), rqp.getBusConfig(), new CliNsiHandler());
-                    CLI_ListenerHolder.getInstance().getListeners().put(defs.getRequesterProfileName(), listener);
+                    NsiRequesterPort port = new NsiRequesterPort();
+                    NsiCallbackHandler handler = NsiCliState.getInstance().getNewState();
+                    port.setCallbackHandler(handler);
+                    listener = new NsiRequesterPortListener(rqp.getUrl(), rqp.getBusConfig(), port);
+                    ListenerHolder.getInstance().getListeners().put(defs.getRequesterProfileName(), listener);
 
                 }
                 listener.start();
@@ -104,13 +104,14 @@ public class Main {
                 System.exit(1);
             }
 
-            ProviderProfile pp = DB_Util.getProviderProfile(name);
+            CliProviderProfile pp = DB_Util.getProviderProfile(name);
             if (pp == null) {
                 System.err.println("could not load provider profile from DB for name:" +name);
                 System.exit(1);
             }
 
             NsiCliState.getInstance().setProvProfile(pp);
+
             if (full) {
                 log.info("Creating the default client port... ");
                 RequesterPortHolder rph = RequesterPortHolder.getInstance();
@@ -150,7 +151,7 @@ public class Main {
     }
 
     private static void injectDefaultProfiles() {
-        ProviderProfile pp = DB_Util.getSpringProvProfile("default");
+        CliProviderProfile pp = DB_Util.getSpringProvProfile("default");
         if (pp == null) {
             System.err.println("no ProviderProfile 'default' bean");
             System.exit(1);
@@ -159,7 +160,7 @@ public class Main {
         DB_Util.save(pp);
 
 
-        RequesterProfile rqp = DB_Util.getSpringRequesterProfile("default");
+        CliRequesterProfile rqp = DB_Util.getSpringRequesterProfile("default");
         if (rqp == null) {
             System.err.println("no RequesterProfile 'default' bean");
             System.exit(1);

@@ -1,8 +1,8 @@
 package net.es.nsi.cli.cmd;
 
 import net.es.nsi.cli.config.DefaultProfiles;
-import net.es.nsi.cli.config.ProviderProfile;
-import net.es.nsi.cli.config.RequesterProfile;
+import net.es.nsi.cli.config.CliProviderProfile;
+import net.es.nsi.cli.config.CliRequesterProfile;
 import net.es.nsi.cli.config.ResvProfile;
 import net.es.nsi.cli.core.CliInternalException;
 import net.es.nsi.cli.db.DB_Util;
@@ -65,10 +65,10 @@ public class DefaultsCommands implements CommandMarker {
 
 
 
-            ProviderProfile pp = DB_Util.getProviderProfile(defs.getProvProfileName());
+            CliProviderProfile pp = DB_Util.getProviderProfile(defs.getProvProfileName());
             if (pp == null) {
-                Map<String, ProviderProfile> beans = ax.getBeansOfType(ProviderProfile.class);
-                for (ProviderProfile prof : beans.values()) {
+                Map<String, CliProviderProfile> beans = ax.getBeansOfType(CliProviderProfile.class);
+                for (CliProviderProfile prof : beans.values()) {
                     if (prof.getName().equals(defs.getProvProfileName())) {
                         pp = prof;
                         break;
@@ -84,11 +84,11 @@ public class DefaultsCommands implements CommandMarker {
 
 
 
-            RequesterProfile rqp  = DB_Util.getRequesterProfile(defs.getRequesterProfileName());
+            CliRequesterProfile rqp  = DB_Util.getRequesterProfile(defs.getRequesterProfileName());
 
             if (rqp == null) {
-                Map<String, RequesterProfile> beans = ax.getBeansOfType(RequesterProfile.class);
-                for (RequesterProfile prof : beans.values()) {
+                Map<String, CliRequesterProfile> beans = ax.getBeansOfType(CliRequesterProfile.class);
+                for (CliRequesterProfile prof : beans.values()) {
                     if (prof.getName().equals(defs.getRequesterProfileName())) {
                         rqp = prof;
                         break;
@@ -134,7 +134,7 @@ public class DefaultsCommands implements CommandMarker {
     }
     @CliCommand(value = "admin defaults prov", help = "set the default provider profile name")
     public String defaults_prov(
-            @CliOption(key = { "name" }, mandatory = true, help = "a provider profile name") final ProviderProfile inProfile) {
+            @CliOption(key = { "name" }, mandatory = true, help = "a provider profile name") final CliProviderProfile inProfile) {
         String out = "";
         DefaultProfiles defs = NsiCliState.getInstance().getDefs();
         if (defs == null) {
@@ -150,7 +150,7 @@ public class DefaultsCommands implements CommandMarker {
 
     @CliCommand(value = "admin defaults req", help = "set the default requester profile name")
     public String defaults_req(
-            @CliOption(key = { "name" }, mandatory = true, help = "a requester  profile name") final RequesterProfile inProfile) {
+            @CliOption(key = { "name" }, mandatory = true, help = "a requester  profile name") final CliRequesterProfile inProfile) {
         String out = "";
         DefaultProfiles defs = NsiCliState.getInstance().getDefs();
 

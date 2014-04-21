@@ -8,7 +8,7 @@
     <!-- just defaults here -->
     <!-- you may empty this file if you want -->
 
-    <bean id="defaultProvider" class="net.es.nsi.cli.config.ProviderProfile" scope="singleton">
+    <bean id="defaultProvider" class="net.es.nsi.cli.config.CliProviderProfile" scope="singleton">
         <property name="name" value="default" />
         <property name="serviceType" value="http://services.ogf.org/nsi/2013/07/descriptions/EVTS.A-GOLE"/>
         <property name="providerNSA" value="default_nsa" />
@@ -24,7 +24,7 @@
     </bean>
 
 
-    <bean id="defaultRequester" class="net.es.nsi.cli.config.RequesterProfile" scope="singleton">
+    <bean id="defaultRequester" class="net.es.nsi.cli.config.CliRequesterProfile" scope="singleton">
         <property name="name" value="default" />
         <property name="requesterId" value="NsiCliRequesterNSA" />
         <property name="busConfig" value="config/server-bus.xml"/>
@@ -32,23 +32,23 @@
     </bean>
 
 
-    <bean id="defaultUPA" class="net.es.nsi.cli.config.ProviderServer" scope="singleton">
+    <bean id="defaultUPA" class="net.es.nsi.cli.config.CliProviderServer" scope="singleton">
         <property name="busConfig" value="config/client-bus.xml"/>
         <property name="auth" ref="noAuth" />
         <property name="url" value="http://changeit.hostname.org/ConnectionService" />
     </bean>
 
 
-    <bean id="sslAuth" class="net.es.nsi.cli.config.NsiAuth" scope="singleton">
+    <bean id="sslAuth" class="net.es.nsi.cli.config.CliNsiAuth" scope="singleton">
         <property name="authType" value="SSL" />
     </bean>
 
-    <bean id="noAuth" class="net.es.nsi.cli.config.NsiAuth" scope="singleton">
+    <bean id="noAuth" class="net.es.nsi.cli.config.CliNsiAuth" scope="singleton">
         <property name="authType" value="NONE" />
     </bean>
 
 
-    <bean id="basicAuth" class="net.es.nsi.cli.config.NsiAuth" scope="singleton">
+    <bean id="basicAuth" class="net.es.nsi.cli.config.CliNsiAuth" scope="singleton">
         <property name="authType" value="BASIC" />
         <property name="username" value="USERNAME" />
         <property name="password" value="CHANGEIT" />

@@ -2,7 +2,6 @@ package net.es.nsi.cli.db;
 
 import net.es.nsi.cli.config.*;
 import net.es.nsi.cli.core.CliInternalException;
-import net.es.nsi.cli.config.SpringContext;
 import org.apache.commons.beanutils.BeanUtils;
 import org.springframework.context.ApplicationContext;
 
@@ -44,11 +43,11 @@ public class DB_Util {
         return null;
     }
 
-    public static ProviderProfile getSpringProvProfile(String name)  {
+    public static CliProviderProfile getSpringProvProfile(String name)  {
 
         ApplicationContext ax = SpringContext.getInstance().getContext();
-        Map<String, ProviderProfile> beans = ax.getBeansOfType(ProviderProfile.class);
-        for (ProviderProfile prof : beans.values()) {
+        Map<String, CliProviderProfile> beans = ax.getBeansOfType(CliProviderProfile.class);
+        for (CliProviderProfile prof : beans.values()) {
             if (prof.getName().equals(name)) {
                 return prof;
             }
@@ -56,11 +55,11 @@ public class DB_Util {
         return null;
     }
 
-    public static RequesterProfile getSpringRequesterProfile(String name) {
+    public static CliRequesterProfile getSpringRequesterProfile(String name) {
 
         ApplicationContext ax = SpringContext.getInstance().getContext();
-        Map<String, RequesterProfile> beans = ax.getBeansOfType(RequesterProfile.class);
-        for (RequesterProfile prof : beans.values()) {
+        Map<String, CliRequesterProfile> beans = ax.getBeansOfType(CliRequesterProfile.class);
+        for (CliRequesterProfile prof : beans.values()) {
             if (prof.getName().equals(name)) {
                 return prof;
             }
@@ -123,13 +122,13 @@ public class DB_Util {
 
 
 
-    public static ProviderProfile getProviderProfile(String name) throws CliInternalException {
+    public static CliProviderProfile getProviderProfile(String name) throws CliInternalException {
         prepare();
         EntityManager em = PersistenceHolder.getEntityManager();
-        String query = "SELECT c FROM ProviderProfile c WHERE c.name  = '"+name+"'";
+        String query = "SELECT c FROM CliProviderProfile c WHERE c.name = '"+name+"'";
 
         em.getTransaction().begin();
-        List<ProviderProfile> recordList = em.createQuery(query, ProviderProfile.class).getResultList();
+        List<CliProviderProfile> recordList = em.createQuery(query, CliProviderProfile.class).getResultList();
         em.getTransaction().commit();
 
         if (recordList.size() == 0) {
@@ -141,23 +140,23 @@ public class DB_Util {
             return recordList.get(0);
         }
     }
-    public static List<ProviderProfile> getProviderProfiles() throws CliInternalException {
+    public static List<CliProviderProfile> getProviderProfiles() throws CliInternalException {
         prepare();
         EntityManager em = PersistenceHolder.getEntityManager();
         em.getTransaction().begin();
-        String query = "SELECT c FROM ProviderProfile c";
-        List<ProviderProfile> recordList = em.createQuery(query, ProviderProfile.class).getResultList();
+        String query = "SELECT c FROM CliProviderProfile c";
+        List<CliProviderProfile> recordList = em.createQuery(query, CliProviderProfile.class).getResultList();
         em.getTransaction().commit();
         return recordList;
     }
 
 
-    public static ProviderProfile copyProviderProfile(ProviderProfile prof, String inName) throws CliInternalException {
+    public static CliProviderProfile copyProviderProfile(CliProviderProfile prof, String inName) throws CliInternalException {
         prepare();
         EntityManager em = PersistenceHolder.getEntityManager();
-        ProviderProfile newProf = new ProviderProfile();
-        ProviderServer  newPs = new ProviderServer();
-        NsiAuth         newAuth = new NsiAuth();
+        CliProviderProfile newProf = new CliProviderProfile();
+        CliProviderServer newPs = new CliProviderServer();
+        CliNsiAuth         newAuth = new CliNsiAuth();
 
         try {
             BeanUtils.copyProperties(newProf,   prof);
@@ -213,13 +212,13 @@ public class DB_Util {
 
 
 
-    public static RequesterProfile getRequesterProfile(String name) throws CliInternalException {
+    public static CliRequesterProfile getRequesterProfile(String name) throws CliInternalException {
         prepare();
         EntityManager em = PersistenceHolder.getEntityManager();
-        String query = "SELECT c FROM RequesterProfile c WHERE c.name  = '"+name+"'";
+        String query = "SELECT c FROM CliRequesterProfile c WHERE c.name  = '"+name+"'";
 
         em.getTransaction().begin();
-        List<RequesterProfile> recordList = em.createQuery(query, RequesterProfile.class).getResultList();
+        List<CliRequesterProfile> recordList = em.createQuery(query, CliRequesterProfile.class).getResultList();
         em.getTransaction().commit();
 
         if (recordList.size() == 0) {
@@ -231,21 +230,21 @@ public class DB_Util {
             return recordList.get(0);
         }
     }
-    public static List<RequesterProfile> getRequesterProfiles() throws CliInternalException {
+    public static List<CliRequesterProfile> getRequesterProfiles() throws CliInternalException {
         prepare();
         EntityManager em = PersistenceHolder.getEntityManager();
-        String query = "SELECT c FROM RequesterProfile c";
+        String query = "SELECT c FROM CliRequesterProfile c";
         em.getTransaction().begin();
-        List<RequesterProfile> recordList = em.createQuery(query, RequesterProfile.class).getResultList();
+        List<CliRequesterProfile> recordList = em.createQuery(query, CliRequesterProfile.class).getResultList();
         em.getTransaction().commit();
         return recordList;
     }
 
-    public static RequesterProfile copyRequesterProfile(RequesterProfile prof, String inName) throws CliInternalException {
+    public static CliRequesterProfile copyRequesterProfile(CliRequesterProfile prof, String inName) throws CliInternalException {
         prepare();
         EntityManager em = PersistenceHolder.getEntityManager();
 
-        RequesterProfile newProf = new RequesterProfile();
+        CliRequesterProfile newProf = new CliRequesterProfile();
         try {
             BeanUtils.copyProperties(newProf, prof);
         } catch (InvocationTargetException ex) {

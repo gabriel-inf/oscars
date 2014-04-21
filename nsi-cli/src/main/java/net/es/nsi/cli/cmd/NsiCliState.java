@@ -1,9 +1,10 @@
 package net.es.nsi.cli.cmd;
 
+import net.es.nsi.cli.config.CliProviderProfile;
+import net.es.nsi.cli.config.CliRequesterProfile;
 import net.es.nsi.cli.config.DefaultProfiles;
-import net.es.nsi.cli.config.RequesterProfile;
-import net.es.nsi.cli.config.ProviderProfile;
 import net.es.nsi.cli.config.ResvProfile;
+import net.es.nsi.client.types.NsiCallbackHandler;
 
 import java.util.HashMap;
 
@@ -22,43 +23,28 @@ public class NsiCliState {
 
 
     protected ResvProfile resvProfile = null;
-    protected ProviderProfile provProfile = null;
-    protected RequesterProfile requesterProfile = null;
+    protected CliProviderProfile provProfile = null;
+    protected CliRequesterProfile requesterProfile = null;
     protected String connectionId = null;
+
+
     protected boolean listenerStarted = false;
     protected boolean listenerStartable = false;
     protected boolean nsiAvailable = false;
     protected boolean verbose = true;
 
-    protected HashMap<String, Boolean> nsiConfirmed = new HashMap<String, Boolean>();
-    protected HashMap<String, Boolean> nsiCommitted  = new HashMap<String, Boolean>();
-    protected HashMap<String, Boolean> nsiProvisioned = new HashMap<String, Boolean>();
+    protected HashMap<String, NsiRequestState> states = new HashMap<String, NsiRequestState>();
 
-    public void setConfirmed(String connectionId, boolean confirmed) {
-        nsiConfirmed.put(connectionId, confirmed);
+    public NsiRequestState getState(String connectionId) {
+        return states.get(connectionId);
     }
-
-    public void setCommitted(String connectionId, boolean confirmed) {
-        nsiCommitted.put(connectionId, confirmed);
+    public void setState(String connectionId, NsiRequestState state) {
+        states.put(connectionId, state);
     }
-    public void setProvisioned(String connectionId, boolean confirmed) {
-        nsiProvisioned.put(connectionId, confirmed);
+    public NsiRequestState getNewState() {
+        return new NsiRequestState();
     }
 
-    public boolean isConfirmed(String connectionId) {
-        if (!nsiConfirmed.containsKey(connectionId)) return false;
-        return nsiConfirmed.get(connectionId);
-    }
-
-    public boolean isCommitted(String connectionId) {
-        if (!nsiCommitted.containsKey(connectionId)) return false;
-        return nsiCommitted.get(connectionId);
-    }
-
-    public boolean isProvisioned(String connectionId) {
-        if (!nsiProvisioned.containsKey(connectionId)) return false;
-        return nsiProvisioned.get(connectionId);
-    }
 
     public boolean isNsiAvailable() {
         return nsiAvailable;
@@ -84,19 +70,19 @@ public class NsiCliState {
         this.resvProfile = resvProfile;
     }
 
-    public ProviderProfile getProvProfile() {
+    public CliProviderProfile getProvProfile() {
         return provProfile;
     }
 
-    public void setProvProfile(ProviderProfile provProfile) {
+    public void setProvProfile(CliProviderProfile provProfile) {
         this.provProfile = provProfile;
     }
 
-    public RequesterProfile getRequesterProfile() {
+    public CliRequesterProfile getRequesterProfile() {
         return requesterProfile;
     }
 
-    public void setRequesterProfile(RequesterProfile requesterProfile) {
+    public void setRequesterProfile(CliRequesterProfile requesterProfile) {
         this.requesterProfile = requesterProfile;
     }
 

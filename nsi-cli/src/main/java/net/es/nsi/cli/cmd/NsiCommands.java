@@ -1,14 +1,14 @@
 package net.es.nsi.cli.cmd;
 
 
-import net.es.nsi.cli.client.BusUtil;
-import net.es.nsi.cli.client.ProviderPortHolder;
-import net.es.nsi.cli.config.AuthType;
-import net.es.nsi.cli.config.RequesterProfile;
-import net.es.nsi.cli.config.ProviderProfile;
+import net.es.nsi.cli.config.CliProviderProfile;
+import net.es.nsi.cli.config.CliRequesterProfile;
 import net.es.nsi.cli.config.ResvProfile;
 import net.es.nsi.cli.core.CliInternalException;
-import net.es.nsi.cli.client.ClientUtil;
+import net.es.nsi.client.types.AuthType;
+import net.es.nsi.client.util.BusUtil;
+import net.es.nsi.client.util.ClientUtil;
+import net.es.nsi.client.util.ProviderPortHolder;
 import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.ifce.ServiceException;
 import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.provider.ConnectionProviderPort;
 import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.QueryType;
@@ -52,8 +52,8 @@ public class NsiCommands implements CommandMarker {
 
     private boolean haveProfiles () {
         ResvProfile resvProfile = NsiCliState.getInstance().getResvProfile();
-        ProviderProfile provProfile = NsiCliState.getInstance().getProvProfile();
-        RequesterProfile requesterProfile = NsiCliState.getInstance().getRequesterProfile();
+        CliProviderProfile provProfile = NsiCliState.getInstance().getProvProfile();
+        CliRequesterProfile requesterProfile = NsiCliState.getInstance().getRequesterProfile();
         if (requesterProfile == null) return false;
         if (resvProfile == null) return false;
         if (provProfile == null) return false;
@@ -102,7 +102,9 @@ public class NsiCommands implements CommandMarker {
         if (!haveConnectionId()) return false;
         if (override) return true;
         if (!NsiCliState.getInstance().isNsiAvailable()) return false;
-        if (!NsiCliState.getInstance().isConfirmed(NsiCliState.getInstance().getConnectionId())) return false;
+        NsiRequestState state = NsiCliState.getInstance().getState(NsiCliState.getInstance().getConnectionId());
+        if (state == null) { return false; }
+        if (!state.isConfirmed()) { return false; }
         return true;
     }
 
@@ -113,8 +115,12 @@ public class NsiCommands implements CommandMarker {
         if (!haveConnectionId()) return false;
         if (override) return true;
         if (!NsiCliState.getInstance().isNsiAvailable()) return false;
-        if (!NsiCliState.getInstance().isCommitted(NsiCliState.getInstance().getConnectionId())) return false;
-        if (NsiCliState.getInstance().isProvisioned(NsiCliState.getInstance().getConnectionId())) return false;
+
+        NsiRequestState state = NsiCliState.getInstance().getState(NsiCliState.getInstance().getConnectionId());
+        if (state == null) { return false; }
+        if (!state.isCommitted()) { return false; }
+        if (!state.isProvisioned()) { return false; }
+
         return true;
     }
 
@@ -125,7 +131,9 @@ public class NsiCommands implements CommandMarker {
         if (!haveConnectionId()) return false;
         if (override) return true;
         if (!NsiCliState.getInstance().isNsiAvailable()) return false;
-        if (!NsiCliState.getInstance().isProvisioned(NsiCliState.getInstance().getConnectionId())) return false;
+        NsiRequestState state = NsiCliState.getInstance().getState(NsiCliState.getInstance().getConnectionId());
+        if (state == null) { return false; }
+        if (!state.isProvisioned()) { return false; }
         return true;
     }
 
@@ -136,7 +144,8 @@ public class NsiCommands implements CommandMarker {
         if (!haveConnectionId()) return false;
         if (override) return true;
         if (!NsiCliState.getInstance().isNsiAvailable()) return false;
-        if (!NsiCliState.getInstance().isProvisioned(NsiCliState.getInstance().getConnectionId())) return false;
+        NsiRequestState state = NsiCliState.getInstance().getState(NsiCliState.getInstance().getConnectionId());
+        if (!state.isProvisioned()) { return false; }
         return true;
     }
 
@@ -199,22 +208,18 @@ public class NsiCommands implements CommandMarker {
         return out;
     }
     private boolean gotCallback(String connectionId, NsiCallbackMessageEnum callback) {
+        NsiRequestState state = NsiCliState.getInstance().getState(NsiCliState.getInstance().getConnectionId());
+        if (state == null) { return false; }
         switch (callback) {
 
             case COMMIT_CONFIRMED:
-                if (NsiCliState.getInstance().isCommitted(connectionId)) {
-                    return true;
-                }
+                if (state.isCommitted()) { return true; }
                 break;
             case RESERVE_CONFIRMED:
-                if (NsiCliState.getInstance().isConfirmed(connectionId)) {
-                    return true;
-                }
+                if (state.isConfirmed()) { return true; }
                 break;
             case PROVISION_CONFIRMED:
-                if (NsiCliState.getInstance().isProvisioned(connectionId)) {
-                    return true;
-                }
+                if (state.isProvisioned()) { return true; }
                 break;
         }
         return false;
@@ -292,8 +297,12 @@ public class NsiCommands implements CommandMarker {
         }
 
         if (connectionId != null && !connectionId.isEmpty()) {
-            NsiCliState.getInstance().setConfirmed(connectionId, false);
-            NsiCliState.getInstance().setCommitted(connectionId, false);
+            NsiRequestState state = NsiCliState.getInstance().getState(NsiCliState.getInstance().getConnectionId());
+            if (state != null) {
+
+                state.setConfirmed(false);
+                state.setCommitted(false);
+            }
         }
 
 
@@ -306,7 +315,7 @@ public class NsiCommands implements CommandMarker {
             e.printStackTrace();
         }
 
-        ProviderProfile pp = NsiCliState.getInstance().getProvProfile();
+        CliProviderProfile pp = NsiCliState.getInstance().getProvProfile();
         String serviceType = pp.getServiceType();
 
         ResvProfile rp = NsiCliState.getInstance().getResvProfile();
@@ -617,8 +626,8 @@ public class NsiCommands implements CommandMarker {
     private CommonHeaderType makeHeader() throws CliInternalException {
         CommonHeaderType header = new CommonHeaderType();
         if (NsiCliState.getInstance().isListenerStarted()) {
-            ProviderProfile pp = NsiCliState.getInstance().getProvProfile();
-            RequesterProfile rp = NsiCliState.getInstance().getRequesterProfile();
+            CliProviderProfile pp = NsiCliState.getInstance().getProvProfile();
+            CliRequesterProfile rp = NsiCliState.getInstance().getRequesterProfile();
 
             String providerNsa = pp.getProviderNSA();
             String protocolV = pp.getProtocolVersion();
@@ -675,7 +684,7 @@ public class NsiCommands implements CommandMarker {
     }
 
     private ConnectionProviderPort getPort() {
-        ProviderProfile provProf = NsiCliState.getInstance().getProvProfile();
+        CliProviderProfile provProf = NsiCliState.getInstance().getProvProfile();
         ProviderPortHolder pph = ProviderPortHolder.getInstance();
         BusUtil.prepareBus(provProf.getProviderServer().getBusConfig());
 

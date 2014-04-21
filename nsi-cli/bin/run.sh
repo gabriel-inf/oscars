@@ -8,7 +8,7 @@ javaFlags="$javaFlags -Dlog4j.configuration=file:./config/log4j.properties "
 javaFlags="$javaFlags -Dcom.sun.xml.bind.v2.runtime.JAXBContextImpl.fastBoot=true "
 javaFlags="$javaFlags -Dorg.apache.cxf.JDKBugHacks.defaultUsesCaches=true "
 
-javaFlags="$javaFlags -jar target/nsi-cli-1.0.one-jar.jar "
+javaFlags="$javaFlags -jar target/nsi-cli-1.1.one-jar.jar "
 
 if [ -n "$1" ]; then
   if [ "$1" == "-d" ]; then

@@ -1,11 +1,12 @@
 package net.es.nsi.cli.cmd;
 
-import net.es.nsi.cli.client.CLI_ListenerHolder;
-import net.es.nsi.cli.client.CliNsiHandler;
-import net.es.nsi.cli.config.RequesterProfile;
+import net.es.nsi.cli.config.CliRequesterProfile;
 import net.es.nsi.cli.core.CliInternalException;
 import net.es.nsi.cli.db.DB_Util;
-import net.es.nsi.cli.client.CLIListener;
+import net.es.nsi.client.types.NsiCallbackHandler;
+import net.es.nsi.client.util.ListenerHolder;
+import net.es.nsi.client.util.NsiRequesterPort;
+import net.es.nsi.client.util.NsiRequesterPortListener;
 import org.apache.log4j.Logger;
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
@@ -29,7 +30,7 @@ public class RequesterCommands implements CommandMarker {
 
     @CliAvailabilityIndicator({"listener start"})
     public boolean listenerStartable() {
-        RequesterProfile currentProfile = NsiCliState.getInstance().getRequesterProfile();
+        CliRequesterProfile currentProfile = NsiCliState.getInstance().getRequesterProfile();
         if (currentProfile == null) {
             return false;
         }
@@ -79,7 +80,7 @@ public class RequesterCommands implements CommandMarker {
 
     @CliAvailabilityIndicator({"admin req save", "req set", "admin req copy"})
     public boolean haveProfile() {
-        RequesterProfile currentProfile = NsiCliState.getInstance().getRequesterProfile();
+        CliRequesterProfile currentProfile = NsiCliState.getInstance().getRequesterProfile();
         return (!(currentProfile == null));
     }
 
@@ -88,8 +89,8 @@ public class RequesterCommands implements CommandMarker {
         String out = "";
         try {
             out += "Database profiles:\n";
-            List<RequesterProfile> profiles = DB_Util.getRequesterProfiles();
-            for (RequesterProfile profile : profiles) {
+            List<CliRequesterProfile> profiles = DB_Util.getRequesterProfiles();
+            for (CliRequesterProfile profile : profiles) {
                 out += profile.toString();
             }
             return out;
@@ -103,7 +104,7 @@ public class RequesterCommands implements CommandMarker {
     @CliCommand(value = "admin req new", help = "create a new requester profile")
     public String requester_new(
             @CliOption(key = { "name" }, mandatory = true, help = "a requester profile name") final String name) {
-        RequesterProfile profile = new RequesterProfile();
+        CliRequesterProfile profile = new CliRequesterProfile();
         profile.setName(name);
 
         NsiCliState.getInstance().setRequesterProfile(profile);
@@ -112,7 +113,7 @@ public class RequesterCommands implements CommandMarker {
 
     @CliCommand(value = "req load", help = "load a requester profile")
     public String requester_load(
-            @CliOption(key = { "name" }, mandatory = true, help = "a requester profile name") final RequesterProfile inProfile) {
+            @CliOption(key = { "name" }, mandatory = true, help = "a requester profile name") final CliRequesterProfile inProfile) {
         NsiCliState.getInstance().setRequesterProfile(inProfile);
         String out;
         out = "profile loaded: [" + inProfile.getName() + "]\n";
@@ -125,10 +126,10 @@ public class RequesterCommands implements CommandMarker {
 
     @CliCommand(value = "admin req delete", help = "delete a named requester profile")
     public String requester_delete(
-            @CliOption(key = { "name" }, mandatory = true, help = "a requester profile name") final RequesterProfile inProfile) {
+            @CliOption(key = { "name" }, mandatory = true, help = "a requester profile name") final CliRequesterProfile inProfile) {
         String name = inProfile.getName();
         DB_Util.delete(inProfile);
-        RequesterProfile currentProfile = NsiCliState.getInstance().getRequesterProfile();
+        CliRequesterProfile currentProfile = NsiCliState.getInstance().getRequesterProfile();
         if (currentProfile != null) {
             if (inProfile.getName().equals(currentProfile.getName())) {
                 NsiCliState.getInstance().setProvProfile(null);
@@ -140,8 +141,8 @@ public class RequesterCommands implements CommandMarker {
 
     @CliCommand(value = "req show", help = "show current or named requester profile")
     public String requester_show(
-            @CliOption(key = { "name" }, mandatory = false, help = "a requester profile name") final RequesterProfile inProfile) {
-        RequesterProfile currentProfile = NsiCliState.getInstance().getRequesterProfile();
+            @CliOption(key = { "name" }, mandatory = false, help = "a requester profile name") final CliRequesterProfile inProfile) {
+        CliRequesterProfile currentProfile = NsiCliState.getInstance().getRequesterProfile();
 
         if (inProfile != null) {
             String out = inProfile.toString();
@@ -157,7 +158,7 @@ public class RequesterCommands implements CommandMarker {
 
     @CliCommand(value = "admin req save", help = "save the current requester profile")
     public String requester_save() {
-        RequesterProfile currentProfile = NsiCliState.getInstance().getRequesterProfile();
+        CliRequesterProfile currentProfile = NsiCliState.getInstance().getRequesterProfile();
         if (currentProfile != null) {
             DB_Util.save(currentProfile);
             String out = "";
@@ -173,13 +174,13 @@ public class RequesterCommands implements CommandMarker {
     @CliCommand(value = "admin req copy", help = "make a copy of the current requester profile with a new name and set it as current")
     public String requester_copy(
             @CliOption(key = { "name" }, mandatory = true, help = "a requester profile name") final String name) {
-        RequesterProfile currentProfile = NsiCliState.getInstance().getRequesterProfile();
+        CliRequesterProfile currentProfile = NsiCliState.getInstance().getRequesterProfile();
 
         if (currentProfile == null) {
             return "no current profile";
         }
         try {
-            RequesterProfile previous = DB_Util.getRequesterProfile(name);
+            CliRequesterProfile previous = DB_Util.getRequesterProfile(name);
             if (previous != null) {
                 return "cannot copy into existing profile for name "+name;
             }
@@ -203,7 +204,7 @@ public class RequesterCommands implements CommandMarker {
             @CliOption(key = { "bus" }, mandatory = false, help = "bus config filename") final File busConfig
     )
     {
-        RequesterProfile currentProfile = NsiCliState.getInstance().getRequesterProfile();
+        CliRequesterProfile currentProfile = NsiCliState.getInstance().getRequesterProfile();
 
         if (name != null)           currentProfile.setName(name);
         if (requesterId != null)    currentProfile.setRequesterId(requesterId);
@@ -220,7 +221,7 @@ public class RequesterCommands implements CommandMarker {
 
     @CliCommand(value = "listener start", help = "start listener")
     public String listener_start() {
-        RequesterProfile currentProfile = NsiCliState.getInstance().getRequesterProfile();
+        CliRequesterProfile currentProfile = NsiCliState.getInstance().getRequesterProfile();
         String listenerUrl = currentProfile.getUrl();
         URL url;
         try {
@@ -230,10 +231,16 @@ public class RequesterCommands implements CommandMarker {
         }
 
         try {
-            CLIListener listener = CLI_ListenerHolder.getInstance().getListeners().get(currentProfile.getName());
+            NsiRequesterPortListener listener = ListenerHolder.getInstance().getListeners().get(currentProfile.getName());
             if (listener == null) {
-                listener = new CLIListener(currentProfile.getUrl(), currentProfile.getBusConfig(), new CliNsiHandler());
-                CLI_ListenerHolder.getInstance().getListeners().put(currentProfile.getName(), listener);
+                NsiRequesterPort port = new NsiRequesterPort();
+
+                NsiCallbackHandler handler = NsiCliState.getInstance().getNewState();
+                port.setCallbackHandler(handler);
+
+
+                listener = new NsiRequesterPortListener(currentProfile.getUrl(), currentProfile.getBusConfig(), port);
+                ListenerHolder.getInstance().getListeners().put(currentProfile.getName(), listener);
             }
             listener.start();
             NsiCliState.getInstance().setListenerStarted(true);
@@ -247,8 +254,8 @@ public class RequesterCommands implements CommandMarker {
 
     @CliCommand(value = "listener stop", help = "stop listener")
     public String listener_stop() {
-        RequesterProfile currentProfile = NsiCliState.getInstance().getRequesterProfile();
-        CLIListener listener = CLI_ListenerHolder.getInstance().getListeners().get(currentProfile.getName());
+        CliRequesterProfile currentProfile = NsiCliState.getInstance().getRequesterProfile();
+        NsiRequesterPortListener listener = ListenerHolder.getInstance().getListeners().get(currentProfile.getName());
         if (listener == null) {
             return "listener not started";
         }
