@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.apache.ws.security.util.StringUtil;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneDomainContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneHopContent;
 import org.ogf.schema.network.topology.ctrlplane.CtrlPlaneLinkContent;
@@ -204,42 +206,47 @@ public class ConnectivityPCE {
                 this.log.info(netLogger.error("getTopology",ErrSev.MINOR, e.getMessage(), topoBridgeUrl, netLogProps));
                 // throw new OSCARSServiceException("Error from topoBridge: " + e.getMessage());
             }
-            
-            for(CtrlPlaneTopologyContent topo : topoResponse.getTopology()){
-                for(CtrlPlaneDomainContent domain : topo.getDomain()){
-                    String domainId = NMWGParserUtil.normalizeURN(domain.getId());
-                    visitedDomains.put(domainId, true);
-                    domains.add(domain);
+            if (topoResponse == null) {
+                String domainIds = StringUtils.join(topoRequest.getDomainId(), ", ");
+                this.log.info(netLogger.error("getTopology", ErrSev.MINOR, "no topology response, domain ids: [ "+domainIds+" ]", topoBridgeUrl, netLogProps));
+            } else {
+                for(CtrlPlaneTopologyContent topo : topoResponse.getTopology()){
+                    for(CtrlPlaneDomainContent domain : topo.getDomain()){
+                        String domainId = NMWGParserUtil.normalizeURN(domain.getId());
+                        visitedDomains.put(domainId, true);
+                        domains.add(domain);
 
-                    //if this is the last domain then we don't need to look any further
-                    if(targetDomain == null){
-                        queryQueue.clear();
-                        return domains;
-                    }
+                        //if this is the last domain then we don't need to look any further
+                        if(targetDomain == null){
+                            queryQueue.clear();
+                            return domains;
+                        }
 
-                    //Get edge domains
-                    for(CtrlPlaneNodeContent node : domain.getNode()){
-                        for(CtrlPlanePortContent port : node.getPort()){
-                            for(CtrlPlaneLinkContent link : port.getLink()){
-                                String remoteDomain = NMWGParserUtil.getURN(link.getRemoteLinkId(), NMWGParserUtil.DOMAIN_TYPE);
-                                remoteDomain = NMWGParserUtil.normalizeURN(remoteDomain);
-                                if(!NMWGParserUtil.TOPO_ID_WILDCARD.equals(remoteDomain) &&
-                                        !domainId.equals(remoteDomain) && 
-                                        !visitedDomains.containsKey(remoteDomain)){
-                                    edgeDomainMap.put(remoteDomain, true);
+                        //Get edge domains
+                        for(CtrlPlaneNodeContent node : domain.getNode()){
+                            for(CtrlPlanePortContent port : node.getPort()){
+                                for(CtrlPlaneLinkContent link : port.getLink()){
+                                    String remoteDomain = NMWGParserUtil.getURN(link.getRemoteLinkId(), NMWGParserUtil.DOMAIN_TYPE);
+                                    remoteDomain = NMWGParserUtil.normalizeURN(remoteDomain);
+                                    if(!NMWGParserUtil.TOPO_ID_WILDCARD.equals(remoteDomain) &&
+                                            !domainId.equals(remoteDomain) &&
+                                            !visitedDomains.containsKey(remoteDomain)){
+                                        edgeDomainMap.put(remoteDomain, true);
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    //if found targetDomain then return and it will be retrieved 
-                    //on the next call to this method
-                    if(targetDomain != null && edgeDomainMap.containsKey(targetDomain)){
-                        queryQueue.clear();
-                        return domains;
+                        //if found targetDomain then return and it will be retrieved
+                        //on the next call to this method
+                        if(targetDomain != null && edgeDomainMap.containsKey(targetDomain)){
+                            queryQueue.clear();
+                            return domains;
+                        }
                     }
                 }
             }
+
         }
         //if we're here then we didn't find the target domain so if there's
         //no new domains to search then we have no connectivity
