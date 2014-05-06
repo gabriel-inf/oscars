@@ -1,10 +1,10 @@
 package net.es.nsi.client.util;
 
+import net.es.nsi.client.types.SpringContext;
 import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.provider.ConnectionProviderPort;
 import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.requester.ConnectionRequesterPort;
 import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.headers.CommonHeaderType;
 import net.es.nsi.client.config.ClientConfig;
-import net.es.nsi.client.config.SpringContext;
 import org.apache.cxf.Bus;
 import org.apache.cxf.bus.spring.SpringBusFactory;
 import org.apache.cxf.interceptor.LoggingInInterceptor;
@@ -37,9 +37,9 @@ public class ClientUtil {
      * @param clientBusFile the bus file that defines characteristics of HTTP connections
      * @return the ConnectionProviderPort that you can use as the client
      */
-    public static ConnectionProviderPort createProviderClient(String url, String clientBusFile){
+    public static ConnectionProviderPort createProviderClient(SpringContext context, String url, String clientBusFile){
 
-        prepareBus(url, clientBusFile);
+        prepareBus(context, url, clientBusFile);
 
         // set logging
         LoggingInInterceptor in = new LoggingInInterceptor();
@@ -75,8 +75,8 @@ public class ClientUtil {
      * @param url URL of the provider to contact
      * @return the ConnectionProviderPort that you can use as the client
      */
-    public static ConnectionProviderPort createProviderClient(String url){
-        return createProviderClient(url, null);
+    public static ConnectionProviderPort createProviderClient(SpringContext context, String url){
+        return createProviderClient(context, url, null);
     }
     
     /**
@@ -86,9 +86,9 @@ public class ClientUtil {
      * @param clientBusFile the bus file that defines characteristics of HTTP connections
      * @return the ConnectionRequesterPort that you can use at the client
      */
-    public static ConnectionRequesterPort createRequesterClient(String url, String clientBusFile){
+    public static ConnectionRequesterPort createRequesterClient(SpringContext context, String url, String clientBusFile){
 
-        prepareBus(url, clientBusFile);
+        prepareBus(context, url, clientBusFile);
 
 
         // set logging
@@ -126,15 +126,15 @@ public class ClientUtil {
      * @param url the URL of the requester to contact
      * @return the ConnectionRequesterPort that you can use at the client
      */
-    public static ConnectionRequesterPort createRequesterClient(String url){
-        return createRequesterClient(url, null);
+    public static ConnectionRequesterPort createRequesterClient(SpringContext context, String url){
+        return createRequesterClient(context, url, null);
     }
 
     /**
      * Configures SSL and other basic client settings
      * @param url the URL of the server to contact
      */
-    public static void prepareBus(String url, String clientBusFile) {
+    public static void prepareBus(SpringContext context, String url, String clientBusFile) {
         String busFile = null;
         String sslBusFile = null;
         if(clientBusFile == null){
@@ -142,8 +142,8 @@ public class ClientUtil {
             if(beansFile == null || "".equals(beansFile)){
                 beansFile = "config/beans.xml";
             }
-            SpringContext.getInstance().initContext(beansFile);
-            ClientConfig cc = SpringContext.getInstance().getContext().getBean("clientConfig", ClientConfig.class);
+            context.initContext(beansFile);
+            ClientConfig cc = context.getContext().getBean("clientConfig", ClientConfig.class);
             sslBusFile = cc.getSslBus();
             busFile = cc.getBus();
         }else{
