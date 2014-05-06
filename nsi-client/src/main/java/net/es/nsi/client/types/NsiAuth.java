@@ -1,59 +1,21 @@
 package net.es.nsi.client.types;
 
 
-public class NsiAuth {
-    protected Long id;
-    protected AuthType authType;
-    protected String username;
-    protected String password;
-    protected String oauth;
+public interface NsiAuth {
+    public AuthType getAuthType();
 
-    public String toString() {
+    public void setAuthType(AuthType authType);
 
-        String out = "";
-        out += "\n          type:        "+authType;
-        out += "\n          username:    "+username;
-        out += "\n          password:    <SECRET>";
-        out += "\n          oauth:       <SECRET>";
-        return out;
-    }
-    public Long getId() {
-        return id;
-    }
+    public String getUsername();
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public void setUsername(String username);
 
-    public AuthType getAuthType() {
-        return authType;
-    }
+    public String getPassword();
 
-    public void setAuthType(AuthType authType) {
-        this.authType = authType;
-    }
+    public void setPassword(String password);
 
-    public String getUsername() {
-        return username;
-    }
+    public String getOauth();
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getOauth() {
-        return oauth;
-    }
-
-    public void setOauth(String oauth) {
-        this.oauth = oauth;
-    }
+    public void setOauth(String oauth);
 }
+
