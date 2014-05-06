@@ -3,14 +3,11 @@ package net.es.nsi.cli.cmd;
 import net.es.nsi.cli.config.DefaultProfiles;
 import net.es.nsi.cli.core.CliInternalException;
 import net.es.nsi.cli.db.DB_Util;
-import net.es.nsi.cli.config.SpringContext;
-import org.springframework.context.ApplicationContext;
 import org.springframework.shell.core.Completion;
 import org.springframework.shell.core.Converter;
 import org.springframework.shell.core.MethodTarget;
 
 import java.util.List;
-import java.util.Map;
 
 public class DefaultsConverter implements Converter<DefaultProfiles> {
 

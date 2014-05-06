@@ -21,7 +21,7 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
 
-        SpringContext sc = SpringContext.getInstance();
+        CliSpringContext sc = CliSpringContext.getInstance();
         String beansFile = System.getProperty("nsi-cli.beans");
         if (beansFile == null || "".equals(beansFile)){
             beansFile = "config/beans.xml";
@@ -100,22 +100,38 @@ public class Main {
 
             name = defs.getProvProfileName();
             if (name == null || name.isEmpty()) {
-                System.err.println("null / empty default requester profile name!");
+                System.err.println("null / empty default provider profile name!");
                 System.exit(1);
             }
+            log.debug("got provider profile name "+name);
 
             CliProviderProfile pp = DB_Util.getProviderProfile(name);
             if (pp == null) {
                 System.err.println("could not load provider profile from DB for name:" +name);
                 System.exit(1);
             }
+            log.debug("loaded provider profile for provider profile "+name);
+
+            CliProviderServer ps = pp.getProviderServer();
+            if (ps == null) {
+                System.err.println("could not load provider server from DB for name:" +name);
+                System.exit(1);
+            }
+            log.debug("loaded provider server for provider profile "+name);
+
+
+            if (ps.getUrl() == null) {
+                System.err.println("null URL for provider server:" +name);
+                System.exit(1);
+            }
+            log.debug("got provider server URL: "+ps.getUrl());
 
             NsiCliState.getInstance().setProvProfile(pp);
 
             if (full) {
                 log.info("Creating the default client port... ");
                 RequesterPortHolder rph = RequesterPortHolder.getInstance();
-                URL url = new URL(pp.getProviderServer().getUrl());
+                URL url = new URL(ps.getUrl());
 
                 rph.getPort(url);
                 log.info("Default port created.");

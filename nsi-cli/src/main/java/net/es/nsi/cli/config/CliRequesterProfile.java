@@ -1,6 +1,6 @@
 package net.es.nsi.cli.config;
 
-import net.es.nsi.client.config.RequesterProfile;
+import net.es.nsi.client.types.RequesterProfile;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -9,7 +9,7 @@ import javax.persistence.Id;
 
 
 @Entity
-public class CliRequesterProfile extends RequesterProfile {
+public class CliRequesterProfile implements RequesterProfile {
     protected Long id;
 
     @Id
@@ -22,6 +22,20 @@ public class CliRequesterProfile extends RequesterProfile {
         this.id = id;
     }
 
+    protected String name;
+    protected String requesterId;
+    protected String url;
+    protected String busConfig;
+
+    public String toString() {
+
+        String out = "\n";
+        out += "\n  name:         "+name;
+        out += "\n  url:          "+url;
+        out += "\n  requesterId:  "+requesterId;
+        out += "\n  busConfig:    "+busConfig;
+        return out;
+    }
 
     public String getName() {
         return name;
@@ -30,4 +44,29 @@ public class CliRequesterProfile extends RequesterProfile {
     public void setName(String name) {
         this.name = name;
     }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public String getBusConfig() {
+        return busConfig;
+    }
+
+    public void setBusConfig(String busConfig) {
+        this.busConfig = busConfig;
+    }
+
+    public String getRequesterId() {
+        return requesterId;
+    }
+
+    public void setRequesterId(String requesterId) {
+        this.requesterId = requesterId;
+    }
+
 }

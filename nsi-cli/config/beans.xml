@@ -33,6 +33,7 @@
 
 
     <bean id="defaultUPA" class="net.es.nsi.cli.config.CliProviderServer" scope="singleton">
+        <property name="name" value="defaultUpa"/>
         <property name="busConfig" value="config/client-bus.xml"/>
         <property name="auth" ref="noAuth" />
         <property name="url" value="http://changeit.hostname.org/ConnectionService" />

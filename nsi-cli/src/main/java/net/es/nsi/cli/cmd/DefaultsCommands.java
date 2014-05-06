@@ -1,12 +1,9 @@
 package net.es.nsi.cli.cmd;
 
-import net.es.nsi.cli.config.DefaultProfiles;
-import net.es.nsi.cli.config.CliProviderProfile;
-import net.es.nsi.cli.config.CliRequesterProfile;
-import net.es.nsi.cli.config.ResvProfile;
+import net.es.nsi.cli.config.*;
 import net.es.nsi.cli.core.CliInternalException;
 import net.es.nsi.cli.db.DB_Util;
-import net.es.nsi.cli.config.SpringContext;
+import net.es.nsi.cli.config.CliSpringContext;
 import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.shell.core.CommandMarker;
@@ -38,7 +35,7 @@ public class DefaultsCommands implements CommandMarker {
     @CliCommand(value = "admin defaults show", help = "show all defaults")
     public String defaults_show() {
         String out = "";
-        ApplicationContext ax = SpringContext.getInstance().getContext();
+        ApplicationContext ax = CliSpringContext.getInstance().getContext();
         try {
             DefaultProfiles defs = NsiCliState.getInstance().getDefs();
             if (defs == null) {

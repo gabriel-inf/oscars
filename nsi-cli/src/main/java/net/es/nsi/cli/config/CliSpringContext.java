@@ -1,17 +1,18 @@
 package net.es.nsi.cli.config;
 
+import net.es.nsi.client.types.SpringContext;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
-public class SpringContext {
-    private static SpringContext instance;
-    public static SpringContext getInstance() {
+public class CliSpringContext implements SpringContext {
+    private static CliSpringContext instance;
+    public static CliSpringContext getInstance() {
         if (instance == null) {
-            instance = new SpringContext();
+            instance = new CliSpringContext();
         }
         return instance;
     }
-    private SpringContext() {}
+    private CliSpringContext() {}
 
     private ApplicationContext context;
 

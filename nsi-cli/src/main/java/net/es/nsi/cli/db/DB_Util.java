@@ -2,6 +2,7 @@ package net.es.nsi.cli.db;
 
 import net.es.nsi.cli.config.*;
 import net.es.nsi.cli.core.CliInternalException;
+import net.es.nsi.cli.config.CliSpringContext;
 import org.apache.commons.beanutils.BeanUtils;
 import org.springframework.context.ApplicationContext;
 
@@ -33,7 +34,7 @@ public class DB_Util {
     }
 
     public static ResvProfile getSpringResvProfile(String name) {
-        ApplicationContext ax = SpringContext.getInstance().getContext();
+        ApplicationContext ax = CliSpringContext.getInstance().getContext();
         Map<String, ResvProfile> beans = ax.getBeansOfType(ResvProfile.class);
         for (ResvProfile prof : beans.values()) {
             if (prof.getName().equals(name)) {
@@ -45,7 +46,7 @@ public class DB_Util {
 
     public static CliProviderProfile getSpringProvProfile(String name)  {
 
-        ApplicationContext ax = SpringContext.getInstance().getContext();
+        ApplicationContext ax = CliSpringContext.getInstance().getContext();
         Map<String, CliProviderProfile> beans = ax.getBeansOfType(CliProviderProfile.class);
         for (CliProviderProfile prof : beans.values()) {
             if (prof.getName().equals(name)) {
@@ -57,7 +58,7 @@ public class DB_Util {
 
     public static CliRequesterProfile getSpringRequesterProfile(String name) {
 
-        ApplicationContext ax = SpringContext.getInstance().getContext();
+        ApplicationContext ax = CliSpringContext.getInstance().getContext();
         Map<String, CliRequesterProfile> beans = ax.getBeansOfType(CliRequesterProfile.class);
         for (CliRequesterProfile prof : beans.values()) {
             if (prof.getName().equals(name)) {
