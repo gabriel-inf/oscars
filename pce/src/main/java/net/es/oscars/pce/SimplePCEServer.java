@@ -183,7 +183,12 @@ public abstract class SimplePCEServer extends PCEProtocolServer implements Runna
                 String  jobType = ( job.getJobType() == SimplePCEJob.CREATE_TYPE ? "create" : "commit"); 
                 netLogProps.put("jobType", jobType);
                 this.log.error(netLogger.error("processJob",null,"exception caught in processJob",null,netLogProps));
-                 e.printStackTrace();
+                 
+            } catch (Exception e) {
+                //make sure no unhandled exceptions block future PCE jobs
+                netLogProps.put("GRI", job.getMessage().getGri());
+                this.log.error(netLogger.error("processJob", null, "Unhandled exception: " + e.getMessage(), null, netLogProps));
+                e.printStackTrace();
             }
         }
         
