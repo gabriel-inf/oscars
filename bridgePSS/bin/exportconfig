@@ -71,6 +71,11 @@ if [ ! -f $DST_DIR/defs-models.yaml ] ; then
     cp $SRC_DIR/defs-models.yaml  $DST_DIR/defs-models.yaml
 fi
 
+# templates
+if [ ! -f $DST_DIR/templates ] ; then
+    mkdir -p $DST_DIR/templates
+    cp $SRC_DIR/templates/* $DST_DIR/templates
+fi
 
 # sample config files
 if [ ! -f $DST_DIR/config-connector-directory.yaml ] ; then
