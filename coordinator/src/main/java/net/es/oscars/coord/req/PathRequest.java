@@ -2,6 +2,7 @@ package net.es.oscars.coord.req;
 
 import net.es.oscars.api.soap.gen.v06.*;
 import net.es.oscars.coord.actions.*;
+import net.es.oscars.coord.actions.CoordAction.State;
 import net.es.oscars.logging.ModuleName;
 import net.es.oscars.resourceManager.soap.gen.GetStatusReqContent;
 import net.es.oscars.resourceManager.soap.gen.GetStatusRespContent;
@@ -431,28 +432,43 @@ public class PathRequest extends CoordRequest <PathRequestParams,PSSReplyContent
         String errorCode = event; // overrides default error event
         boolean isTeardownError = false;
         boolean isSetupError = false;
-
+        boolean isUpstream = false;
+        boolean isDownstream = false;
+        
         if (event.equals(NotifyRequestTypes.PATH_SETUP_DOWNSTREAM_FAILED)) {
             errorCode = ErrorCodes.PATH_SETUP_DOWNSTREAM_FAILED;
             isSetupError = true;
+            isDownstream = true;
         } else if  (event.equals(NotifyRequestTypes.PATH_SETUP_UPSTREAM_FAILED)) {
             errorCode = ErrorCodes.PATH_SETUP_UPSTREAM_FAILED;
             isSetupError = true;
+            isUpstream = true;
         } else if (event.equals(NotifyRequestTypes.RESV_CREATE_FAILED)) {
             errorCode = ErrorCodes.RESV_CREATE_FAILED;
             isSetupError = true;
         } else if (event.equals(NotifyRequestTypes.PATH_TEARDOWN_DOWNSTREAM_FAILED)) {
             errorCode = ErrorCodes.PATH_TEARDOWN_DOWNSTREAM_FAILED;
             isTeardownError = true;
+            isDownstream = true;
         } else if (event.equals(NotifyRequestTypes.PATH_TEARDOWN_UPSTREAM_FAILED)) {
             errorCode = ErrorCodes.PATH_TEARDOWN_UPSTREAM_FAILED;
             isTeardownError = true;
+            isUpstream = true;
         }
 
         if (isSetupError || isTeardownError) {
             this.status = PSSConstants.FAIL;
             this.setReservationState();
             this.sendTeardown();
+            String msg = "Error from " + eventContent.getErrorSource() + ": " + eventContent.getErrorMessage();
+            if (!State.FAILED.equals(this.getState())){
+                if(isDownstream){
+                    this.sendDownStream(msg);
+                }
+                if(isUpstream){
+                    this.sendUpStream(msg);
+                }
+            }
         }
 
          ErrorReport errRep = new ErrorReport(errorCode,

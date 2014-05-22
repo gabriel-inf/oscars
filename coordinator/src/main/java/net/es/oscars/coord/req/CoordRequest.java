@@ -72,7 +72,7 @@ public class CoordRequest<P,R> extends CoordAction<P,R> implements Comparable<Co
     // the request needs to be found by its name.
     private static HashMap<String, String> aliases = new HashMap<String, String>();
 
-    private static long WATCHDOG_TIMER = (15 * 60 * 1000); // 15 minutes
+    private static long WATCHDOG_TIMER = (2 * 60 * 1000); // 15 minutes
 
     /**
      *
