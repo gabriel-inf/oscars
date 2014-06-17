@@ -1,6 +1,5 @@
 package net.es.oscars.nsibridge.test.cuke;
 
-import cucumber.api.PendingException;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
@@ -12,15 +11,12 @@ import net.es.oscars.nsibridge.common.PersistenceHolder;
 import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.config.TimingConfig;
 import net.es.oscars.nsibridge.prov.NSI_SM_Holder;
-import net.es.oscars.nsibridge.prov.NSI_Util;
 import net.es.oscars.nsibridge.prov.RequestHolder;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.ifce.ServiceException;
 import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.ReserveType;
 import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.headers.CommonHeaderType;
 import net.es.oscars.nsibridge.soap.impl.ConnectionProvider;
 import net.es.oscars.nsibridge.state.resv.NSI_Resv_SM;
 import net.es.oscars.nsibridge.test.req.NSIRequestFactory;
-import net.es.oscars.utils.task.sched.Workflow;
 import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 

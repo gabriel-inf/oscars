@@ -9,11 +9,21 @@ public class NsaConfig {
     private String protocolVersion = "";
     private String serviceType = "";
     private String networkId = "";
+    private List<StpTransformConfig> stpTransforms = new ArrayList<StpTransformConfig>();
+
     private List<StpConfig> stps = new ArrayList<StpConfig>();
 
     public NsaConfig() {
 
     };
+
+    public List<StpTransformConfig> getStpTransforms() {
+        return stpTransforms;
+    }
+
+    public void setStpTransforms(List<StpTransformConfig> stpTransforms) {
+        this.stpTransforms = stpTransforms;
+    }
 
     public String getNetworkId() {
         return networkId;

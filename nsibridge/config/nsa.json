@@ -13,6 +13,12 @@
                 "stpId":        "urn:ogf:network:es.net:2013:bi-ps",
                 "oscarsId":     "urn:ogf:network:es.net:star-cr5:xe-6/1/1:*"
             }
+        ],
+        "stpTransform": [
+            {
+                "match": "urn:ogf:network:es.net:2013:",
+                "replace":   "urn:ogf:network:es.net:"
+            }
         ]
     }
 }

@@ -1,4 +1,3 @@
-@wip
 Feature: modifying existing reservations
 
     I want to verify I can modify a new reservation

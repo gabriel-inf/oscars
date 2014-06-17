@@ -10,6 +10,7 @@ import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.config.nsa.NsaConfig;
 import net.es.oscars.nsibridge.config.nsa.NsaConfigProvider;
 import net.es.oscars.nsibridge.config.nsa.StpConfig;
+import net.es.oscars.nsibridge.config.nsa.StpTransformConfig;
 import net.es.oscars.nsibridge.oscars.OscarsProxy;
 import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.*;
 import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.services.point2point.ObjectFactory;
@@ -21,6 +22,7 @@ import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.topology.NMWGParserUtil;
 import net.es.oscars.utils.topology.PathTools;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ogf.schema.network.topology.ctrlplane.*;
 import org.springframework.context.ApplicationContext;
@@ -415,7 +417,7 @@ public class NSI_OSCARS_Translation {
             srcStp += localNetworkId();
             dstStp += localNetworkId();
         }
-        if(pathInfo.getPath() != null &&  pathInfo.getPath().getHop() != null && pathInfo.getPath().getHop().size() >= 2){
+        if (pathInfo.getPath() != null &&  pathInfo.getPath().getHop() != null && pathInfo.getPath().getHop().size() >= 2) {
             List<CtrlPlaneHopContent> hops = pathInfo.getPath().getHop();
             srcStp += ":"+ findStpByOSCARSId(NMWGParserUtil.getURN(hops.get(0))).getStpId();
 
@@ -444,7 +446,7 @@ public class NSI_OSCARS_Translation {
                 ordStp.setStp(hopStp);
                 ero.getOrderedSTP().add(ordStp);
             }
-        }else if(pathInfo.getLayer2Info() != null){
+        } else if (pathInfo.getLayer2Info() != null){
             srcStp += ":"+ findStpByOSCARSId(pathInfo.getLayer2Info().getSrcEndpoint()).getStpId();
             if(pathInfo.getLayer2Info().getSrcVtag() != null && pathInfo.getLayer2Info().getSrcVtag().getValue() != null){
                 String srcVlan = pathInfo.getLayer2Info().getSrcVtag().getValue();
@@ -456,7 +458,7 @@ public class NSI_OSCARS_Translation {
                 String dstVlan = pathInfo.getLayer2Info().getDestVtag().getValue();
                 dstStp += "?vlan="+dstVlan;
             }
-        }else{
+        } else {
             throw new TranslationException("OSCARS reservation has no path or Layer2Info set so cannot determine STPs");
         }
         p2pType.setSourceSTP(srcStp);
@@ -478,6 +480,7 @@ public class NSI_OSCARS_Translation {
 
         List<StpConfig> stps = nc.getStps();
 
+        // first look for one-to-one mapping
         for (StpConfig cfg : stps) {
             if (cfg.getStpId().equals(stpId)) return cfg;
         }
@@ -486,6 +489,16 @@ public class NSI_OSCARS_Translation {
         StpConfig def = new StpConfig();
         def.setOscarsId(stpId);
         def.setStpId(stpId);
+
+        List<StpTransformConfig> transforms = nc.getStpTransforms();
+        for (StpTransformConfig transform : transforms) {
+            log.debug("applying an STP transformation: match "+transform.getMatch()+" replace: "+transform.getReplace());
+            String transformed = StringUtils.replace(def.getOscarsId(), transform.getMatch(), transform.getReplace());
+            log.debug("OSCARS URN was: "+def.getOscarsId()+" now: "+transformed);
+            def.setOscarsId(transformed);
+        }
+
+
         return def;
     }
     
