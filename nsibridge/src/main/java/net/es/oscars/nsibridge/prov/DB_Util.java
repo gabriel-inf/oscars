@@ -360,10 +360,11 @@ public class DB_Util {
         throw new ServiceException("could not find ExceptionRecord connId: "+connectionId+" corrId: "+correlationId);
     }
 
-    public static void saveException(String connectionId, String correlationId, String exceptionString) throws ServiceException {
-        log.debug("saving exception: connId: "+connectionId+" corrId: "+correlationId+" ["+exceptionString+"]");
+    public static void saveException(String connectionId, String errorId, String correlationId, String exceptionString) throws ServiceException {
+        log.debug("saving exception: connId: "+connectionId+" errorId: "+errorId+" corrId: "+correlationId+" ["+exceptionString+"]");
         ConnectionRecord cr = getConnectionRecord(connectionId);
         ExceptionRecord er = new ExceptionRecord();
+        er.setErrorId(errorId);
         er.setCorrelationId(correlationId);
         er.setTimestamp(new Date());
         er.setExceptionString(exceptionString);

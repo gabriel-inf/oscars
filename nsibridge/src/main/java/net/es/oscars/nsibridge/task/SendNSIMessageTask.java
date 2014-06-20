@@ -146,7 +146,33 @@ public class SendNSIMessageTask extends Task  {
                 cst.setReservationState(cr.getReserveState());
                 cst.setProvisionState(cr.getProvisionState());
                 cst.setLifecycleState(cr.getLifecycleState());
+                DataPlaneStatusType dst = new DataPlaneStatusType();
+
+                int version = 0;
+                boolean active = false;
+
+                for (DataplaneStatusRecord tmp : cr.getDataplaneStatusRecords()) {
+                    if (tmp.getVersion() >= version) {
+                        version = tmp.getVersion();
+                        active = tmp.isActive();
+                    }
+                }
+                dst.setActive(active);
+                dst.setVersion(version);
+                dst.setVersionConsistent(true);
+                cst.setDataPlaneStatus(dst);
+            } else {
+                cst.setReservationState(ReservationStateEnumType.RESERVE_FAILED);
+                cst.setProvisionState(ProvisionStateEnumType.RELEASED);
+                cst.setLifecycleState(LifecycleStateEnumType.FAILED);
+                DataPlaneStatusType dst = new DataPlaneStatusType();
+                dst.setActive(false);
+                dst.setVersion(0);
+                dst.setVersionConsistent(true);
+                cst.setDataPlaneStatus(dst);
             }
+
+
 
             XMLGregorianCalendar cal;
             GregorianCalendar gc = new GregorianCalendar();

@@ -60,7 +60,7 @@ public class NSI_Util {
         st.setText(er.getExceptionString());
         st.setNsaId(nsaCfg.getNsaId());
         st.setServiceType(nsaCfg.getServiceType());
-        st.setErrorId(er.getId().toString());
+        st.setErrorId(er.getErrorId().toString());
         st.setConnectionId(connectionId);
         return st;
     }

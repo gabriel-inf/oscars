@@ -4,10 +4,7 @@ import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.beans.db.OscarsStatusRecord;
 import net.es.oscars.nsibridge.ifces.StateException;
 import net.es.oscars.nsibridge.oscars.*;
-import net.es.oscars.nsibridge.prov.DB_Util;
-import net.es.oscars.nsibridge.prov.NSI_Util;
-import net.es.oscars.nsibridge.prov.RequestHolder;
-import net.es.oscars.nsibridge.prov.TranslationException;
+import net.es.oscars.nsibridge.prov.*;
 import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.ifce.ServiceException;
 import net.es.oscars.utils.task.TaskException;
 import org.apache.log4j.Logger;
@@ -177,7 +174,7 @@ public abstract class OscarsTask extends SMTask {
 
     protected void processFail(String connId, String exceptionString) throws StateException, ServiceException, TaskException {
         log.error(exceptionString);
-        DB_Util.saveException(connId, correlationId, exceptionString);
+        DB_Util.saveException(connId, NSI_ErrorIdEnum.NRM_ERROR.toString(), correlationId, exceptionString);
         this.processFail(connId);
     }
 

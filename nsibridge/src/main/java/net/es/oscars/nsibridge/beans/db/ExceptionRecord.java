@@ -7,6 +7,7 @@ import java.util.Date;
 @Entity
 public class ExceptionRecord {
     protected Long id;
+    protected String errorId;
     protected String correlationId;
     protected String exceptionString;
     protected Date timestamp;
@@ -19,6 +20,15 @@ public class ExceptionRecord {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+
+    public String getErrorId() {
+        return errorId;
+    }
+
+    public void setErrorId(String errorId) {
+        this.errorId = errorId;
     }
 
     public String getCorrelationId() {

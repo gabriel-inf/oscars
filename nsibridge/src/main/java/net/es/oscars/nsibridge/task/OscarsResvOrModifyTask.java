@@ -85,7 +85,7 @@ public class OscarsResvOrModifyTask extends OscarsTask  {
                         exceptionString += ex.toString();
                         log.error(ex);
                         try {
-                            DB_Util.saveException(connId, correlationId, exceptionString);
+                            DB_Util.saveException(connId, NSI_ErrorIdEnum.NRM_ERROR.toString(), correlationId, exceptionString);
                             this.getStateMachine().process(this.failEvent, this.correlationId);
                             DB_Util.persistStateMachines(connId);
                             return;
@@ -124,7 +124,7 @@ public class OscarsResvOrModifyTask extends OscarsTask  {
                 this.getStateMachine().process(this.failEvent, this.correlationId);
                 DB_Util.persistStateMachines(connId);
                 exceptionString = ex.toString();
-                DB_Util.saveException(connId, correlationId, exceptionString);
+                DB_Util.saveException(connId, NSI_ErrorIdEnum.NRM_ERROR.toString(), correlationId, exceptionString);
 
                 this.onSuccess();
                 return;
@@ -136,7 +136,7 @@ public class OscarsResvOrModifyTask extends OscarsTask  {
                 DB_Util.persistStateMachines(connId);
                 this.onSuccess();
                 exceptionString = "could not perform operation after trying for a while";
-                DB_Util.saveException(connId, correlationId, exceptionString);
+                DB_Util.saveException(connId, NSI_ErrorIdEnum.NRM_ERROR.toString(), correlationId, exceptionString);
                 return;
             }
 
@@ -162,7 +162,7 @@ public class OscarsResvOrModifyTask extends OscarsTask  {
 
             if (!submittedOK) {
                 this.getStateMachine().process(this.failEvent, this.correlationId);
-                DB_Util.saveException(connId, correlationId, exceptionString);
+                DB_Util.saveException(connId, NSI_ErrorIdEnum.NRM_ERROR.toString(), correlationId, exceptionString);
                 DB_Util.persistStateMachines(connId);
                 this.onSuccess();
                 return;
@@ -220,7 +220,7 @@ public class OscarsResvOrModifyTask extends OscarsTask  {
                 this.onSuccess();
                 DB_Util.persistStateMachines(connId);
                 exceptionString = ex.toString();
-                DB_Util.saveException(connId, correlationId, exceptionString);
+                DB_Util.saveException(connId, NSI_ErrorIdEnum.NRM_ERROR.toString(),  correlationId, exceptionString);
                 return;
             }
 

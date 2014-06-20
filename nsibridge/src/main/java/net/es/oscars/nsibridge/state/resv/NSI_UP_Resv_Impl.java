@@ -10,10 +10,7 @@ import net.es.oscars.nsibridge.ifces.NsiResvMdl;
 import net.es.oscars.nsibridge.ifces.StateException;
 import net.es.oscars.nsibridge.ifces.StateMachineType;
 import net.es.oscars.nsibridge.oscars.*;
-import net.es.oscars.nsibridge.prov.DB_Util;
-import net.es.oscars.nsibridge.prov.NSI_SM_Holder;
-import net.es.oscars.nsibridge.prov.NSI_Util;
-import net.es.oscars.nsibridge.prov.RequestHolder;
+import net.es.oscars.nsibridge.prov.*;
 import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.ifce.ServiceException;
 import net.es.oscars.nsibridge.task.*;
 import net.es.oscars.utils.task.TaskException;
@@ -77,7 +74,7 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
         } catch (TaskException e) {
             log.error(e);
             try {
-                DB_Util.saveException(connectionId, correlationId, e.toString());
+                DB_Util.saveException(connectionId, NSI_ErrorIdEnum.NRM_ERROR.toString(), correlationId, e.toString());
                 NSI_Resv_SM.handleEvent(connectionId, correlationId, NSI_Resv_Event.LOCAL_RESV_CHECK_FL);
                 rh.removeResvRequest(connectionId);
             } catch (ServiceException ex) {
@@ -126,7 +123,7 @@ public class NSI_UP_Resv_Impl implements NsiResvMdl {
 
         if (!okCommit) {
             try {
-                DB_Util.saveException(connectionId, correlationId, exString);
+                DB_Util.saveException(connectionId, NSI_ErrorIdEnum.NRM_ERROR.toString(), correlationId, exString);
                 Set<UUID> taskIds = rsm.process(NSI_Resv_Event.LOCAL_RESV_COMMIT_FL, correlationId);
                 taskId = taskIds.iterator().next();
                 DB_Util.persistStateMachines(connectionId);

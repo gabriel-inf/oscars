@@ -6,6 +6,7 @@ import net.es.oscars.nsibridge.beans.db.ResvRecord;
 import net.es.oscars.nsibridge.config.TimingConfig;
 import net.es.oscars.nsibridge.oscars.*;
 import net.es.oscars.nsibridge.prov.DB_Util;
+import net.es.oscars.nsibridge.prov.NSI_ErrorIdEnum;
 import net.es.oscars.nsibridge.prov.TranslationException;
 import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.ifce.ServiceException;
 import net.es.oscars.utils.task.RunState;
@@ -77,7 +78,7 @@ public class OscarsCancelOrModifyTask extends OscarsTask  {
                 exString += ex.toString();
                 log.error(ex);
                 try {
-                    DB_Util.saveException(connId, correlationId, exString);
+                    DB_Util.saveException(connId, NSI_ErrorIdEnum.NRM_ERROR.toString(), correlationId, exString);
                     this.onFail();
                     return;
                 } catch (ServiceException ex1) {
@@ -90,7 +91,7 @@ public class OscarsCancelOrModifyTask extends OscarsTask  {
             if (!action.equals(OscarsLogicAction.YES)) {
                 this.onFail();
                 exString = "could not perform operation after trying for a while";
-                DB_Util.saveException(connId, correlationId, exString);
+                DB_Util.saveException(connId, NSI_ErrorIdEnum.NRM_ERROR.toString(), correlationId, exString);
                 return;
             }
 
