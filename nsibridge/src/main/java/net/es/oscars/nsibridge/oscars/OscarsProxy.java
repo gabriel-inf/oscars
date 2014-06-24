@@ -172,8 +172,19 @@ public class OscarsProxy {
 
             return cr;
         } else {
-            Object[] res = coordClient.invoke("createReservation",req);
+            Object[] res = coordClient.invoke("createReservation", req);
             CreateReply cr = (CreateReply) res[0];
+            if (cr == null) {
+                cr = new CreateReply();
+                cr.setGlobalReservationId(UUID.randomUUID().toString());
+                cr.setStatus(OscarsStates.FAILED.toString());
+            } else if (cr.getStatus() == null) {
+                cr.setStatus(OscarsStates.FAILED.toString());
+           } else if (cr.getStatus().equals("Ok")) {
+                cr.setStatus(OscarsStates.RESERVED.toString());
+            } else {
+                cr.setStatus(OscarsStates.FAILED.toString());
+            }
             return cr;
         }
     }

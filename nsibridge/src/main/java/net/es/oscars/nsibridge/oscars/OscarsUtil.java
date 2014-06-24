@@ -61,7 +61,7 @@ public class OscarsUtil {
             log.debug("connId: "+connId+" gri: "+reply.getGlobalReservationId());
             addOscarsRecord(cr, reply.getGlobalReservationId(), new Date(), reply.getStatus());
         } catch (OSCARSServiceException ex) {
-            addOscarsRecord(cr, null, new Date(), "FAILED");
+            addOscarsRecord(cr, null, new Date(), OscarsStates.FAILED.toString());
             log.error(ex.getMessage(), ex);
             throw new ServiceException("Failed to submit reservation");
         }
@@ -369,6 +369,7 @@ public class OscarsUtil {
         HashMap<OscarsOps, OscarsLogicAction> allActions = new HashMap<OscarsOps, OscarsLogicAction>();
         if (or != null) {
             for (OscarsOps op : ops) {
+
                 OscarsLogicAction anAction = OscarsStateLogic.isOperationAllowed(op, OscarsStates.valueOf(or.getStatus()));
                 allActions.put(op, anAction);
                 log.debug("op: "+op+" action:"+anAction);
