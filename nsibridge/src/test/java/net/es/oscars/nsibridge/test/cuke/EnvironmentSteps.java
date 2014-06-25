@@ -42,6 +42,7 @@ public class EnvironmentSteps {
         wfTicker.start();
         ScheduleUtils.scheduleProvMonitor();
         ScheduleUtils.scheduleResvTimeoutMonitor();
+        ScheduleUtils.scheduleExpirationMonitor();
 
         OscarsSecurityContext.getInstance().setSubjectAttributes(new SubjectAttributes());
         didSetup = true;

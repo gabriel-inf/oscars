@@ -80,6 +80,11 @@ public class NSI_Prov_TH implements TransitionHandler {
             case RELEASING:
                 if (toState.equals(ProvisionStateEnumType.RELEASED)) {
                     taskIds.add(mdl.sendRelCF(correlationId));
+                    if (ev.equals(NSI_Prov_Event.END_TIME)) {
+                        taskIds.add(mdl.dataplaneUpdate(correlationId));
+                    }
+
+
                 } else {
                     throw new StateException("invalid state transition ["+transitionStr+"]");
                 }

@@ -132,6 +132,7 @@ public class Invoker implements Runnable {
             ts.start();
             ScheduleUtils.scheduleProvMonitor();
             ScheduleUtils.scheduleResvTimeoutMonitor();
+            ScheduleUtils.scheduleExpirationMonitor();
         } catch (TaskException e) {
             e.printStackTrace();
             Invoker.setKeepRunning(false);
@@ -149,6 +150,9 @@ public class Invoker implements Runnable {
                         PersistenceHolder.getEntityManager().close();
                         ProviderServer.getInstance().stop();
                         try {
+                            ScheduleUtils.stopProvMonitor();
+                            ScheduleUtils.stopExpirationMonitor();
+                            ScheduleUtils.stopResvTimeoutMonitor();
                             Schedule.getInstance().stop();
                         } catch (Exception ex) {
                             log.error(ex);

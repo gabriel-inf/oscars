@@ -36,6 +36,8 @@ public class NSI_Life_TH implements TransitionHandler {
                 if (toState.equals(LifecycleStateEnumType.TERMINATING)) {
                     taskIds.add(mdl.localTerm(correlationId));
                     taskIds.add(mdl.localCancel(correlationId));
+                } else if (toState.equals(LifecycleStateEnumType.PASSED_END_TIME)) {
+                    taskIds.add(mdl.localCancel(correlationId));
                 } else {
                     throw new StateException("invalid state transition ["+transitionStr+"]");
                 }

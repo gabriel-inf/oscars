@@ -7,6 +7,7 @@ public enum NSI_Prov_Event implements SM_Event {
     RECEIVED_NSI_PROV_RQ,
     LOCAL_PROV_CONFIRMED,
     LOCAL_PROV_FAILED,
+    END_TIME,
 
 
 

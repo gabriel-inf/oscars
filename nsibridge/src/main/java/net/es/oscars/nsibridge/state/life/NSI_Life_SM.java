@@ -46,7 +46,7 @@ public class NSI_Life_SM implements StateMachine {
                     ns.setState(nextState);
                     this.setState(ns);
                 } else if (event.equals(NSI_Life_Event.END_TIME)) {
-                    nextState = LifecycleStateEnumType.TERMINATING;
+                    nextState = LifecycleStateEnumType.PASSED_END_TIME;
                     ns.setState(nextState);
                     this.setState(ns);
                 } else if (event.equals(NSI_Life_Event.RECEIVED_NSI_TERM_RQ)) {

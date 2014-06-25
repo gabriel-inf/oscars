@@ -87,6 +87,8 @@ public class NSI_UP_Life_Impl implements NsiLifeMdl {
         return taskId;
     }
 
+
+
     @Override
     public UUID sendTermCF(String correlationId) {
         long now = new Date().getTime();

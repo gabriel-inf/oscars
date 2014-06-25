@@ -50,8 +50,7 @@ public class OscarsCancelOrModifyTask extends OscarsTask  {
             try {
                 DB_Util.abortResvRecord(connectionId);
             } catch (ServiceException ex) {
-                exString = ex.toString();
-                log.error(exString, ex);
+                // we don't care about these exceptions
             }
 
 

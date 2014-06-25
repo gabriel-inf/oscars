@@ -48,6 +48,10 @@ public class NSI_Prov_SM implements StateMachine {
                     nextState = ProvisionStateEnumType.RELEASED;
                     ns.setState(nextState);
                     this.setState(ns);
+                } else if (event.equals(NSI_Prov_Event.END_TIME)) {
+                    nextState = ProvisionStateEnumType.RELEASED;
+                    ns.setState(nextState);
+                    this.setState(ns);
                 } else if (event.equals(NSI_Prov_Event.LOCAL_TEARDOWN_FAILED)) {
                     nextState = ProvisionStateEnumType.RELEASED;
                     ns.setState(nextState);
@@ -83,6 +87,10 @@ public class NSI_Prov_SM implements StateMachine {
 
             case PROVISIONED:
                 if (event.equals(NSI_Prov_Event.RECEIVED_NSI_REL_RQ)) {
+                    nextState = ProvisionStateEnumType.RELEASING;
+                    ns.setState(nextState);
+                    this.setState(ns);
+                } else if (event.equals(NSI_Prov_Event.END_TIME)) {
                     nextState = ProvisionStateEnumType.RELEASING;
                     ns.setState(nextState);
                     this.setState(ns);
