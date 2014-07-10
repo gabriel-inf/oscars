@@ -150,7 +150,7 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
         SendNSIMessageTask sendNsiMsg = new SendNSIMessageTask();
         sendNsiMsg.setCorrId(correlationId);
         sendNsiMsg.setConnId(connectionId);
-        sendNsiMsg.setMessage(CallbackMessages.ERROR);
+        sendNsiMsg.setMessage(CallbackMessages.ERROR_EVENT);
 
 
         UUID taskId = null;

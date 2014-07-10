@@ -126,7 +126,8 @@ public class RequestProcessor {
 
         } catch (StateException ex) {
             log.error(ex);
-            throw new ServiceException("resv state machine does not allow transition: "+connId);
+            ServiceException state_error = ServiceExceptionUtil.makeException(ex.getMessage(), connId, "00201");
+            throw state_error;
         } finally {
             DB_Util.persistStateMachines(connId);
         }
@@ -194,7 +195,8 @@ public class RequestProcessor {
             }
         } catch (StateException ex) {
             log.error(ex);
-            throw new ServiceException("state machine does not allow transition: "+connId);
+            ServiceException state_error = ServiceExceptionUtil.makeException(ex.getMessage(), connId, "00201");
+            throw state_error;
         } finally {
             DB_Util.persistStateMachines(connId);
         }

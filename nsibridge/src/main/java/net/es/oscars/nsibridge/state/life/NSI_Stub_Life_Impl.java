@@ -16,7 +16,17 @@ public class NSI_Stub_Life_Impl implements NsiLifeMdl {
 
 
     @Override
-    public UUID localTerm(String correlationId) {
+    public UUID localTerminate(String correlationId) {
+        return null;
+    }
+
+    @Override
+    public UUID localForcedEnd(String correlationId) {
+        return null;
+    }
+
+    @Override
+    public UUID localEndtime(String correlationId) {
         return null;
     }
 
@@ -26,13 +36,14 @@ public class NSI_Stub_Life_Impl implements NsiLifeMdl {
     }
 
     @Override
+    public UUID sendForcedEnd(String correlationId) {
+        return null;
+    }
+
+    @Override
     public UUID sendTermCF(String correlationId) {
         return null;
     }
 
 
-    @Override
-    public UUID notifyForcedEndErrorEvent(String correlationId) {
-        return null;
-    }
 }

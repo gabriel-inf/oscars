@@ -63,7 +63,25 @@ Feature: State machines behavior verification
         When I submit the "LSM" event: "LOCAL_TERM_CONFIRMED"
         Then the "LSM" state is: "Terminated"
 
+    @wip
+    Scenario: Endtime walk through the Lifecycle uPA state machine
+        Given I have set up the run environment
+        When I assign random connId and corrId
 
+        Given that I have created a new "LSM" state machine
+        Given that I have set the "LSM" model implementation to be a stub
+        Then the "LSM" state is: "Created"
+
+        When I submit the "LSM" event: "END_TIME"
+        Then the "LSM" state is: "PassedEndTime"
+
+        When I submit the "LSM" event: "RECEIVED_NSI_TERM_RQ"
+        Then the "LSM" state is: "Terminating"
+
+        When I assign a random corrId
+        When I submit the "LSM" event: "LOCAL_TERM_CONFIRMED"
+        Then the "LSM" state is: "Terminated"
+      
 
   Scenario: No error walk through the Provisioning uPA state machine
         Given I have set up the run environment

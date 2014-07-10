@@ -32,8 +32,8 @@ public class NSI_UP_Life_Impl implements NsiLifeMdl {
 
 
     @Override
-    public UUID localTerm(String correlationId) {
-        log.debug("localTerm start");
+    public UUID localTerminate(String correlationId) {
+        log.debug("localTerminate start");
         UUID taskId = null;
 
         long now = new Date().getTime();
@@ -57,11 +57,33 @@ public class NSI_UP_Life_Impl implements NsiLifeMdl {
             e.printStackTrace();
         }
         return taskId;
-
     }
 
+    @Override
+    public UUID localEndtime(String correlationId) {
+        // nothing to do, OSCARS will cancel the reservation after end time by itself
+        log.debug("localEndtime start");
+        UUID taskId = null;
+        return taskId;
+    }
+
+    @Override
+    public UUID localForcedEnd(String correlationId) {
+        log.debug("localForcedEnd start");
+        return this.cancelOscars(correlationId);
+    }
+
+
+    @Override
     public UUID localCancel(String correlationId) {
-        log.debug("localCancel start");
+        return this.cancelOscars(correlationId);
+    }
+
+
+
+
+
+    protected UUID cancelOscars(String correlationId) {
         UUID taskId = null;
 
         long now = new Date().getTime();
@@ -83,11 +105,34 @@ public class NSI_UP_Life_Impl implements NsiLifeMdl {
         } catch (TaskException e) {
             e.printStackTrace();
         }
-
         return taskId;
     }
 
 
+    @Override
+    public UUID sendForcedEnd(String correlationId) {
+        log.debug("sendForcedEnd start");
+        long now = new Date().getTime();
+
+        Workflow wf = Workflow.getInstance();
+        SendNSIMessageTask sendNsiMsg = new SendNSIMessageTask();
+        sendNsiMsg.setCorrId(correlationId);
+        sendNsiMsg.setConnId(connectionId);
+        sendNsiMsg.setMessage(CallbackMessages.ERROR_EVENT);
+
+        UUID taskId = null;
+
+        try {
+            Long notId = DB_Util.makeNotification(connectionId, EventEnumType.FORCED_END, CallbackMessages.ERROR_EVENT);
+            sendNsiMsg.setNotificationId(notId);
+            taskId = wf.schedule(sendNsiMsg, now + 1000);
+        } catch (ServiceException ex) {
+            log.error(ex);
+        } catch (TaskException e) {
+            e.printStackTrace();
+        }
+        return taskId;
+    }
 
     @Override
     public UUID sendTermCF(String correlationId) {
@@ -110,27 +155,4 @@ public class NSI_UP_Life_Impl implements NsiLifeMdl {
     }
 
 
-    @Override
-    public UUID notifyForcedEndErrorEvent(String correlationId) {
-        long now = new Date().getTime();
-
-        Workflow wf = Workflow.getInstance();
-        SendNSIMessageTask sendNsiMsg = new SendNSIMessageTask();
-        sendNsiMsg.setCorrId(correlationId);
-        sendNsiMsg.setConnId(connectionId);
-        sendNsiMsg.setMessage(CallbackMessages.ERROR_EVENT);
-
-        UUID taskId = null;
-
-        try {
-            Long notId = DB_Util.makeNotification(connectionId, EventEnumType.FORCED_END, CallbackMessages.ERROR_EVENT);
-            sendNsiMsg.setNotificationId(notId);
-            taskId = wf.schedule(sendNsiMsg, now + 1000);
-        } catch (ServiceException ex) {
-            log.error(ex);
-        } catch (TaskException e) {
-            e.printStackTrace();
-        }
-        return taskId;
-    }
 }

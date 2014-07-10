@@ -290,6 +290,7 @@ public class SendNSIMessageTask extends Task  {
                     port.dataPlaneStateChange(connId, notificationId.intValue(), cal, dst, outHeader, outHolder);
                     break;
 
+
                 case ERROR_EVENT:
                     try {
                         nr = DB_Util.getNotificationRecord(connId, notificationId);

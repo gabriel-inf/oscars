@@ -125,7 +125,7 @@ public class NSI_Prov_SM implements StateMachine {
 
         Set<UUID> taskIds = this.transitionHandler.process(correlationId, ps, ns, event, this);
 
-        String post = "PST: PSM ["+this.getId()+"] now at state ["+this.getState()+"] after event ["+event+"]";
+        String post = "PST: PSM ["+this.getId()+"] now at state ["+this.getState().value()+"] after event ["+event+"]";
         LOG.debug(post);
 
         return(taskIds);

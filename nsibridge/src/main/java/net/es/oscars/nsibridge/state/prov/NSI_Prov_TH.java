@@ -69,6 +69,7 @@ public class NSI_Prov_TH implements TransitionHandler {
                     } else if (ev.equals(NSI_Prov_Event.LOCAL_SETUP_FAILED)) {
                         log.info("local setup failed");
                         taskIds.add(mdl.dataplaneUpdate(correlationId));
+                        taskIds.add(mdl.notifyProvFL(correlationId));
 
                     }
 

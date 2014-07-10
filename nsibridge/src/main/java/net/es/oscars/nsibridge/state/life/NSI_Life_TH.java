@@ -34,10 +34,13 @@ public class NSI_Life_TH implements TransitionHandler {
         switch (fromState) {
             case CREATED:
                 if (toState.equals(LifecycleStateEnumType.TERMINATING)) {
-                    taskIds.add(mdl.localTerm(correlationId));
                     taskIds.add(mdl.localCancel(correlationId));
+                    taskIds.add(mdl.localTerminate(correlationId));
                 } else if (toState.equals(LifecycleStateEnumType.PASSED_END_TIME)) {
-                    taskIds.add(mdl.localCancel(correlationId));
+                    taskIds.add(mdl.localEndtime(correlationId));
+                } else if (toState.equals(LifecycleStateEnumType.FAILED)) {
+                    taskIds.add(mdl.localForcedEnd(correlationId));
+                    taskIds.add(mdl.sendForcedEnd(correlationId));
                 } else {
                     throw new StateException("invalid state transition ["+transitionStr+"]");
                 }
@@ -50,7 +53,17 @@ public class NSI_Life_TH implements TransitionHandler {
                 }
                 break;
             case FAILED:
-                throw new StateException("invalid state transition ["+transitionStr+"]");
+                if (toState.equals(LifecycleStateEnumType.TERMINATING)) {
+
+                } else {
+                    throw new StateException("invalid state transition ["+transitionStr+"]");
+                }
+            case PASSED_END_TIME:
+                if (toState.equals(LifecycleStateEnumType.TERMINATING)) {
+
+                } else {
+                    throw new StateException("invalid state transition ["+transitionStr+"]");
+                }
             case TERMINATED:
                 throw new StateException("invalid state transition ["+transitionStr+"]");
             default:

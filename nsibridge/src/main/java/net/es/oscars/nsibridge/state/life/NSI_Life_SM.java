@@ -31,7 +31,7 @@ public class NSI_Life_SM implements StateMachine {
 
         NSI_Life_State ps = (NSI_Life_State) this.getState();
         NSI_Life_State ns = new NSI_Life_State();
-        String pre = "PRE: PSM ["+this.getId()+"] at state ["+state.value()+"] got event ["+event+"]";
+        String pre = "PRE: LSM ["+this.getId()+"] at state ["+state.value()+"] got event ["+event+"]";
         //LOG.debug(pre);
         String error = pre;
 
@@ -40,9 +40,15 @@ public class NSI_Life_SM implements StateMachine {
 
 
         switch (prevState) {
+            // no events allowed if already terminated
+            case TERMINATED:
+                error = pre + " : error : event ["+event+"] not allowed";
+                LOG.error(error);
+                throw new StateException(error);
+
             case CREATED:
-                if (event.equals(NSI_Life_Event.CLEANUP)) {
-                    nextState = LifecycleStateEnumType.TERMINATING;
+                if (event.equals(NSI_Life_Event.LOCAL_FORCED_END)) {
+                    nextState = LifecycleStateEnumType.FAILED;
                     ns.setState(nextState);
                     this.setState(ns);
                 } else if (event.equals(NSI_Life_Event.END_TIME)) {
@@ -64,29 +70,30 @@ public class NSI_Life_SM implements StateMachine {
                     nextState = LifecycleStateEnumType.TERMINATED;
                     ns.setState(nextState);
                     this.setState(ns);
-                } else if (event.equals(NSI_Life_Event.LOCAL_TERM_FAILED)) {
-                    nextState = LifecycleStateEnumType.FAILED;
-                    ns.setState(nextState);
-                    this.setState(ns);
                 } else {
                     error = pre + " : error : event ["+event+"] not allowed";
                     LOG.error(error);
                     throw new StateException(error);
                 }
                 break;
-            case TERMINATED:
-                error = pre + " : error : event ["+event+"] not allowed";
-                LOG.error(error);
-                throw new StateException(error);
+
+            case PASSED_END_TIME:
             case FAILED:
-                error = pre + " : error : event ["+event+"] not allowed";
-                LOG.error(error);
-                throw new StateException(error);
+                if (event.equals(NSI_Life_Event.RECEIVED_NSI_TERM_RQ)) {
+                    nextState = LifecycleStateEnumType.TERMINATING;
+                    ns.setState(nextState);
+                    this.setState(ns);
+                } else {
+                    error = pre + " : error : event ["+event+"] not allowed";
+                    LOG.error(error);
+                    throw new StateException(error);
+
+                }
         }
 
 
-        String post = "PST: PSM ["+this.getId()+"] now at state ["+this.getState()+"] after event ["+event+"]";
-        //  LOG.debug(post);
+        String post = "PST: LSM ["+this.getId()+"] now at state ["+this.getState().value()+"] after event ["+event+"]";
+        LOG.debug(post);
         return (this.transitionHandler.process(correlationId, ps, ns, event, this));
     }
 
