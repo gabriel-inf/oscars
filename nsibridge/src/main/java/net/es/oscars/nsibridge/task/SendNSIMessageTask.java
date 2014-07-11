@@ -51,6 +51,12 @@ public class SendNSIMessageTask extends Task  {
 
     public void onRun() throws TaskException {
         log.debug(this.id+" starting");
+        if (message != null) {
+            log.debug("message: "+message.toString());
+        } else {
+            log.error("no message!");
+            return;
+        }
         SpringContext sc = SpringContext.getInstance();
         ApplicationContext ax = sc.getContext();
         NSAStubConfig stubConfig = ax.getBean("nsaStubConfig", NSAStubConfig.class);

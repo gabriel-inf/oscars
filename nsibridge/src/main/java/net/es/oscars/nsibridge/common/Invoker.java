@@ -68,6 +68,7 @@ public class Invoker implements Runnable {
     }
 
     public void run() {
+        System.out.println("Starting NSI Bridge v. 0.6.1-17");
 
         try {
             ContextConfig.getInstance().setContext(context);

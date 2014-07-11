@@ -59,7 +59,7 @@ public class ExpirationMonitor extends Thread {
             if (cr.getLifecycleState() == null) {
                 continue;
             } else if (!cr.getLifecycleState().equals(LifecycleStateEnumType.CREATED)) {
-                // nothing to do for FAILED, TERMINATING or TERMINATED records
+                // nothing to do for FAILED, TERMINATING, PASSED_ENDTIME or TERMINATED records
                 continue;
             }
             if (cr.getProvisionState() == null) {
@@ -103,6 +103,13 @@ public class ExpirationMonitor extends Thread {
                 psm.process(NSI_Prov_Event.END_TIME, UUID.randomUUID().toString());
             } catch (StateException ex) {
                 log.error(ex);
+            }
+
+            try {
+                DB_Util.persistStateMachines(cr.getConnectionId());
+            } catch (ServiceException e) {
+                log.error(e);
+                e.printStackTrace();
             }
 
 

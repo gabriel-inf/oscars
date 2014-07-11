@@ -52,6 +52,14 @@ public class NSI_Stub_Prov_Impl implements NsiProvMdl {
         log.debug("local prov stub");
         return null;
     }
+
+
+    @Override
+    public UUID localEndtime(String correlationId) {
+        log.debug("local prov stub");
+        return null;
+    }
+
     @Override
     public UUID dataplaneUpdate(String correlationId) {
         return null;

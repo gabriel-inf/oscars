@@ -16,5 +16,6 @@ public interface NsiProvMdl {
 
     public UUID dataplaneUpdate(String correlationId);
 
+    public UUID localEndtime(String correlationId);
 
 }
