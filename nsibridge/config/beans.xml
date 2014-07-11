@@ -72,7 +72,7 @@
           class="net.es.oscars.nsibridge.config.OscarsTimingConfig"
           scope="singleton">
         <property name="submitTimeout" value="15"/>
-        <property name="pollInterval" value="1"/>
+        <property name="pollInterval" value="5"/>
         <property name="pollTimeout" value="60"/>
 
     </bean>

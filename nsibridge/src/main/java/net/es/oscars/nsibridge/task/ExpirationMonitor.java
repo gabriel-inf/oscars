@@ -64,6 +64,9 @@ public class ExpirationMonitor extends Thread {
             }
             if (cr.getProvisionState() == null) {
                 continue;
+            } else if (cr.getProvisionState().equals(ProvisionStateEnumType.PROVISIONING)) {
+                // wait til done provisioning before trying again
+                continue;
             } else if (cr.getProvisionState().equals(ProvisionStateEnumType.RELEASING)) {
                 // wait til done releasing before trying again
                 continue;

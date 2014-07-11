@@ -161,8 +161,9 @@ public class RequestProcessor {
         NSI_Life_State lsmState = (NSI_Life_State) lsm.getState();
         LifecycleStateEnumType lsmEnumState = (LifecycleStateEnumType) lsmState.state();
 
-        if (!lsmEnumState.equals(LifecycleStateEnumType.CREATED)) {
-            throw new ServiceException("cannot perform "+request.getRequestType()+" - lifecycle state: "+lsm.getState().value());
+        if (lsmEnumState.equals(LifecycleStateEnumType.TERMINATED) || lsmEnumState.equals(LifecycleStateEnumType.TERMINATING)) {
+            ServiceException state_error = ServiceExceptionUtil.makeException("cannot perform "+request.getRequestType()+" - lifecycle state is "+lsmEnumState.value(), connId, "00201");
+            throw state_error;
         }
 
 

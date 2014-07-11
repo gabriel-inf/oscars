@@ -86,6 +86,39 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
     public UUID localEndtime(String correlationId) {
         UUID taskId = null;
         log.debug("local endtime start");
+        try {
+            ConnectionRecord cr = DB_Util.getConnectionRecord(connectionId);
+
+
+            ResvRecord rr = ConnectionRecord.getCommittedResvRecord(cr);
+            DataplaneStatusRecord dr = new DataplaneStatusRecord();
+
+            dr.setVersion(rr.getVersion());
+            dr.setActive(false);
+
+            boolean found = false;
+            for (DataplaneStatusRecord aRecord : cr.getDataplaneStatusRecords()) {
+                if (aRecord.getVersion() == dr.getVersion()) {
+                    aRecord.setActive(dr.isActive());
+                    found = true;
+                }
+            }
+            if (!found) {
+                cr.getDataplaneStatusRecords().add(dr);
+                log.debug("added a new dataplane record for connId: " + cr.getConnectionId() + " v:" + dr.getVersion() + " a:" + dr.isActive());
+            } else {
+                log.debug("updated dataplane record for connId: " + cr.getConnectionId() + " v:" + dr.getVersion() + " a:" + dr.isActive());
+
+            }
+            EntityManager em = PersistenceHolder.getEntityManager();
+            em.getTransaction().begin();
+            em.persist(cr);
+            em.getTransaction().commit();
+        } catch (ServiceException ex) {
+            ex.printStackTrace();
+            log.error(ex);
+        }
+
 
         long now = new Date().getTime();
 

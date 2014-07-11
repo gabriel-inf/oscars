@@ -47,7 +47,7 @@ public class ProvMonitor extends Thread {
                 continue;
             }
 
-            // do not set up oscars if we are TERMINATING / TERMINATED / FAILED
+            // do not set up oscars if we are TERMINATING / TERMINATED / FAILED / PASSED_ENDTIME
             if (!cr.getLifecycleState().equals(LifecycleStateEnumType.CREATED)) {
                 continue;
             }

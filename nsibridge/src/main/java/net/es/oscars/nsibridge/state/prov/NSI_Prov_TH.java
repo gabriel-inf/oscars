@@ -42,7 +42,9 @@ public class NSI_Prov_TH implements TransitionHandler {
                     } else if (ev.equals(NSI_Prov_Event.LOCAL_TEARDOWN_FAILED)) {
                         log.info("local teardown failed");
                         taskIds.add(mdl.dataplaneUpdate(correlationId));
-
+                    } else if (ev.equals(NSI_Prov_Event.END_TIME)) {
+                        log.info("local endtime");
+                        taskIds.add(mdl.localEndtime(correlationId));
                     }
                 } else {
                     throw new StateException("invalid state transition ["+transitionStr+"]");
@@ -80,10 +82,10 @@ public class NSI_Prov_TH implements TransitionHandler {
 
             case RELEASING:
                 if (toState.equals(ProvisionStateEnumType.RELEASED)) {
-                    if (!ev.equals(NSI_Prov_Event.END_TIME)) {
-                        taskIds.add(mdl.sendRelCF(correlationId));
+                    if (ev.equals(NSI_Prov_Event.END_TIME)) {
+
                     } else {
-                        taskIds.add(mdl.localEndtime(correlationId));
+                        taskIds.add(mdl.sendRelCF(correlationId));
                     }
 
 
