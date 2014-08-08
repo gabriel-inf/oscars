@@ -1,6 +1,10 @@
 package net.es.nsi.cli.core;
 
 
+import joptsimple.OptionException;
+import joptsimple.OptionParser;
+import joptsimple.OptionSet;
+import joptsimple.OptionSpec;
 import net.es.nsi.cli.cmd.NsiBootstrap;
 import net.es.nsi.cli.cmd.NsiCliState;
 import net.es.nsi.cli.config.*;
@@ -16,6 +20,8 @@ import org.springframework.context.ApplicationContext;
 import java.io.IOException;
 import java.net.URL;
 
+import static java.util.Arrays.asList;
+
 public class Main {
     private static final Logger log = Logger.getLogger(Main.class);
 
@@ -28,12 +34,13 @@ public class Main {
         }
         log.info("Initializing Spring from "+beansFile);
         ApplicationContext ax = sc.initContext(beansFile);
+        parseArgs(args);
         prepare(true);
 
         NsiBootstrap.main(args);
     }
 
-    private static void prepare(boolean full) {
+    private static void prepare(boolean receivecallbacks) {
 
 
         try {
@@ -80,21 +87,28 @@ public class Main {
 
             NsiCliState.getInstance().setRequesterProfile(rqp);
 
-            if (full) {
+            if (receivecallbacks) {
 
                 log.info("Starting listener... ");
                 NsiRequesterPortListener listener = ListenerHolder.getInstance().getListeners().get("default");
+                boolean listenerError = false;
                 if (listener == null) {
                     NsiRequesterPort port = new NsiRequesterPort();
                     NsiCallbackHandler handler = NsiCliState.getInstance().getNewState();
                     port.setCallbackHandler(handler);
-                    listener = new NsiRequesterPortListener(rqp.getUrl(), rqp.getBusConfig(), port);
-                    ListenerHolder.getInstance().getListeners().put(defs.getRequesterProfileName(), listener);
-
+                    try {
+                        listener = new NsiRequesterPortListener(rqp.getUrl(), rqp.getBusConfig(), port);
+                        ListenerHolder.getInstance().getListeners().put(defs.getRequesterProfileName(), listener);
+                    } catch (Exception ex) {
+                        log.error("could not start listener!");
+                        listenerError = true;
+                    }
                 }
-                listener.start();
-                NsiCliState.getInstance().setListenerStarted(true);
-                log.info("listener started.");
+                if (!listenerError) {
+                    listener.start();
+                    NsiCliState.getInstance().setListenerStarted(true);
+                    log.info("listener started.");
+                }
             }
 
 
@@ -128,7 +142,7 @@ public class Main {
 
             NsiCliState.getInstance().setProvProfile(pp);
 
-            if (full) {
+            if (receivecallbacks) {
                 log.info("Creating the default client port... ");
                 RequesterPortHolder rph = RequesterPortHolder.getInstance();
                 URL url = new URL(ps.getUrl());
@@ -193,8 +207,33 @@ public class Main {
         NsiCliState.getInstance().setResvProfile(rp);
         DB_Util.save(rp);
 
+    }
 
+
+
+    public static String[] parseArgs(String args[])  throws java.io.IOException {
+
+        OptionParser parser = new OptionParser();
+        parser.acceptsAll( asList("h", "?"), "show help then exit" );
+        parser.accepts("d", "turn on debugging");
+        parser.accepts("cmdfile" , "/path/to/script" ).withRequiredArg().describedAs("path to script file to non-interactively execute then exit").ofType(String.class);
+        try {
+            OptionSet options = parser.parse( args );
+            // check for help
+            if ( options.has( "?" ) || options.has("h")) {
+                parser.printHelpOn( System.out );
+                System.exit(0);
+            }
+
+        } catch (OptionException exception) {
+            System.err.println("Error parsing command-line parameters: "+exception.getMessage());
+            parser.printHelpOn(System.err);
+            System.exit(1);
+        }
+
+        return args;
 
     }
+
 
 }

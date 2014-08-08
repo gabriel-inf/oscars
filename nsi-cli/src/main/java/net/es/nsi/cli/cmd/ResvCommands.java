@@ -24,13 +24,10 @@ public class ResvCommands implements CommandMarker {
     }
 
     @CliCommand(value = "admin resv help", help = "display help")
-    public String resv_help() {
+    public String admin_resv_help() {
         String help = "";
         help += "Reservation Profiles:\n";
         help += "=====================\n";
-        help += "'resv load' loads a profile for use\n";
-        help += "'resv set' changes settings in the current profile (*)\n";
-        help += "'resv show' shows the profile settings\n";
 
         help += "'admin resv all' shows all available profiles\n";
         help += "'admin resv copy' makes a copy of the current profile (*)\n";
@@ -38,10 +35,31 @@ public class ResvCommands implements CommandMarker {
         help += "'admin resv new' creates a new empty profile\n";
         help += "'admin resv save' saves the current profile (*)\n";
         help += "   (*) : operation only available if a current profile exists.\n";
+        help += "see also: 'resv help'\n";
         return help;
     }
 
+    @CliCommand(value = "resv help", help = "help setting current reservation profile parameters")
+    public String resv_help() {
 
+        String help = "";
+        help += "'resv load' loads a profile for use\n";
+        help += "'resv show' shows the profile settings\n";
+        help += "'resv help' shows the profile settings\n";
+        help += "'resv set' changes settings in the current profile (*)\n";
+        help += "resv set --name <profile name>\n";
+        help += "         --bw <bandwidth (mbps)>\n";
+        help += "         --v <version>\n";
+        help += "         --st <start time (natty format)>\n";
+        help += "         --et <end time (natty format)>\n";
+        help += "         --g <gri>\n";
+        help += "         --d <description>\n";
+        help += "         --ss <src STP>\n";
+        help += "         --ds <dst STP>\n";
+        help += "see also: 'admin resv help'\n";
+
+        return help;
+    }
 
     @CliCommand(value = "admin resv new", help = "create a new reservation profile")
     public String resv_new(
@@ -152,10 +170,12 @@ public class ResvCommands implements CommandMarker {
     }
 
 
+
+
     @CliCommand(value = "resv set", help = "set current reservation profile parameters")
     public String resv_set(
             @CliOption(key = { "name" },  mandatory = false, help = "profile name") final String name,
-            @CliOption(key = { "b", "bw", "bandwidth" },  mandatory = false, help = "bandwidth (mbps)") final Integer bw,
+            @CliOption(key = { "bw" },  mandatory = false, help = "bandwidth (mbps)") final Integer bw,
             @CliOption(key = { "v" },  mandatory = false, help = "version") final Integer version,
 
             @CliOption(key = { "st" }, mandatory = false, help = "start time (natty format)") final Date startTime,
@@ -168,6 +188,7 @@ public class ResvCommands implements CommandMarker {
             @CliOption(key = { "ds" }, mandatory = false, help = "dst stp") final String dstStp
     ) {
         ResvProfile currentProfile = NsiCliState.getInstance().getResvProfile();
+
 
         if (name != null)       currentProfile.setName(name);
         if (bw != null)         currentProfile.setBandwidth(bw);

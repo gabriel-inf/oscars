@@ -24,22 +24,42 @@ public class ProviderCommands implements CommandMarker {
     }
 
     @CliCommand(value = "admin prov help", help = "display help")
-    public String prov_help() {
+    public String admin_prov_help() {
         String help = "";
         help += "Provider Profiles:\n";
         help += "==================\n";
-        help += "'prov load' loads a profile for use\n";
-        help += "'prov set' changes settings in the current profile (*)\n";
-        help += "'prov show' shows the profile settings\n";
         help += "'admin prov all' shows all available profiles\n";
         help += "'admin prov copy' makes a copy of the current profile (*)\n";
         help += "'admin prov delete' deletes a profile\n";
         help += "'admin prov new' creates a new empty profile\n";
         help += "'admin prov save' saves the current profile (*)\n";
         help += "   (*) : operation only available if a current profile exists.\n";
+        help += "See also: 'prov help'\n";
         return help;
     }
 
+    @CliCommand(value = "prov help", help = "display help")
+    public String prov_help() {
+        String help = "";
+        help += "Provider Profile Administration:\n";
+        help += "==================\n";
+        help += "'prov load' loads a profile for use\n";
+        help += "'prov show' shows the profile settings\n";
+        help += "'prov set' changes settings in the current profile (*)\n";
+        help += "prov set --name <profile name>\n";
+        help += "         --auth <auth type>\n";
+        help += "         --bus <HTTP bus config file name>\n";
+        help += "         --nsa <nsa>\n";
+        help += "         --url <nsa id>\n";
+        help += "         --prot <protocol version>\n";
+        help += "         --st <service type>\n";
+        help += "         --o <oauth token>\n";
+        help += "         --u <http-basic username>\n";
+        help += "         --p <http-basic password>\n";
+        help += "   (*) : operation only available if a current profile exists.\n";
+        help += "See also: 'admin prov help'\n";
+        return help;
+    }
 
     @CliCommand(value = "admin prov all", help = "list all provider profiles")
     public String prov_all() {

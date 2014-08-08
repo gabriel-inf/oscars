@@ -8,7 +8,7 @@
     <artifactId>nsi-cli</artifactId>
     <version>1.1</version>
     <properties>
-        <spring.shell.version>1.1.0.M1</spring.shell.version>
+        <spring.shell.version>1.1.0.RELEASE</spring.shell.version>
         <java.version>1.6</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -66,8 +66,19 @@
             <version>${nsi-client.version}</version>
         </dependency>
 
-        <!-- natural time parsing -->
+        <dependency>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
+            <version>3.2.1</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils</artifactId>
+            <version>1.9.2</version>
+        </dependency>
 
+
+        <!-- natural time parsing -->
         <dependency>
             <groupId>com.joestelmach</groupId>
             <artifactId>natty</artifactId>
@@ -81,7 +92,12 @@
             <version>${spring.shell.version}</version>
         </dependency>
 
-
+        <!-- command-line parsing -->
+        <dependency>
+            <groupId>net.sf.jopt-simple</groupId>
+            <artifactId>jopt-simple</artifactId>
+            <version>4.3</version>
+        </dependency>
 
         <!-- persistence -->
         <dependency>

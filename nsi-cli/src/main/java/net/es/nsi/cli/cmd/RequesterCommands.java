@@ -59,20 +59,34 @@ public class RequesterCommands implements CommandMarker {
 
 
     @CliCommand(value = "admin req help", help = "display help")
-    public String requester_help() {
+    public String admin_req_help() {
         String help = "";
-        help += "Requester Profiles:\n";
+        help += "Requester Profile Admin:\n";
         help += "===================\n";
-        help += "'req load' loads a profile for use\n";
-        help += "'req set' changes settings in the current profile (*)\n";
-        help += "'req show' shows the profile settings\n";
-
         help += "'admin req all' shows all available profiles\n";
         help += "'admin req copy' makes a copy of the current profile (*)\n";
         help += "'admin req delete' deletes a profile\n";
         help += "'admin req new' creates a new empty profile\n";
         help += "'admin req save' saves the current profile (*)\n";
         help += "   (*) : operation only available if a current profile exists.\n";
+        help += "\nSee also: 'req help'\n";
+
+        return help;
+    }
+    @CliCommand(value = "req help", help = "display help")
+    public String req_help() {
+        String help = "";
+        help += "Requester Profiles:\n";
+        help += "===================\n";
+        help += "'req load' loads a profile for use\n";
+        help += "'req show' shows the profile settings\n";
+        help += "'req set' changes settings in the current profile (*)\n";
+        help += "req set --name <profile name>\n";
+        help += "        --bus <bus config file>\n";
+        help += "        --r <requester id>\n";
+        help += "        --url <URL to bind to>\n";
+        help += "   (*) : operation only available if a current profile exists.\n";
+        help += "\nSee also: 'req help'\n";
 
         return help;
     }
