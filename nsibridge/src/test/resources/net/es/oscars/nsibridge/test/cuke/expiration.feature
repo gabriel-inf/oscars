@@ -1,7 +1,6 @@
 Feature: reservation expiration
     I want to verify that reservations expire after end time is reached
 
-    @wip
     Scenario: Exercise reservation expiration
         Given I have set up the run environment
         Given I clear all existing tasks

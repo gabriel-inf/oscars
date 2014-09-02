@@ -63,7 +63,6 @@ Feature: State machines behavior verification
         When I submit the "LSM" event: "LOCAL_TERM_CONFIRMED"
         Then the "LSM" state is: "Terminated"
 
-    @wip
     Scenario: Endtime walk through the Lifecycle uPA state machine
         Given I have set up the run environment
         When I assign random connId and corrId
@@ -106,3 +105,4 @@ Feature: State machines behavior verification
         When I assign a random corrId
         When I submit the "PSM" event: "LOCAL_REL_CONFIRMED"
         Then the "PSM" state is: "Released"
+        Given I clear all existing tasks

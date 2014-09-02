@@ -192,6 +192,8 @@ public class RequestProcessor {
                 case TERMINATE:
                     taskIds= smh.getLifeStateMachines().get(connId).process(NSI_Life_Event.RECEIVED_NSI_TERM_RQ, corrId);
                     request.getTaskIds().addAll(taskIds);
+                    taskIds = smh.getProvStateMachines().get(connId).process(NSI_Prov_Event.RECEIVED_NSI_TERM_RQ, corrId);
+                    request.getTaskIds().addAll(taskIds);
                 break;
             }
         } catch (StateException ex) {

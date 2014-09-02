@@ -21,5 +21,7 @@ public enum NSI_Prov_Event implements SM_Event {
     LOCAL_TEARDOWN_CONFIRMED,
     LOCAL_TEARDOWN_FAILED,
 
+    RECEIVED_NSI_TERM_RQ,
+
 
 }

@@ -83,9 +83,11 @@ public class NSI_Prov_TH implements TransitionHandler {
             case RELEASING:
                 if (toState.equals(ProvisionStateEnumType.RELEASED)) {
                     if (ev.equals(NSI_Prov_Event.END_TIME)) {
+                        taskIds.add(mdl.dataplaneUpdate(correlationId));
 
                     } else {
                         taskIds.add(mdl.sendRelCF(correlationId));
+                        taskIds.add(mdl.dataplaneUpdate(correlationId));
                     }
 
 

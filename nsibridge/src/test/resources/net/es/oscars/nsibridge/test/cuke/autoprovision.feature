@@ -29,3 +29,4 @@ Feature: set up oscars circuit when start time comes, tear down after end time
         Then I can get the dataplane record with version 0
         Then the dataplane record "is" active
 
+        Given I clear all existing tasks

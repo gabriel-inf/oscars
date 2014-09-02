@@ -16,3 +16,4 @@ Feature: STP mapping reservation
       Given i set the stp transform as match: "urn:ogf:network:es.net:2013" replace: "urn:ogf:network:es.net"
       When I perform all transforms and mappings
       Then the oscars urn is "urn:ogf:network:es.net:foo:bar"
+      Given I clear all existing tasks
