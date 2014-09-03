@@ -66,7 +66,7 @@ public class ConnectionProvider implements ConnectionProviderPort {
             log.error(ex);
             throw ex;
         } catch (Exception ex) {
-            log.error(ex);
+            log.error("unexpected exception in reserve!", ex);
         }
     }
 
@@ -90,7 +90,7 @@ public class ConnectionProvider implements ConnectionProviderPort {
             log.error(ex);
             throw ex;
         } catch (Exception ex) {
-            log.error(ex);
+            log.error("unexpected exception in reserveAbort!", ex);
         }
     }
 
@@ -115,7 +115,7 @@ public class ConnectionProvider implements ConnectionProviderPort {
             log.error(ex);
             throw ex;
         } catch (Exception ex) {
-            log.error(ex);
+            log.error("unexpected exception in reserveCommit!", ex);
         }
     }
 
@@ -137,7 +137,7 @@ public class ConnectionProvider implements ConnectionProviderPort {
             log.error(ex);
             throw ex;
         } catch (Exception ex) {
-            log.error(ex);
+            log.error("unexpected exception in provision!", ex);
         }
     }
 
@@ -160,7 +160,7 @@ public class ConnectionProvider implements ConnectionProviderPort {
             log.error(ex);
             throw ex;
         } catch (Exception ex) {
-            log.error(ex);
+            log.error("unexpected exception in release!", ex);
         }
     }
 
@@ -184,7 +184,7 @@ public class ConnectionProvider implements ConnectionProviderPort {
             log.error(ex);
             throw ex;
         } catch (Exception ex) {
-            log.error(ex);
+            log.error("unexpected exception in terminate!", ex);
         }
     }
 
