@@ -6,7 +6,7 @@
 %define oscars_home /etc/oscars
 %define log_dir /var/log/oscars
 %define run_dir /var/run/oscars
-%define relnum 11
+%define relnum 12
 
 Name:           oscars-pss-%{pss_name}
 Version:        0.6.1
@@ -51,10 +51,12 @@ mvn -DskipTests --projects %{mvn_project_list} install
 #Create directory structure for build root
 mkdir -p %{buildroot}/%{install_base}/target
 mkdir -p %{buildroot}/%{install_base}/bin
+mkdir -p %{buildroot}/%{install_base}/sql
 mkdir -p %{buildroot}/etc/init.d
 
 #Copy jar files and scripts
 cp %{package_name}/target/*.jar %{buildroot}/%{install_base}/target/
+cp %{package_name}/sql/*.sql %{buildroot}/%{install_base}/sql/
 install -m 755 %{package_name}/bin/startServer.sh %{buildroot}/%{install_base}/bin/
 install -m 755 %{package_name}/scripts/oscars-pss-%{pss_name} %{buildroot}/etc/init.d/oscars-pss-%{pss_name}
 
@@ -69,6 +71,11 @@ perl -e 's/^vers=/#vers=/g' -pi $(find %{buildroot}/%{install_base}/bin -type f)
 perl -e 's/%{package_name}-\$vers/%{package_name}/g' -pi $(find %{buildroot}/%{install_base}/bin -type f)
 
 %post
+#configure database
+if [ $1 -eq 1 ]; then
+    %{install_base}/sql/configure_database %{install_base}/sql/
+fi
+
 #Create directory for PID files
 mkdir -p %{run_dir}
 chown oscars:oscars %{run_dir}
