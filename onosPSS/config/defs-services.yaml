@@ -1,0 +1,5 @@
+---
+
+-   id:     "onos"
+    impl:   "net.es.oscars.pss.stub.StubCircuitService"
+

@@ -1,0 +1,5 @@
+---
+- id: "some-model"
+  services: 
+    - id:               "onos"
+      "configGenerator": "net.es.oscars.pss.onos.cfg.OnosConfigGen"
