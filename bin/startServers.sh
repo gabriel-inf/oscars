@@ -142,6 +142,7 @@ startnullAgg() {
 startPSS() {
     DRAGONPSS="DRAGON"
     EOMPLSPSS="EOMPLS"
+    EOMPLSPSS="ONOS"
     OPENFLOWPSS="OPENFLOW"
     OPENFLOWJPSS="OPENFLOWJ"
     #Get PSS choice, but keep stubPSS the default
@@ -164,6 +165,8 @@ startPSS() {
         startDragonPSS
     elif [ "$whichPSS" == "$EOMPLSPSS" ]; then
         startEomplsPSS
+    elif [ "$whichPSS" == "$ONOSPSS" ]; then
+        startOnosPSS
     elif [ "$whichPSS" == "$OPENFLOWPSS" ]; then
         startOpenflowPSS
     elif [ "$whichPSS" == "$OPENFLOWJPSS" ]; then
@@ -175,6 +178,10 @@ startPSS() {
 
 startStubPSS(){
     startService "PSSService" "PSSService" "stubPSS" "stubPSS"
+}
+
+startStubPSS(){
+    startService "PSSService" "PSSService" "onosPSS" "onosPSS"
 }
 
 startDragonPSS(){

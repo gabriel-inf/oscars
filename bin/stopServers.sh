@@ -119,7 +119,7 @@ stopstubPSS () {
 ###############################################################################
 stopPSS () {
 	#echo "PSS Type:$1"
-	PSSOptions=( stub dragon eompls openflow )
+	PSSOptions=( stub dragon eompls openflow onos )
 	if [ ! -z $1 ] ; then
 		PSSType="$1PSS"
 	else
@@ -245,6 +245,7 @@ while [ ! -z $1 ]
 #PSS option stops which ever PSS is running
   PSS)	stopPSS;;
   stubPSS)  stopPSS "stub";;
+  onosPSS)  stopPSS "onos";;
   dragonPSS) stopPSS "dragon";;
   eomplsPSS) stopPSS "eompls";;
   openflowPSS) stopPSS "openflow";;
