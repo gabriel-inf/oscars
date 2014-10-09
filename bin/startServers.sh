@@ -142,7 +142,7 @@ startnullAgg() {
 startPSS() {
     DRAGONPSS="DRAGON"
     EOMPLSPSS="EOMPLS"
-    EOMPLSPSS="ONOS"
+    ONOSPSS="ONOS"
     OPENFLOWPSS="OPENFLOW"
     OPENFLOWJPSS="OPENFLOWJ"
     #Get PSS choice, but keep stubPSS the default
@@ -180,7 +180,7 @@ startStubPSS(){
     startService "PSSService" "PSSService" "stubPSS" "stubPSS"
 }
 
-startStubPSS(){
+startOnosPSS(){
     startService "PSSService" "PSSService" "onosPSS" "onosPSS"
 }
 
