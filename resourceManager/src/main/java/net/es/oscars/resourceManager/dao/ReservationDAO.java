@@ -3,14 +3,14 @@ package net.es.oscars.resourceManager.dao;
 import java.util.*;
 
 import net.es.oscars.utils.topology.PathTools;
+import net.es.oscars.utils.topology.VlanRange;
+
 import org.apache.log4j.*;
 
 import org.hibernate.*;
 
 import net.es.oscars.database.hibernate.GenericHibernateDAO;
-import net.es.oscars.resourceManager.beans.PathType;
 import net.es.oscars.resourceManager.beans.Reservation;
-import net.es.oscars.resourceManager.beans.ConstraintType;
 import net.es.oscars.resourceManager.common.RMCore;
 import net.es.oscars.resourceManager.common.RMUtils;
 import net.es.oscars.resourceManager.common.RMException;
@@ -151,16 +151,26 @@ public class ReservationDAO
             criteria.add(endQ);
         }
 
-        String hsql = "from Reservation r";
-        if (!criteria.isEmpty()) {
-            hsql += " where " +RMUtils.join(criteria, " and ", "(", ")");
+        String sql = "SELECT DISTINCT r.* FROM reservations AS r ";
+        if (vlanTags != null && !vlanTags.isEmpty() &&
+            !vlanTags.contains("any")) {
+           
+           sql += " INNER JOIN stdConstraints AS c ON c.reservationId = r.id";
+           sql += " INNER JOIN paths AS p ON c.pathId = p.id";
+           sql += " INNER JOIN pathElems as pe ON pe.pathId = p.id";
+           sql += " INNER JOIN pathElemParams AS pep ON pe.id = pep.pathElemId ";
+           criteria.add("pep.type='vlanRangeAvailability' ");
+           criteria.add("pep.value IN ("+RMUtils.join(this.expandVlanList(vlanTags), ",", "'", "'")+") ");
         }
-        hsql += " order by r.startTime desc";
-
+        if (!criteria.isEmpty()) {
+            sql += " where " +RMUtils.join(criteria, " and ", "(", ")");
+        }
+        sql += " order by r.startTime desc";
 
        // log.debug("HSQL is: ["+hsql+"]");
 
-        Query query = this.getSession().createQuery(hsql);
+        SQLQuery query = this.getSession().createSQLQuery(sql);
+        query.addEntity(Reservation.class);
         // if zero, get everything (needed for browser)
         if (numRequested > 0) {
             //log.debug("numRequested: " + numRequested + " resOffset: "+ resOffset);
@@ -178,23 +188,9 @@ public class ReservationDAO
         log.debug(reservations.size() + " reservations returned");
         //log.debug("done with Hibernate query");
 
-        if (vlanTags != null && !vlanTags.isEmpty() &&
-            !vlanTags.contains("any")) {
-            ArrayList<Reservation> removeThese = new ArrayList<Reservation>();
-            for (Reservation rsv : this.reservations) {
-                if (!this.containsVlan(rsv, vlanTags)) {
-                    removeThese.add(rsv);
-                }
-            }
-            for (Reservation rsv : removeThese) {
-                this.reservations.remove(rsv);
-                // log.debug("removing reservation");
-            }
-        }
         //log.debug("list.finish");
         return this.reservations;
     }
-
 
     /** 
      * Retrieves the list of all pending and active reservations that
@@ -418,55 +414,22 @@ public class ReservationDAO
                                         .setString(1, login)
                                         .uniqueResult();
     }
-
+    
     /**
-     * Checks to see whether first element in path contains a VLAN in the
-     * list of tags or ranges specified.
-     *
-     * @param rsv Reservation to check
-     * @param vlanTags list of tags or tag ranges to check
-     * @throws RMException
-     * @return whether first element in path has a matching VLAN
+     * Expands a list of ranges to individual VLAN tags
+     * 
+     * @param vlanTags the ranges to expand
+     * @return a list with each item as an individual VLAN number
      */
-    private boolean containsVlan(Reservation rsv, List<String> vlanTags) throws RMException  {
-        int checkVtag = -1;
-        int minVtag = 100000;
-        int maxVtag = -1;
-        List<String> tagStrs = RMUtils.getVlanTags(rsv.getPath());
-        if (tagStrs.isEmpty()) {
-            return false;
-        }
-        String tagStr = tagStrs.get(0);
-        // no associated VLAN
-        if (tagStr == null || tagStr.equals("any") || tagStr.equals("")) {
-            log.debug ("first vlanTag is empty");
-            return false;
-        }
-        int resvVtag = Math.abs(Integer.parseInt(tagStr));
-        for (String v: vlanTags) {
-            String[] range = v.split("-");
-            // single number
-            if (range.length == 1) {
-                try {
-                    checkVtag = Integer.parseInt(range[0]);
-                } catch (NumberFormatException ex) {
-                    continue;
-                }
-                if (checkVtag == resvVtag) {
-                    return true;
-                }
-            } else if (range.length == 2) {
-                try {
-                    minVtag = Integer.parseInt(range[0]);
-                    maxVtag = Integer.parseInt(range[1]);
-                } catch (NumberFormatException ex) {
-                    continue;
-                }
-                if ((resvVtag >= minVtag) && (resvVtag <= maxVtag)) {
-                    return true;
-                }
+    private List<String> expandVlanList(List<String> vlanTags) {
+        List<String> expandedRange = new ArrayList<String>();
+        VlanRange range = new VlanRange(RMUtils.join(vlanTags, ",", "", ""));
+        for(int tag = 0; tag < range.getMap().length; tag++){
+            if(range.getMap()[tag]){
+                expandedRange.add(tag+"");
             }
         }
-        return false;
+        
+        return expandedRange;
     }
 }
