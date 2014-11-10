@@ -156,6 +156,9 @@ public class VlanPCE {
             
             if(vlanRange != null){
                 String urnKey = NMWGParserUtil.normalizeURN(NMWGParserUtil.getURN(hop, this.urnType()));
+                if(vlanMap.containsKey(urnKey) && vlanMap.get(urnKey) != null){
+                    vlanRange += "," + vlanMap.get(urnKey);
+                }
                 vlanMap.put(urnKey, new VlanRange(vlanRange));
             }
         }
