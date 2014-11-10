@@ -101,7 +101,7 @@ chown oscars:oscars %{oscars_home}/modules/oscars-pce-%{pce_name}.enabled
 
 %files
 %defattr(-,oscars,oscars,-)
-%config %{oscars_home}/%{service_name}/conf/*
+%config(noreplace) %{oscars_home}/%{service_name}/conf/*
 %{install_base}/target/*
 %{install_base}/bin/*
 /etc/init.d/oscars-pce-%{pce_name}
