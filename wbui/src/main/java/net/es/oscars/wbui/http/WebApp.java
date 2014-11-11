@@ -4,9 +4,9 @@ import java.util.Map;
 import java.io.File;
 import java.io.FileInputStream;
 
-import org.mortbay.jetty.Server;
-import org.mortbay.jetty.webapp.WebAppContext;
-import org.mortbay.xml.XmlConfiguration;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.webapp.WebAppContext;
+import org.eclipse.jetty.xml.XmlConfiguration;
 
 import net.es.oscars.utils.config.*;
 import net.es.oscars.utils.svc.ServiceNames;
