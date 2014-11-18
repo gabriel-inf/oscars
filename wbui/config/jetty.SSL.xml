@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!DOCTYPE Configure PUBLIC "-//Mort Bay Consulting//DTD Configure//EN" "http://jetty.mortbay.org/configure.dtd">
+<!DOCTYPE Configure PUBLIC "-//Mort Bay Consulting//DTD Configure//EN" "http://jetty.eclipse.org/configure.dtd">
 
 <!-- =============================================================== -->
 <!-- Configure the Jetty Server                                      -->
@@ -10,98 +10,121 @@
 <!-- =============================================================== -->
 
 
-<Configure id="Server" class="org.mortbay.jetty.Server">
+<Configure id="Server" class="org.eclipse.jetty.server.Server">
 
-    <!-- =========================================================== -->
-    <!-- Set connectors                                              -->
-    <!-- =========================================================== -->
-    <!-- One of each type!                                           -->
-    <!-- =========================================================== -->
+<!-- =========================================================== -->
+<!-- Set connectors                                              -->
+<!-- =========================================================== -->
+<!-- One of each type!                                           -->
+<!-- =========================================================== -->
 
-    <!-- Use this connector for many frequently idle connections
-         and for threadless continuations.
-         The set host localhost will restrict listening for
-         requests to the loopback interface. If it is ommitted
-         requests from any host will be accepted
-    --> 
-    
-  <Call name="addConnector">
-    <Arg>
-      <New class="org.mortbay.jetty.security.SslSelectChannelConnector">
-        <Set name="host">localhost</Set>
-        <Set name="Port"><SystemProperty name="jetty.port" default="8443"/></Set>
-        <Set name="maxIdleTime">30000</Set>
-        <Set name="Acceptors">2</Set>
-        <Set name="AcceptQueueSize">100</Set>
-        <Set name="keystore">keystore-server.jks</Set>
-        <Set name="password">changeit</Set>
-        <Set name="keyPassword">changeit</Set>
-        <Set name="ExcludeCipherSuites">
-                <!-- these filters ensure that a ciphersuite with
-                export-suitable or null encryption is used,
-                but exclude anonymous Diffie-Hellman key change as
-                this is vulnerable to man-in-the-middle attacks -->
-          <Array type="java.lang.String">
-            <Item>SSL_RSA_WITH_3DES_EDE_CBC_SHA</Item>
-            <Item>SSL_DHE_RSA_WITH_DES_CBC_SHA</Item>
-            <Item>SSL_DHE_DSS_WITH_DES_CBC_SHA</Item>
-            <Item>*_DH_anon_.*</Item>
-          </Array>
-        </Set>
-      </New>
-    </Arg>
-  </Call>
+<!-- Use this connector for many frequently idle connections
+     and for threadless continuations.
+     The set host simian.es.net will restrict listening for
+     requests to the loopback interface. If it is ommitted
+     requests from any host will be accepted
+-->
 
-    <!-- =========================================================== -->
-    <!-- Set handler Collection Structure                            --> 
-    <!-- =========================================================== -->
-    <Set name="handler">
-      <New id="Handlers" class="org.mortbay.jetty.handler.HandlerCollection">
-        <Set name="handlers">
-         <Array type="org.mortbay.jetty.Handler">
-           <Item>
-             <New id="Contexts" class="org.mortbay.jetty.handler.ContextHandlerCollection"/>
-           </Item>
-           <Item>
-             <New id="DefaultHandler" class="org.mortbay.jetty.handler.DefaultHandler"/>
-           </Item>
-           <Item>
-             <New id="RequestLog" class="org.mortbay.jetty.handler.RequestLogHandler"/>
-           </Item>
-         </Array>
-        </Set>
-      </New>
+<New id="sslContextFactory" class="org.eclipse.jetty.util.ssl.SslContextFactory">
+
+    <Set name="KeyStorePath">keystore-server.jks</Set>
+    <Set name="KeyStorePassword">changeit</Set>
+    <Set name="KeyManagerPassword">changeit</Set>
+    <Set name="ExcludeProtocols">
+        <Array type="java.lang.String">
+            <Item>SSLv3</Item>
+            <Item>SSLv3</Item>
+        </Array>
     </Set>
-    
- 
-    <!-- =========================================================== -->
-    <!-- Configure Request Log                                       -->
-    <!-- Request logs  may be configured for the entire server here, -->
-    <!-- or they can be configured for a specific web app in a       -->
-    <!-- contexts configuration (see $(jetty.home)/contexts/test.xml -->
-    <!-- for an example).                                            -->
-    <!-- =========================================================== -->
-    <!-- TODO see if we can make this work  -mrt -->
-    <Ref id="RequestLog">
-      <Set name="requestLog">
-        <New id="RequestLogImpl" class="org.mortbay.jetty.NCSARequestLog">
-          <Set name="filename"><SystemProperty name="jetty.logs" default="./logs"/>/yyyy_mm_dd.request.log</Set>
-          <Set name="filenameDateFormat">yyyy_MM_dd</Set>
-          <Set name="retainDays">90</Set>
-          <Set name="append">true</Set>
-          <Set name="extended">false</Set>
-          <Set name="logCookies">false</Set>
-          <Set name="LogTimeZone">GMT</Set>
-        </New>
-      </Set>
-    </Ref>
+</New>
 
-    <!-- =========================================================== -->
-    <!-- extra options                                               -->
-    <!-- =========================================================== -->
-    <Set name="stopAtShutdown">true</Set>
-    <Set name="sendServerVersion">true</Set>
-    <Set name="sendDateHeader">true</Set>
-    <Set name="gracefulShutdown">1000</Set>
+<New id="httpConfig" class="org.eclipse.jetty.server.HttpConfiguration">
+    <Set name="secureScheme">https</Set>
+    <Set name="securePort"><Property name="jetty.tls.port" default="8443" /></Set>
+    <Set name="outputBufferSize">32768</Set>
+    <Set name="requestHeaderSize">8192</Set>
+    <Set name="responseHeaderSize">8192</Set>
+
+    <Call name="addCustomizer">
+        <Arg><New class="org.eclipse.jetty.server.ForwardedRequestCustomizer"/></Arg>
+    </Call>
+</New>
+
+
+<Call id="sslConnector" name="addConnector">
+    <Arg>
+        <New class="org.eclipse.jetty.server.ServerConnector">
+            <Arg name="server"><Ref refid="Server" /></Arg>
+            <Arg name="factories">
+                <Array type="org.eclipse.jetty.server.ConnectionFactory">
+                    <Item>
+                        <New class="org.eclipse.jetty.server.SslConnectionFactory">
+                            <Arg name="next">http/1.1</Arg>
+                            <Arg name="sslContextFactory"><Ref refid="sslContextFactory"/></Arg>
+                        </New>
+                    </Item>
+                    <Item>
+                        <New class="org.eclipse.jetty.server.HttpConnectionFactory">
+                            <Arg name="config"><Ref refid="httpConfig" /></Arg>
+                        </New>
+                    </Item>
+                </Array>
+            </Arg>
+            <Set name="host"><Property name="jetty.host" /></Set>
+            <Set name="port"><Property name="jetty.tls.port" default="8443" /></Set>
+            <Set name="idleTimeout">30000</Set>
+        </New>
+    </Arg>
+</Call>
+
+
+
+<!-- =========================================================== -->
+<!-- Set handler Collection Structure                            -->
+<!-- =========================================================== -->
+<Set name="handler">
+    <New id="Handlers" class="org.eclipse.jetty.server.handler.HandlerCollection">
+        <Set name="handlers">
+            <Array type="org.eclipse.jetty.server.Handler">
+                <Item>
+                    <New id="Contexts" class="org.eclipse.jetty.server.handler.ContextHandlerCollection"/>
+                </Item>
+                <Item>
+                    <New id="DefaultHandler" class="org.eclipse.jetty.server.handler.DefaultHandler"/>
+                </Item>
+                <Item>
+                    <New id="RequestLog" class="org.eclipse.jetty.server.handler.RequestLogHandler"/>
+                </Item>
+            </Array>
+        </Set>
+    </New>
+</Set>
+
+
+<!-- =========================================================== -->
+<!-- Configure Request Log                                       -->
+<!-- Request logs  may be configured for the entire server here, -->
+<!-- or they can be configured for a specific web app in a       -->
+<!-- contexts configuration (see $(jetty.home)/contexts/test.xml -->
+<!-- for an example).                                            -->
+<!-- =========================================================== -->
+<!-- TODO see if we can make this work  -mrt -->
+<Ref id="RequestLog">
+    <Set name="requestLog">
+        <New id="RequestLogImpl" class="org.eclipse.jetty.server.NCSARequestLog">
+            <Set name="filename"><SystemProperty name="jetty.logs" default="./logs"/>/yyyy_mm_dd.request.log</Set>
+            <Set name="filenameDateFormat">yyyy_MM_dd</Set>
+            <Set name="retainDays">90</Set>
+            <Set name="append">true</Set>
+            <Set name="extended">false</Set>
+            <Set name="logCookies">false</Set>
+            <Set name="LogTimeZone">GMT</Set>
+        </New>
+    </Set>
+</Ref>
+
+<!-- =========================================================== -->
+<!-- extra options                                               -->
+<!-- =========================================================== -->
 
 </Configure>
