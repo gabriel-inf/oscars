@@ -39,7 +39,7 @@
     </http:authorization> 
     -->
     
-    <http:tlsClientParameters disableCNCheck="true"  secureSocketProtocol="SSL">
+    <http:tlsClientParameters disableCNCheck="true">
         <sec:trustManagers>
             <sec:keyStore type="JKS" password="changeit"
                           file="/etc/oscars/keystores/oscars.jks"/>

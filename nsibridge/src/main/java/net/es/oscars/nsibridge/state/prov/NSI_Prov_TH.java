@@ -45,6 +45,7 @@ public class NSI_Prov_TH implements TransitionHandler {
                     } else if (ev.equals(NSI_Prov_Event.END_TIME)) {
                         log.info("local endtime");
                         taskIds.add(mdl.localEndtime(correlationId));
+                        taskIds.add(mdl.dataplaneUpdate(correlationId));
                     }
                 } else {
                     throw new StateException("invalid state transition ["+transitionStr+"]");

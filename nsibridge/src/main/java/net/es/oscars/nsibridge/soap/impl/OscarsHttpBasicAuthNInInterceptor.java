@@ -12,7 +12,6 @@ import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.message.Exchange;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.transport.Conduit;
-import org.apache.cxf.ws.addressing.EndpointReferenceType;
 import org.apache.log4j.Logger;
 
 
@@ -121,8 +120,7 @@ public class OscarsHttpBasicAuthNInInterceptor extends SoapHeaderInterceptor {
 
     private Conduit getConduit(Message inMessage) throws IOException {
         Exchange exchange = inMessage.getExchange();
-        EndpointReferenceType target = exchange.get(EndpointReferenceType.class);
-        Conduit conduit = exchange.getDestination().getBackChannel(inMessage, null, target);
+        Conduit conduit = exchange.getDestination().getBackChannel(inMessage);
         exchange.setConduit(conduit);
         return conduit;
     }

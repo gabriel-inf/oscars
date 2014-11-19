@@ -54,7 +54,7 @@
     </http:authorization> 
     -->
   
-    <http:tlsClientParameters disableCNCheck="true"  secureSocketProtocol="SSL">
+    <http:tlsClientParameters disableCNCheck="true">
 
         <sec:trustManagers>
             <sec:keyStore type="JKS" password="client-trust"

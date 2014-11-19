@@ -99,11 +99,11 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
             boolean found = false;
             for (DataplaneStatusRecord aRecord : cr.getDataplaneStatusRecords()) {
                 if (aRecord.getVersion() == dr.getVersion()) {
-                    aRecord.setActive(dr.isActive());
+                    aRecord.setActive(false);
                     found = true;
                 }
             }
-            dr.setActive(false);
+
             if (!found) {
                 cr.getDataplaneStatusRecords().add(dr);
                 log.debug("added a new dataplane record for connId: " + cr.getConnectionId() + " v:" + dr.getVersion() + " a:" + dr.isActive());
