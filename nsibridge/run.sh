@@ -10,7 +10,7 @@ javaFlags="$javaFlags -Dorg.apache.cxf.JDKBugHacks.defaultUsesCaches=true "
 debugSSL="-Djavax.net.debug=ssl,handshake,data,all"
 
 
-javaFlags="$javaFlags $debugSSL -jar target/nsibridge-1.0.jar"
+javaFlags="$javaFlags $debugSSL -jar target/nsibridge-1.0.one-jar.jar"
 if [ -n "$1" ]; then
   if [ "$1" == "-d" ]; then 
     debugFlags="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005"
