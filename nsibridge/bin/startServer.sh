@@ -19,7 +19,7 @@ fi
 
 if [ -z "$jarfile" ]; then
     vers=`cat $OSCARS_DIST/VERSION`
-    jarfile=$OSCARS_DIST/${shortname}/target/${shortname}-$vers.one-jar.jar
+    jarfile=$OSCARS_DIST/${shortname}/target/${shortname}-$vers.jar
     echo "Starting ${shortname} with version:$vers context:$context"
 fi
 

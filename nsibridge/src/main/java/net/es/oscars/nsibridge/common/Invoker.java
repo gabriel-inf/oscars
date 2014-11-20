@@ -8,7 +8,6 @@ import joptsimple.OptionSet;
 
 import net.es.oscars.nsibridge.config.HttpConfig;
 import net.es.oscars.nsibridge.config.OscarsStubConfig;
-import net.es.oscars.nsibridge.config.OscarsStubSecConfig;
 import net.es.oscars.nsibridge.config.nsa.NsaConfig;
 import net.es.oscars.nsibridge.config.nsa.NsaConfigProvider;
 import net.es.oscars.nsibridge.config.nsa.StpConfig;
@@ -20,6 +19,7 @@ import net.es.oscars.utils.config.ConfigDefaults;
 import net.es.oscars.utils.config.ConfigException;
 import net.es.oscars.utils.config.ContextConfig;
 import net.es.oscars.utils.soap.OSCARSServiceException;
+import net.es.oscars.utils.svc.ServiceNames;
 import net.es.oscars.utils.task.TaskException;
 import net.es.oscars.utils.task.sched.Schedule;
 import net.es.oscars.utils.task.sched.Workflow;
@@ -34,9 +34,6 @@ public class Invoker implements Runnable {
     private static final Logger log = Logger.getLogger(Invoker.class);
     private static boolean keepRunning = true;
 
-    public static boolean isKeepRunning() {
-        return keepRunning;
-    }
 
     public static void setKeepRunning(boolean keepRunning) {
         Invoker.keepRunning = keepRunning;
@@ -68,14 +65,15 @@ public class Invoker implements Runnable {
     }
 
     public void run() {
-        System.out.println("Starting NSI Bridge v. 0.6.1-17");
+        System.out.println("Starting NSI Bridge");
 
+        System.out.println("Loading config... ");
         try {
             ContextConfig.getInstance().setContext(context);
             String manifestFile = System.getProperty("nsibridge.manifest");
-            if(manifestFile == null || "".equals(manifestFile)){
+            if (manifestFile == null || "".equals(manifestFile)) {
                 manifestFile = "./config/manifest.yaml";
-            }else{
+            } else {
                 manifestFile = manifestFile.replaceFirst("file:", "");
             }
             ContextConfig.getInstance().loadManifest(new File(manifestFile));
@@ -118,7 +116,7 @@ public class Invoker implements Runnable {
 
 
         try {
-            System.out.print("Connecting to OSCARS...");
+            System.out.print("Initialize OSCARS connection...");
             OscarsProxy.getInstance().initialize();
             System.out.println(" connected.");
         } catch (OSCARSServiceException e) {

@@ -5,20 +5,21 @@ import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import net.es.oscars.common.soap.gen.SubjectAttributes;
-import net.es.oscars.nsibridge.config.OscarsStubSecConfig;
-import net.es.oscars.nsibridge.config.OscarsStubConfig;
+
 import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.oscars.OscarsProxy;
 import net.es.oscars.nsibridge.prov.ScheduleUtils;
 import net.es.oscars.nsibridge.soap.impl.OscarsSecurityContext;
-import net.es.oscars.utils.task.sched.Schedule;
+import net.es.oscars.utils.config.ConfigException;
+import net.es.oscars.utils.config.ContextConfig;
+import net.es.oscars.utils.svc.ServiceNames;
 import net.es.oscars.utils.task.sched.WFTicker;
 import net.es.oscars.utils.task.sched.Workflow;
 import org.apache.log4j.Logger;
-import org.springframework.context.ApplicationContext;
+
+import java.io.File;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class EnvironmentSteps {
@@ -30,6 +31,12 @@ public class EnvironmentSteps {
             // log.info("resv timeout: "+SpringContext.getInstance().getContext().getBean("timingConfig", TimingConfig.class).getResvTimeout());
             return;
         }
+        ContextConfig cc = ContextConfig.getInstance();
+        cc.setContext("UNITTEST");
+
+        String manifestFile = "./config/manifest.yaml";
+        ContextConfig.getInstance().loadManifest(new File(manifestFile));
+
 
         SpringContext sc = SpringContext.getInstance();
         sc.initContext("src/test/resources/config/beans.xml");

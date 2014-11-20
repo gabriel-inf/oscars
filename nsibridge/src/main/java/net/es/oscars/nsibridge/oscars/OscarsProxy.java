@@ -305,10 +305,10 @@ public class OscarsProxy {
         if (coordClient != null) {
             return;
         }
-        if (oscarsStubConfig.isStub()) return;
 
         ContextConfig cc = ContextConfig.getInstance();
         cc.setServiceName(ServiceNames.SVC_COORD);
+
 
         // not used yet, will be when reservations are managed
         String configFilename = null;
@@ -316,6 +316,9 @@ public class OscarsProxy {
             configFilename = cc.getFilePath(ServiceNames.SVC_COORD ,cc.getContext(), ConfigDefaults.CONFIG);
         } catch (ConfigException ex) {
             log.error(ex.getMessage(), ex);
+        }
+        if (configFilename == null) {
+            throw new OSCARSServiceException("Null coord config file for context: "+cc.getContext());
         }
 
 
@@ -329,6 +332,7 @@ public class OscarsProxy {
         if (soap == null ) {
             throw new OSCARSServiceException("soap stanza not found in "+configFilename);
         }
+        log.info("Initializing coord client from filename: "+configFilename);
 
         try {
             URL coordHost = new URL ((String)soap.get("publishTo"));
@@ -337,6 +341,7 @@ public class OscarsProxy {
         } catch (MalformedURLException ex) {
             log.error(ex.getMessage(), ex);
         }
+        log.info("Initialized coord client");
     }
 
     private void initAuthNClient() throws OSCARSServiceException {
@@ -345,10 +350,9 @@ public class OscarsProxy {
             return;
         }
 
-        if (oscarsStubConfig.isStub()) return;
 
         ContextConfig cc = ContextConfig.getInstance();
-        cc.setServiceName(ServiceNames.SVC_COORD);
+        cc.setServiceName(ServiceNames.SVC_AUTHN);
 
         String configFilename = null;
         try {
@@ -356,12 +360,15 @@ public class OscarsProxy {
         } catch (ConfigException ex) {
             log.error(ex.getMessage(), ex);
         }
-
+        if (configFilename == null) {
+            throw new OSCARSServiceException("Null authn config file for context: "+cc.getContext());
+        }
         HashMap<String,Object> authNMap = (HashMap<String,Object>) ConfigHelper.getConfiguration(configFilename);
         if (authNMap == null) {
             throw new OSCARSServiceException("could not load authN config file "+configFilename);
-
         }
+        log.info("Initializing authN client from filename: "+configFilename);
+
         Map soap = (HashMap<String,Object>) authNMap.get("soap");
         if (soap == null ) {
             throw new OSCARSServiceException("soap stanza not found in "+configFilename);
@@ -374,6 +381,7 @@ public class OscarsProxy {
         } catch (MalformedURLException ex) {
             log.error(ex.getMessage(), ex);
         }
+        log.info("Initialized authN client");
     }
 
     public MessagePropertiesType makeMessageProps() {
