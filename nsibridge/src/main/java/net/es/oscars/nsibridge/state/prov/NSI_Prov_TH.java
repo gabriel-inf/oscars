@@ -63,6 +63,9 @@ public class NSI_Prov_TH implements TransitionHandler {
             case PROVISIONED:
                 if (toState.equals(ProvisionStateEnumType.RELEASING)) {
                     taskIds.add(mdl.localRel(correlationId));
+                    if (ev.equals(NSI_Prov_Event.END_TIME)) {
+                        taskIds.add(mdl.localEndtime(correlationId));
+                    }
                 } else if (toState.equals(ProvisionStateEnumType.PROVISIONED)) {
                     if (ev.equals(NSI_Prov_Event.LOCAL_SETUP_CONFIRMED)) {
                         log.info("local setup OK");
@@ -84,7 +87,6 @@ public class NSI_Prov_TH implements TransitionHandler {
                 if (toState.equals(ProvisionStateEnumType.RELEASED)) {
                     if (ev.equals(NSI_Prov_Event.END_TIME)) {
                         log.info("local endtime");
-                        taskIds.add(mdl.localEndtime(correlationId));
                         taskIds.add(mdl.dataplaneUpdate(correlationId));
 
                     } else {

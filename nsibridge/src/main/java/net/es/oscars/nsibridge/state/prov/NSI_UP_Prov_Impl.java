@@ -97,25 +97,6 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
             log.error(ex);
         }
 
-
-        long now = new Date().getTime();
-
-        TimingConfig tc = SpringContext.getInstance().getContext().getBean("timingConfig", TimingConfig.class);
-        Workflow wf = Workflow.getInstance();
-
-        SMTransitionTask sm = new SMTransitionTask();
-        sm.setCorrelationId(correlationId);
-        sm.setConnectionId(connectionId);
-        sm.setSmt(StateMachineType.PSM);
-        sm.setSuccessEvent(NSI_Prov_Event.LOCAL_TEARDOWN_CONFIRMED);
-
-        Double d = (tc.getTaskInterval() * 1000);
-        Long when = now + d.longValue();
-        try {
-            taskId = wf.schedule(sm , when);
-        } catch (TaskException e) {
-            e.printStackTrace();
-        }
         log.debug("local endtime scheduled taskId: "+taskId);
         return taskId;
     }
