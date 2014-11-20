@@ -11,6 +11,7 @@ import net.es.oscars.nsibridge.config.TimingConfig;
 import net.es.oscars.nsibridge.ifces.CallbackMessages;
 import net.es.oscars.nsibridge.ifces.NsiProvMdl;
 import net.es.oscars.nsibridge.ifces.StateMachineType;
+import net.es.oscars.nsibridge.oscars.OscarsStates;
 import net.es.oscars.nsibridge.prov.DB_Util;
 import net.es.oscars.nsibridge.prov.NSI_SM_Holder;
 import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.ifce.ServiceException;
@@ -88,33 +89,9 @@ public class NSI_UP_Prov_Impl implements NsiProvMdl {
         log.debug("local endtime start");
         try {
             ConnectionRecord cr = DB_Util.getConnectionRecord(connectionId);
-
-
             ResvRecord rr = ConnectionRecord.getCommittedResvRecord(cr);
-            DataplaneStatusRecord dr = new DataplaneStatusRecord();
+            DB_Util.updateDataplaneRecord(cr, OscarsStates.FINISHED, rr.getVersion());
 
-            dr.setVersion(rr.getVersion());
-            dr.setActive(false);
-
-            boolean found = false;
-            for (DataplaneStatusRecord aRecord : cr.getDataplaneStatusRecords()) {
-                if (aRecord.getVersion() == dr.getVersion()) {
-                    aRecord.setActive(false);
-                    found = true;
-                }
-            }
-
-            if (!found) {
-                cr.getDataplaneStatusRecords().add(dr);
-                log.debug("added a new dataplane record for connId: " + cr.getConnectionId() + " v:" + dr.getVersion() + " a:" + dr.isActive());
-            } else {
-                log.debug("updated dataplane record for connId: " + cr.getConnectionId() + " v:" + dr.getVersion() + " a:" + dr.isActive());
-
-            }
-            EntityManager em = PersistenceHolder.getEntityManager();
-            em.getTransaction().begin();
-            em.persist(cr);
-            em.getTransaction().commit();
         } catch (ServiceException ex) {
             ex.printStackTrace();
             log.error(ex);
