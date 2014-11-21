@@ -9,6 +9,11 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
+    <properties>
+        <cxf.version>3.0.2</cxf.version>
+    </properties>
+
+
     <!-- puts all code & libraries in one jar -->
     <pluginRepositories>
         <pluginRepository>
@@ -16,6 +21,7 @@
             <url>http://onejar-maven-plugin.googlecode.com/svn/mavenrepo</url>
         </pluginRepository>
     </pluginRepositories>
+
 
     <dependencies>
         <!-- testing -->
