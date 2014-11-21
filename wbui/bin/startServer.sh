@@ -24,9 +24,9 @@ if [ -z "$jarfile" ]; then
     echo "Starting ${shortname} with version:$vers context:$context"
 fi
 
-debugSSL="-Djavax.net.debug=ssl,handshake,data,all"
+# debugSSL="-Djavax.net.debug=ssl,handshake,data,all"
 
-java -Djava.net.preferIPv4Stack=true $debugSSL -Xmx512m  -jar $jarfile  -c $context 
-#java -Djava.net.preferIPv4Stack=true $debugSSL -Xmx512m  -jar $jarfile  -c $context &
-#echo $! > $pidfile
+# java -Djava.net.preferIPv4Stack=true $debugSSL -Xmx512m  -jar $jarfile  -c $context
+java -Djava.net.preferIPv4Stack=true $debugSSL -Xmx512m  -jar $jarfile  -c $context &
+echo $! > $pidfile
 

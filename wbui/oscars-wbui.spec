@@ -5,7 +5,7 @@
 %define oscars_home /etc/oscars
 %define log_dir /var/log/oscars
 %define run_dir /var/run/oscars
-%define relnum 2
+%define relnum 3
 
 Name:           oscars-%{package_name}
 Version:        0.6.1
@@ -16,13 +16,13 @@ Group:          Development/Libraries
 URL:            http://code.google.com/p/oscars-idc/
 Source0:        oscars-%{version}-%{relnum}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires:  java-1.6.0-openjdk
-BuildRequires:  java-1.6.0-openjdk-devel
+BuildRequires:  java-1.7.0-openjdk
+BuildRequires:  java-1.7.0-openjdk-devel
 BuildRequires:  perl
 BuildArch:      noarch
 Requires:       oscars-env
 Requires:       oscars-servlets
-Requires:       java-1.6.0-openjdk
+Requires:       java-1.7.0-openjdk
 Requires:       chkconfig
 
 %description
