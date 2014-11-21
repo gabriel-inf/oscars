@@ -1,3 +1,4 @@
+@wip
 Feature: reservation expiration
     I want to verify that reservations expire after end time is reached
 
@@ -32,3 +33,6 @@ Feature: reservation expiration
         When I wait 25000 milliseconds
         Then the "LSM" state is: "PassedEndTime"
         Then the "PSM" state is: "Released"
+        Then I can get the dataplane record with version 0
+        Then the dataplane record "is not" active
+        Then I have sent a dataplane update with version 0 and "is not" active

@@ -62,7 +62,7 @@ public class DB_Util {
         } else {
             dsr.setActive(false);
         }
-        log.debug("updated dataplane record: connId: ["+cr.getConnectionId()+"] status: "+os+" version: "+dsr.getVersion());
+        log.debug("updated dataplane record: connId: ["+cr.getConnectionId()+"] status: "+os+" active: "+dsr.isActive()+" version: "+dsr.getVersion());
         EntityManager em = PersistenceHolder.getEntityManager();
         em.getTransaction().begin();
         em.persist(cr);

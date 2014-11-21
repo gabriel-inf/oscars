@@ -8,6 +8,8 @@ import net.es.oscars.nsibridge.beans.SimpleRequestType;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.beans.db.DataplaneStatusRecord;
 import net.es.oscars.nsibridge.beans.db.ResvRecord;
+import net.es.oscars.nsibridge.common.WorkflowAction;
+import net.es.oscars.nsibridge.common.WorkflowRecord;
 import net.es.oscars.nsibridge.oscars.OscarsOps;
 import net.es.oscars.nsibridge.oscars.OscarsProvQueue;
 import net.es.oscars.nsibridge.prov.DB_Util;
@@ -150,4 +152,23 @@ public class ProvisionSteps {
         assertThat(dr, notNullValue());
         dsr = dr;
     }
+
+    @Then("^I have sent a dataplane update with version (\\d+) and \"([^\"]*)\" active$")
+    public void I_have_sent_a_dataplane_update_with_version_and_active(int version, String is) throws Throwable {
+        String connId = HelperSteps.getValue("connId");
+        WorkflowRecord wfRecord = WorkflowRecord.getInstance();
+        Integer dataplaneUpdateVersion = (Integer) wfRecord.getRecord(connId, WorkflowAction.DATAPLANE_UPDATE_VERSION);
+        Boolean dataplaneUpdateActive = (Boolean) wfRecord.getRecord(connId, WorkflowAction.DATAPLANE_UPDATE_ACTIVE);
+
+        boolean shouldBeActive = false;
+        if (is.equals("is")) {
+            shouldBeActive = true;
+        }
+
+        assertThat(dataplaneUpdateActive, is(shouldBeActive));
+        assertThat(dataplaneUpdateVersion, is(version));
+
+
+    }
+
 }

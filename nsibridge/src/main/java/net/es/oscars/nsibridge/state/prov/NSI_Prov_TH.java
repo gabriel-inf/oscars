@@ -64,6 +64,7 @@ public class NSI_Prov_TH implements TransitionHandler {
                 if (toState.equals(ProvisionStateEnumType.RELEASING)) {
                     taskIds.add(mdl.localRel(correlationId));
                     if (ev.equals(NSI_Prov_Event.END_TIME)) {
+                        log.info("endtime reached");
                         taskIds.add(mdl.localEndtime(correlationId));
                     }
                 } else if (toState.equals(ProvisionStateEnumType.PROVISIONED)) {
@@ -85,17 +86,8 @@ public class NSI_Prov_TH implements TransitionHandler {
 
             case RELEASING:
                 if (toState.equals(ProvisionStateEnumType.RELEASED)) {
-                    if (ev.equals(NSI_Prov_Event.END_TIME)) {
-                        log.info("local endtime");
-                        taskIds.add(mdl.dataplaneUpdate(correlationId));
-
-                    } else {
-                        log.info("releasing to released");
-                        taskIds.add(mdl.sendRelCF(correlationId));
-                        taskIds.add(mdl.dataplaneUpdate(correlationId));
-                    }
-
-
+                    taskIds.add(mdl.sendRelCF(correlationId));
+                    taskIds.add(mdl.dataplaneUpdate(correlationId));
                 } else {
                     throw new StateException("invalid state transition ["+transitionStr+"]");
                 }

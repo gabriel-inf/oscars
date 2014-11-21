@@ -1,6 +1,5 @@
 Feature: verify dataplane change feature
 
-    @wip
     Scenario: perform complete reservation, check all dataplane change events
       Given I have set up the run environment
       Given I clear all existing tasks

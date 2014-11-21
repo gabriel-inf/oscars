@@ -7,6 +7,8 @@ import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
 import net.es.oscars.nsibridge.beans.db.DataplaneStatusRecord;
 import net.es.oscars.nsibridge.beans.db.NotificationRecord;
 import net.es.oscars.nsibridge.beans.db.ResvRecord;
+import net.es.oscars.nsibridge.common.WorkflowAction;
+import net.es.oscars.nsibridge.common.WorkflowRecord;
 import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.config.TimingConfig;
 import net.es.oscars.nsibridge.config.nsa.JsonNsaConfigProvider;
@@ -132,12 +134,6 @@ public class SendNSIMessageTask extends Task  {
                 return;
             }
 
-            if (!stubConfig.isPerformCallback()) {
-                log.info("not performing callback - this NSA is a stub");
-                this.onSuccess();
-                return;
-            }
-
 
 
             ConnectionRequesterPort port = RequesterPortHolder.getInstance().getPort(url);
@@ -186,6 +182,9 @@ public class SendNSIMessageTask extends Task  {
             NotificationRecord nr;
 
 
+            if (!stubConfig.isPerformCallback()) {
+                log.info("not performing callback - this NSA is a stub");
+            }
 
             switch (message) {
                 case RESV_CF:
@@ -209,31 +208,66 @@ public class SendNSIMessageTask extends Task  {
                     rcct.getAny().addAll(rrct.getAny());
                     rcct.getOtherAttributes().putAll(rrct.getOtherAttributes());
 
-                    port.reserveConfirmed(connId, gri, description, rcct, outHeader, outHolder);
+                    if (!stubConfig.isPerformCallback()) {
+                        this.onSuccess();
+                        return;
+                    } else {
+                        port.reserveConfirmed(connId, gri, description, rcct, outHeader, outHolder);
+                    }
                     break;
                 case RESV_CM_CF:
-                    port.reserveCommitConfirmed(connId, outHeader, outHolder);
+                    if (!stubConfig.isPerformCallback()) {
+                        this.onSuccess();
+                        return;
+                    } else {
+                        port.reserveCommitConfirmed(connId, outHeader, outHolder);
+                    }
                     break;
                 case RESV_AB_CF:
-                    port.reserveAbortConfirmed(connId, outHeader, outHolder);
+                    if (!stubConfig.isPerformCallback()) {
+                        this.onSuccess();
+                        return;
+                    } else {
+                        port.reserveAbortConfirmed(connId, outHeader, outHolder);
+                    }
                     break;
 
                 case PROV_CF:
-                    port.provisionConfirmed(connId, outHeader, outHolder);
+                    if (!stubConfig.isPerformCallback()) {
+                        this.onSuccess();
+                        return;
+                    } else {
+                        port.provisionConfirmed(connId, outHeader, outHolder);
+                    }
                     break;
                 case REL_CF:
-                    port.releaseConfirmed(connId, outHeader, outHolder);
+                    if (!stubConfig.isPerformCallback()) {
+                        this.onSuccess();
+                        return;
+                    } else {
+                        port.releaseConfirmed(connId, outHeader, outHolder);
+                    }
                     break;
 
                 case TERM_CF:
-                    port.terminateConfirmed(connId, outHeader, outHolder);
+                    if (!stubConfig.isPerformCallback()) {
+                        this.onSuccess();
+                        return;
+                    } else {
+                        port.terminateConfirmed(connId, outHeader, outHolder);
+                    }
                     break;
 
                 // failures
                 case RESV_FL:
                     try {
                         st = NSI_Util.makeServiceException(connId, corrId);
-                        port.reserveFailed(connId, cst, st, outHeader, outHolder);
+                        if (!stubConfig.isPerformCallback()) {
+                            this.onSuccess();
+                            return;
+                        } else {
+                            port.reserveFailed(connId, cst, st, outHeader, outHolder);
+                        }
                     } catch (ServiceException ex) {
                         log.error(ex.getMessage(), ex);
                     }
@@ -241,7 +275,12 @@ public class SendNSIMessageTask extends Task  {
                 case RESV_CM_FL:
                     try {
                         st = NSI_Util.makeServiceException(connId, corrId);
-                        port.reserveCommitFailed(connId, cst, st, outHeader, outHolder);
+                        if (!stubConfig.isPerformCallback()) {
+                            this.onSuccess();
+                            return;
+                        } else {
+                            port.reserveCommitFailed(connId, cst, st, outHeader, outHolder);
+                        }
                     } catch (ServiceException ex) {
                         log.error(ex.getMessage(), ex);
                     }
@@ -259,8 +298,12 @@ public class SendNSIMessageTask extends Task  {
 
                     Double d = ax.getBean("timingConfig", TimingConfig.class).getResvTimeout();
                     NsaConfig cfg = ax.getBean("nsaConfigProvider", JsonNsaConfigProvider.class).getConfig("local");
-
-                    port.reserveTimeout(connId, notificationId.intValue(), cal, d.intValue(), connId, cfg.getNsaId(), outHeader, outHolder);
+                    if (!stubConfig.isPerformCallback()) {
+                        this.onSuccess();
+                        return;
+                    } else {
+                        port.reserveTimeout(connId, notificationId.intValue(), cal, d.intValue(), connId, cfg.getNsaId(), outHeader, outHolder);
+                    }
                     break;
 
                 case DATAPLANE_CHANGE:
@@ -292,8 +335,18 @@ public class SendNSIMessageTask extends Task  {
                     dst.setActive(dpActive);
                     dst.setVersion(dpVersion);
                     dst.setVersionConsistent(dpConsistent);
+                    log.info("sent dataplane state change with connId: "+connId+" version: "+dpVersion+" active: "+dpActive);
+                    WorkflowRecord wfRecord = WorkflowRecord.getInstance();
+                    wfRecord.setRecord(connId, WorkflowAction.DATAPLANE_UPDATE_VERSION, dpVersion);
+                    wfRecord.setRecord(connId, WorkflowAction.DATAPLANE_UPDATE_ACTIVE, dpActive);
 
-                    port.dataPlaneStateChange(connId, notificationId.intValue(), cal, dst, outHeader, outHolder);
+                    if (!stubConfig.isPerformCallback()) {
+                        this.onSuccess();
+                        return;
+                    } else {
+                        port.dataPlaneStateChange(connId, notificationId.intValue(), cal, dst, outHeader, outHolder);
+                    }
+
                     break;
 
 
@@ -309,7 +362,13 @@ public class SendNSIMessageTask extends Task  {
 
                         NsaConfigProvider ncp = (NsaConfigProvider) ax.getBean("nsaConfigProvider");
                         String nsaId = ncp.getConfig("local").getNsaId();
-                        port.errorEvent(connId, notificationId.intValue(), cal, nr.getEventType(), connId, nsaId, tvl, st, outHeader, outHolder);
+
+                        if (!stubConfig.isPerformCallback()) {
+                            this.onSuccess();
+                            return;
+                        } else {
+                            port.errorEvent(connId, notificationId.intValue(), cal, nr.getEventType(), connId, nsaId, tvl, st, outHeader, outHolder);
+                        }
                     } catch (ServiceException ex) {
                         log.error(ex.getMessage(), ex);
 
