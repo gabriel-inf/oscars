@@ -202,35 +202,74 @@ public class NSI_OSCARS_Translation {
         dstVlan.setTagged(true);
         pi.getLayer2Info().setDestVtag(dstVlan);
 
+        boolean hasEro = true;
+        StpListType stpList = p2pType.getEro();
+        if (stpList == null || stpList.getOrderedSTP() == null) {
+            hasEro = false;
+        } else if (stpList.getOrderedSTP().isEmpty()) {
+            hasEro = false;
+        }
 
 
-        CtrlPlaneHopContent srcHop = new CtrlPlaneHopContent();
-        srcHop.setLinkIdRef(srcStpCfg.getOscarsId());
-        CtrlPlaneLinkContent srcLink = new CtrlPlaneLinkContent();
-        CtrlPlaneSwcapContent srcSwcap = new CtrlPlaneSwcapContent();
-        CtrlPlaneSwitchingCapabilitySpecificInfo srcSwcapInfo = new CtrlPlaneSwitchingCapabilitySpecificInfo();
-        srcSwcapInfo.setVlanRangeAvailability(nsiSrcVlan);
-        srcSwcap.setSwitchingCapabilitySpecificInfo(srcSwcapInfo);
-        srcLink.setSwitchingCapabilityDescriptors(srcSwcap);
-        srcLink.setId(srcHop.getLinkIdRef());
-        srcHop.setLinkIdRef(null);
-        srcHop.setLink(srcLink);
+        if (hasEro) {
+            List<OrderedStpType> orderedSTPs = stpList.getOrderedSTP();
+            int size = orderedSTPs.size();
+            int i = 0;
+            for (OrderedStpType orderedStp : orderedSTPs) {
 
-        CtrlPlaneHopContent dstHop = new CtrlPlaneHopContent();
-        dstHop.setLinkIdRef(dstStpCfg.getOscarsId());
-        CtrlPlaneLinkContent dstLink = new CtrlPlaneLinkContent();
-        CtrlPlaneSwcapContent dstSwcap = new CtrlPlaneSwcapContent();
-        CtrlPlaneSwitchingCapabilitySpecificInfo dstSwcapInfo = new CtrlPlaneSwitchingCapabilitySpecificInfo();
-        dstSwcapInfo.setVlanRangeAvailability(nsiDstVlan);
-        dstSwcap.setSwitchingCapabilitySpecificInfo(dstSwcapInfo);
-        dstLink.setSwitchingCapabilityDescriptors(dstSwcap);
-        dstLink.setId(dstHop.getLinkIdRef());
-        dstHop.setLinkIdRef(null);
-        dstHop.setLink(dstLink);
+                String stp = orderedStp.getStp();
+                String urn = STPUtil.getUrn(stp);
+                StpConfig stpCfg = findStp(urn);
+                CtrlPlaneHopContent hop = new CtrlPlaneHopContent();
+                hop.setLinkIdRef(stpCfg.getOscarsId());
+
+                CtrlPlaneLinkContent link = new CtrlPlaneLinkContent();
+                CtrlPlaneSwcapContent swcap = new CtrlPlaneSwcapContent();
+                CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo = new CtrlPlaneSwitchingCapabilitySpecificInfo();
+                if (i == 0) {
+                    swcapInfo.setVlanRangeAvailability(nsiSrcVlan);
+                } else if (i == size -1) {
+                    swcapInfo.setVlanRangeAvailability(nsiDstVlan);
+
+                }
+                swcap.setSwitchingCapabilitySpecificInfo(swcapInfo);
+                link.setSwitchingCapabilityDescriptors(swcap);
+                link.setId(hop.getLinkIdRef());
+                hop.setLink(link);
+                pathHops.add(hop);
+                i++;
+            }
+
+        } else {
+
+            CtrlPlaneHopContent srcHop = new CtrlPlaneHopContent();
+            srcHop.setLinkIdRef(srcStpCfg.getOscarsId());
+            CtrlPlaneLinkContent srcLink = new CtrlPlaneLinkContent();
+            CtrlPlaneSwcapContent srcSwcap = new CtrlPlaneSwcapContent();
+            CtrlPlaneSwitchingCapabilitySpecificInfo srcSwcapInfo = new CtrlPlaneSwitchingCapabilitySpecificInfo();
+            srcSwcapInfo.setVlanRangeAvailability(nsiSrcVlan);
+            srcSwcap.setSwitchingCapabilitySpecificInfo(srcSwcapInfo);
+            srcLink.setSwitchingCapabilityDescriptors(srcSwcap);
+            srcLink.setId(srcHop.getLinkIdRef());
+            srcHop.setLinkIdRef(null);
+            srcHop.setLink(srcLink);
+
+            CtrlPlaneHopContent dstHop = new CtrlPlaneHopContent();
+            dstHop.setLinkIdRef(dstStpCfg.getOscarsId());
+            CtrlPlaneLinkContent dstLink = new CtrlPlaneLinkContent();
+            CtrlPlaneSwcapContent dstSwcap = new CtrlPlaneSwcapContent();
+            CtrlPlaneSwitchingCapabilitySpecificInfo dstSwcapInfo = new CtrlPlaneSwitchingCapabilitySpecificInfo();
+            dstSwcapInfo.setVlanRangeAvailability(nsiDstVlan);
+            dstSwcap.setSwitchingCapabilitySpecificInfo(dstSwcapInfo);
+            dstLink.setSwitchingCapabilityDescriptors(dstSwcap);
+            dstLink.setId(dstHop.getLinkIdRef());
+            dstHop.setLinkIdRef(null);
+            dstHop.setLink(dstLink);
 
 
-        pathHops.add(srcHop);
-        pathHops.add(dstHop);
+            pathHops.add(srcHop);
+            pathHops.add(dstHop);
+        }
 
         OptionalConstraintType oct = new OptionalConstraintType();
         oct.setCategory("policing");
