@@ -59,6 +59,7 @@ cp %{package_name}/target/*.jar %{buildroot}/%{install_base}/target/
 cp %{package_name}/sql/*.sql %{buildroot}/%{install_base}/sql/
 install -m 755 %{package_name}/bin/startServer.sh %{buildroot}/%{install_base}/bin/
 install -m 755 %{package_name}/scripts/oscars-pss-%{pss_name} %{buildroot}/etc/init.d/oscars-pss-%{pss_name}
+install -m 755 %{package_name}/scripts/configure_database %{buildroot}/%{install_base}/sql/
 
 #Run exportconfig
 %{package_name}/bin/exportconfig ./ %{oscars_home} %{log_dir} %{buildroot}
