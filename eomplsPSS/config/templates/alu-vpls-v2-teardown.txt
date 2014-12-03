@@ -53,14 +53,11 @@ exit all
 <#list lsps as lsp>
 configure router mpls lsp "${lsp.primary}" shutdown
 configure router mpls no lsp "${lsp.primary}"
-</#list>
-
 <#if protect>
-<#list lsps as lsp>
 configure router mpls lsp "${lsp.protect}" shutdown
 configure router mpls no lsp "${lsp.protect}"
-</#list>
 </#if>
+</#list>
 exit all
 </#if>
 
@@ -70,8 +67,12 @@ exit all
 
 <#if paths??>
 <#list paths as path>
-configure router mpls path "${path.name}" shutdown
-configure router mpls no path "${path.name}"
+configure router mpls path "${path.primary}" shutdown
+configure router mpls no path "${path.primary}"
+<#if protect>
+configure router mpls path "${path.protect}" shutdown
+configure router mpls no path "${path.protect}"
+</#if>
 </#list>
 exit all
 </#if>

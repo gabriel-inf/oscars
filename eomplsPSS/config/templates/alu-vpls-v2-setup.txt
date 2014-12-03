@@ -89,11 +89,16 @@ exit all
 <#if paths??>
 # mpls path
 <#list paths as path>
-configure router mpls path "${path.name}" shutdown
+configure router mpls path "${path.primary}" shutdown
 <#list path.hops as hop>
-configure router mpls path "${path.name}" hop ${hop.order} ${hop.address} strict
+configure router mpls path "${path.primary}" hop ${hop.order} ${hop.address} strict
 </#list>
-configure router mpls path "${path.name}" no shutdown
+configure router mpls path "${path.primary}" no shutdown
+
+<#if protect>
+configure router mpls path "${path.protect}" no shutdown
+exit all
+</#if>
 </#list>
 </#if>
 
@@ -104,19 +109,18 @@ configure router mpls path "${path.name}" no shutdown
 <#list lsps as lsp>
 configure router mpls lsp "${lsp.primary}" shutdown
 configure router mpls lsp "${lsp.primary}" to ${lsp.to}
-configure router mpls lsp "${lsp.primary}" primary "${lsp.path}" priority 5 5
+configure router mpls lsp "${lsp.primary}" primary "${lsp.primary_path}" priority 5 5
 configure router mpls lsp "${lsp.primary}" metric 65000
 configure router mpls lsp "${lsp.primary}" no shutdown
 </#list>
 </#if>
 
 <#if protect>
-configure router mpls path "loose" no shutdown
 <#list lsps as lsp>
 configure router mpls lsp "${lsp.protect}" shutdown
 configure router mpls lsp "${lsp.protect}" to ${lsp.to}
 configure router mpls lsp "${lsp.protect}" metric 65100
-configure router mpls lsp "${lsp.protect}" primary "loose" priority 4 4
+configure router mpls lsp "${lsp.protect}" primary "${lsp.protect_path}" priority 4 4
 configure router mpls lsp "${lsp.protect}" no shutdown
 </#list>
 </#if>

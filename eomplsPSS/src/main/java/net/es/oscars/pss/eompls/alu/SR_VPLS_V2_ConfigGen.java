@@ -299,7 +299,9 @@ public class SR_VPLS_V2_ConfigGen implements DeviceConfigGenerator, PostCommitCo
             Map lsp = new HashMap();
             Map path = new HashMap();
 
-            path.put("name", pathName);
+            path.put("primary", pathName+"_wrk");
+            path.put("protect", pathName+"_prt");
+
             lsp.put("primary", lspName+"_wrk");
             lsp.put("protect", lspName+"_prt");
 
@@ -448,7 +450,8 @@ public class SR_VPLS_V2_ConfigGen implements DeviceConfigGenerator, PostCommitCo
                 hops.add(hop);
             }
             HashMap path = new HashMap();
-            path.put("name", ng.getPathName(gri));
+            path.put("primary", ng.getPathName(gri)+"_wrk");
+            path.put("protect", ng.getPathName(gri)+"_prt");
             path.put("hops", hops);
             paths.add(path);
 
@@ -458,9 +461,10 @@ public class SR_VPLS_V2_ConfigGen implements DeviceConfigGenerator, PostCommitCo
             HashMap lsp = new HashMap();
             lsp.put("to", lspTo);
             lsp.put("primary", ng.getLSPName(gri)+"_wrk");
-            lsp.put("path", ng.getPathName(gri));
+            lsp.put("primary_path", ng.getPathName(gri)+"_wrk");
             if (protect) {
                 lsp.put("protect", ng.getLSPName(gri)+"_prt");
+                lsp.put("protect_path", ng.getPathName(gri)+"_prt");
             }
             lsps.add(lsp);
 
