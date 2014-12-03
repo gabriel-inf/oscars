@@ -103,7 +103,7 @@ top
 
 # paths
 <#list paths as path>
-edit protocols mpls path ${path.name}
+edit protocols mpls path ${path.primary}
 <#list path.hops as hop>
 set ${hop} strict
 </#list>
@@ -118,7 +118,7 @@ set to ${lsp.to}
 set metric 65000
 set no-cspf
 set priority 4 4
-set primary ${lsp.path}
+set primary ${lsp.primary_path}
 set policing filter ${filters.primary}
 </#list>
 
@@ -174,6 +174,12 @@ set loss-priority high
 set forwarding-class best-effort-vc
 set accept
 
+# protect paths
+<#list paths as path>
+edit protocols mpls path ${path.protect}
+</#list>
+
+
 # protect LSPs
 <#list lsps as lsp>
 top
@@ -182,6 +188,7 @@ set to ${lsp.to}
 set metric 65100
 set no-cspf
 set priority 5 5
+set primary ${lsp.protect_path}
 set policing filter ${filters.protect}
 </#list>
 

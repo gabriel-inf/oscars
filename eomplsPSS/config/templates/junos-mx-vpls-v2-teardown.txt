@@ -25,7 +25,7 @@ delete protocols mpls label-switched-path ${lsp.primary}
 </#list>
 
 <#list paths as path>
-delete protocols mpls path ${path.name}
+delete protocols mpls path ${path.primary}
 </#list>
 
 delete policy-options community ${community.name}
@@ -42,8 +42,9 @@ delete firewall family any filter ${filters.protect}
 <#list lsps as lsp>
 delete protocols mpls label-switched-path ${lsp.protect}
 </#list>
-
-
+<#list paths as path>
+delete protocols mpls path ${path.protect}
+</#list>
 </#if>
 
 </#if>

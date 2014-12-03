@@ -214,7 +214,8 @@ public class MX_VPLS_V2_ConfigGen implements DeviceConfigGenerator, VplsV2Config
         String communityName;
         String communityMembers;
         Long lspBandwidth;
-        String pathName;
+        String wrk_pathName;
+        String prt_pathName;
         String lspName;
         String vplsName;
 
@@ -276,7 +277,8 @@ public class MX_VPLS_V2_ConfigGen implements DeviceConfigGenerator, VplsV2Config
         communityName           = ng.getCommunityName(gri, description);
         policyName              = ng.getPolicyName(gri, description);
         policerName             = ng.getPolicerName(gri, description);
-        pathName                = ng.getPathName(gri, description);
+        wrk_pathName                = ng.getPathName(gri, description)+"_wrk";
+        prt_pathName                = ng.getPathName(gri, description)+"_prt";
         lspName                 = ng.getLSPName(gri, description);
         vplsName                = ng.getVplsName(gri, description);
 
@@ -397,7 +399,8 @@ public class MX_VPLS_V2_ConfigGen implements DeviceConfigGenerator, VplsV2Config
             Map path = new HashMap();
             Map lsp = new HashMap();
 
-            path.put("name", pathName);
+            path.put("primary", wrk_pathName);
+            path.put("protect", prt_pathName);
             ArrayList hops = lspBean.getPathAddresses();
             path.put("hops", hops);
             paths.add(path);
@@ -407,7 +410,8 @@ public class MX_VPLS_V2_ConfigGen implements DeviceConfigGenerator, VplsV2Config
             lsp.put("protect", lspName+"_prt");
             lsp.put("to", remoteVplsLoopback);
             lsp.put("neighbor", lspNeighbor);
-            lsp.put("path", pathName);
+            lsp.put("primary_path", wrk_pathName);
+            lsp.put("protect_path", prt_pathName);
 
             lsps.add(lsp);
 
@@ -503,7 +507,8 @@ public class MX_VPLS_V2_ConfigGen implements DeviceConfigGenerator, VplsV2Config
 
         String policyName;
         String communityName;
-        String pathName;
+        String wrk_pathName;
+        String prt_pathName;
         String lspName;
         String vplsName;
 
@@ -571,7 +576,8 @@ public class MX_VPLS_V2_ConfigGen implements DeviceConfigGenerator, VplsV2Config
         communityName           = ng.getCommunityName(gri, description);
         policyName              = ng.getPolicyName(gri, description);
         policerName             = ng.getPolicerName(gri, description);
-        pathName                = ng.getPathName(gri, description);
+        wrk_pathName            = ng.getPathName(gri, description)+"_wrk";
+        prt_pathName            = ng.getPathName(gri, description)+"_prt";
         lspName                 = ng.getLSPName(gri, description);
         vplsName                = ng.getVplsName(gri, description);
 
@@ -624,7 +630,8 @@ public class MX_VPLS_V2_ConfigGen implements DeviceConfigGenerator, VplsV2Config
         MX_VPLS_TemplateParams params = new MX_VPLS_TemplateParams();
         if (!sameDevice) {
             Map path = new HashMap();
-            path.put("name", pathName);
+            path.put("primary", wrk_pathName);
+            path.put("protect", prt_pathName);
             paths.add(path);
 
             Map lsp = new HashMap();
