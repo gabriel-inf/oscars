@@ -112,6 +112,7 @@ chown oscars:oscars %{oscars_home}/modules/oscars-pss-%{pss_name}.enabled
 %config %{oscars_home}/%{service_name}/conf/*
 %{install_base}/target/*
 %{install_base}/bin/*
+%{install_base}/sql/*
 /etc/init.d/oscars-pss-%{pss_name}
 
 %preun
