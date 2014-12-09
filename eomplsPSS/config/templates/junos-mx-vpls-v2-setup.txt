@@ -173,6 +173,7 @@ set loss-priority high
 </#if>
 set forwarding-class best-effort-vc
 set accept
+top
 
 # protect paths
 <#list paths as path>
