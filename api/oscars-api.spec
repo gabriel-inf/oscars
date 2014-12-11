@@ -5,7 +5,7 @@
 %define oscars_home /etc/oscars
 %define log_dir /var/log/oscars
 %define run_dir /var/run/oscars
-%define relnum 2
+%define relnum 3 
 
 Name:           oscars-%{package_name}
 Version:        0.6.1
@@ -82,7 +82,7 @@ if [ "$1" = "2" ]; then
   unlink %{install_base}/target/%{package_name}.jar
   unlink %{oscars_home}/modules/z.oscars-%{package_name}.enabled
 fi
-ln -s %{install_base}/target/%{package_name}-%{version}-%{relnum}.one-jar.jar %{install_base}/target/%{package_name}.one-jar.jar
+ln -s %{install_base}/target/%{package_name}-%{version}-%{relnum}-one-jar.jar %{install_base}/target/%{package_name}.one-jar.jar
 chown oscars:oscars %{install_base}/target/%{package_name}.one-jar.jar
 ln -s %{install_base}/target/%{package_name}-%{version}-%{relnum}.jar %{install_base}/target/%{package_name}.jar
 chown oscars:oscars %{install_base}/target/%{package_name}.jar
