@@ -5,12 +5,12 @@
 %define oscars_home /etc/oscars
 %define log_dir /var/log/oscars
 %define run_dir /var/run/oscars
-%define relnum 6 
+%define relnum 7 
 
 Name:           oscars-%{package_name}
 Version:        0.6.1
 Release:        %{relnum}
-Summary:        OSCARS Web User Interface 
+Summary:        /OSCARS Web User Interface 
 License:        distributable, see LICENSE
 Group:          Development/Libraries
 URL:            http://code.google.com/p/oscars-idc/
@@ -105,6 +105,9 @@ chown oscars:oscars %{oscars_home}/modules/oscars-%{package_name}.enabled
 
 #Configure service to start when machine boots
 /sbin/chkconfig --add oscars-%{package_name}
+
+#make sure jetty has pemrissions to delete temp directory
+chown oscars:oscars /var/lib/oscars/wbui
 
 %files
 %defattr(-,oscars,oscars,-)
