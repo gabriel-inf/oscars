@@ -2,7 +2,7 @@
 %define oscars_src_dir rpm-environment
 %define oscars_dist /opt/oscars
 %define oscars_home /etc/oscars
-%define relnum 2
+%define relnum 3
 
 Name:           oscars-%{package_name}
 Version:        0.6.1
@@ -14,7 +14,7 @@ URL:            http://code.google.com/p/oscars-idc/
 Source0:        oscars-%{version}-%{relnum}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
-Requires:       java-1.6.0-openjdk
+Requires:       java-1.7.0-openjdk
 
 %description
 Configures environment variables, certificates and scripts used globally by OSCARS modules
@@ -54,6 +54,16 @@ if [ $1 -eq 1 ]; then
 fi
 chown oscars:oscars %{oscars_home}/keystores/*
 chmod 600 %{oscars_home}/keystores/*
+
+#Set secureSocketProtocol to TLS for server
+/usr/bin/perl -e 's/<httpj:tlsServerParameters.*>/<httpj:tlsServerParameters secureSocketProtocol="TLS">/g' -pi $(find %{oscars_home} -type f -name server-cxf-ssl.xml)
+#Set secureSocketProtocol to TLS for client
+/usr/bin/perl -e 's/<http:tlsClientParameters.*>/<http:tlsClientParameters disableCNCheck="true" secureSocketProtocol="TLS">/g' -pi $(find %{oscars_home} -type f -name client-cxf-ssl.xml)
+#Remove previously set AES so we don't get multiple
+/usr/bin/perl -e 's/\s*<sec:include>\.\*_WITH_AES_\.\*<\/sec:include>\s*//g' -pi $(find %{oscars_home} -type f -name \*-cxf-ssl.xml)
+#Reset AES
+/usr/bin/perl -e 's/( *)(<sec:include>\.\*_WITH_DES_\.\*<\/sec:include>)/$1$2\n$1<sec:include>.*_WITH_AES_.*<\/sec:include>/g' -pi $(find %{oscars_home} -type f -name \*-cxf-ssl.xml)
+
 
 %files
 %defattr(-,oscars,oscars,-)
