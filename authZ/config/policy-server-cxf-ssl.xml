@@ -17,7 +17,7 @@
 
   <httpj:engine-factory>
   <httpj:engine port="9005">
-    <httpj:tlsServerParameters>
+    <httpj:tlsServerParameters secureSocketProtocol="TLS">
       <sec:keyManagers keyPassword="changeit">
            <sec:keyStore type="JKS" password="changeit"
                 file="keystore-server.jks"/>
@@ -35,6 +35,7 @@
         <sec:include>.*_EXPORT_.*</sec:include>
         <sec:include>.*_EXPORT1024_.*</sec:include>
         <sec:include>.*_WITH_DES_.*</sec:include>
+        <sec:include>.*_WITH_AES_.*</sec:include>
         <sec:include>.*_WITH_NULL_.*</sec:include>
         <sec:exclude>.*_DH_anon_.*</sec:exclude>
       </sec:cipherSuitesFilter>

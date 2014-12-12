@@ -29,7 +29,7 @@
   </cxf:bus> 
 
   <http:conduit name="*.http-conduit">
-    <http:tlsClientParameters disableCNCheck="false"  secureSocketProtocol="SSL">
+    <http:tlsClientParameters disableCNCheck="true" secureSocketProtocol="TLS">
       <sec:trustManagers>
           <sec:keyStore type="JKS" password="changeit"
                file="keystore-truststore.jks"/>
@@ -48,6 +48,7 @@
        <sec:include>.*_EXPORT_.*</sec:include>
         <sec:include>.*_EXPORT1024_.*</sec:include>
         <sec:include>.*_WITH_DES_.*</sec:include>
+        <sec:include>.*_WITH_AES_.*</sec:include>
         <sec:include>.*_WITH_NULL_.*</sec:include>
         <sec:exclude>.*_DH_anon_.*</sec:exclude>
       </sec:cipherSuitesFilter>

@@ -82,7 +82,7 @@
   <!-- configuration for SSL connections  -->
 
   <http:conduit name="*.http-conduit">
-    <http:tlsClientParameters secureSocketProtocol="SSL" disableCNCheck="true">
+    <http:tlsClientParameters disableCNCheck="true" secureSocketProtocol="TLS">
       <sec:trustManagers>
           <sec:keyStore type="JKS" password="changeit"
                file="keystore-truststore.jks"/>
@@ -100,6 +100,7 @@
         <sec:include>.*_EXPORT_.*</sec:include>
         <sec:include>.*_EXPORT1024_.*</sec:include>
         <sec:include>.*_WITH_DES_.*</sec:include>
+        <sec:include>.*_WITH_AES_.*</sec:include>
         <sec:include>.*_WITH_NULL_.*</sec:include>
         <sec:exclude>.*_DH_anon_.*</sec:exclude>
       </sec:cipherSuitesFilter>
@@ -108,7 +109,7 @@
    </http:conduit>
     
    <http:conduit name="{http://oscars.es.net/OSCARS/wsnbroker}WSNBrokerPort.http-conduit">
-    <http:tlsClientParameters secureSocketProtocol="SSL" disableCNCheck="true">
+    <http:tlsClientParameters disableCNCheck="true" secureSocketProtocol="TLS">
       <sec:trustManagers>
           <sec:keyStore type="JKS" password="changeit"
                file="keystore-truststore.jks"/>
@@ -126,6 +127,7 @@
         <sec:include>.*_EXPORT_.*</sec:include>
         <sec:include>.*_EXPORT1024_.*</sec:include>
         <sec:include>.*_WITH_DES_.*</sec:include>
+        <sec:include>.*_WITH_AES_.*</sec:include>
         <sec:include>.*_WITH_NULL_.*</sec:include>
         <sec:exclude>.*_DH_anon_.*</sec:exclude>
       </sec:cipherSuitesFilter>

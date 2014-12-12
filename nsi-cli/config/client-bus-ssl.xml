@@ -40,7 +40,7 @@
 
 
   <http:conduit name="*.http-conduit">
-    <http:tlsClientParameters disableCNCheck="true"  secureSocketProtocol="SSL">
+    <http:tlsClientParameters disableCNCheck="true" secureSocketProtocol="TLS">
         <sec:trustManagers>
             <sec:keyStore type="JKS" password="CHANGEIT"
                           file="config/client-keystore.jks"/>

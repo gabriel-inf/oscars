@@ -15,7 +15,7 @@
         <httpj:engine-factory bus="cxf">
 
             <httpj:engine port="8500">
-                <httpj:tlsServerParameters>
+                <httpj:tlsServerParameters secureSocketProtocol="TLS">
                     <sec:trustManagers>
                         <sec:keyStore type="JKS" password="changeit"
                                       file="/etc/oscars/keystores/oscars.jks"/>
