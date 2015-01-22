@@ -23,8 +23,8 @@
     <bean id="clientConfig"
           class="net.es.oscars.nsibridge.config.ClientConfig"
           scope="singleton">
-        <property name="bus" value="/etc/oscars/NsiBridgeService/conf/client-bus.xml"/>
-        <property name="sslBus" value="/etc/oscars/NsiBridgeService/conf/client-bus-ssl.xml"/>
+        <property name="busConfigPath" value="/etc/oscars/NsiBridgeService/conf/client-bus-ssl.xml"/>
+
     </bean>
 
     <bean id="nsaConfigProvider"

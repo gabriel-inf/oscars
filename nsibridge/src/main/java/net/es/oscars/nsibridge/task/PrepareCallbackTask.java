@@ -47,7 +47,7 @@ public class PrepareCallbackTask extends Task  {
         }
 
         ClientConfig cc = SpringContext.getInstance().getContext().getBean("clientConfig", ClientConfig.class);
-        ConnectionRequesterPort port = ClientUtil.createRequesterClient(url, cc);
+        ConnectionRequesterPort port = ClientUtil.getInstance().getRequesterPort(url, cc);
 
 
         log.debug(this.id+" starting");

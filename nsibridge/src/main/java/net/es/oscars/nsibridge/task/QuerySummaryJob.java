@@ -49,7 +49,7 @@ public class QuerySummaryJob implements Job  {
             return;
         }
 
-        ConnectionRequesterPort client = ClientUtil.createRequesterClient(url, cc);
+        ConnectionRequesterPort client = ClientUtil.getInstance().getRequesterPort(url, cc);
         try {
             //perform query
             QuerySummaryConfirmedType result = RequestProcessor.getInstance().syncQuerySum(request);

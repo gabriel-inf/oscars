@@ -51,7 +51,7 @@ public class QueryRecursiveJob implements Job  {
             return;
         }
 
-        ConnectionRequesterPort client = ClientUtil.createRequesterClient(url, cc);
+        ConnectionRequesterPort client = ClientUtil.getInstance().getRequesterPort(url, cc);
 
         try {
             //perform query

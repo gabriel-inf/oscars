@@ -21,7 +21,7 @@
     <bean id="clientConfig"
           class="net.es.oscars.nsibridge.config.ClientConfig"
           scope="singleton">
-        <property name="busConfigPath" value="config/client-bus.xml/"/>
+        <property name="busConfigPath" value="config/client-bus.xml"/>
     </bean>
 
     <bean id="nsaConfigProvider"
