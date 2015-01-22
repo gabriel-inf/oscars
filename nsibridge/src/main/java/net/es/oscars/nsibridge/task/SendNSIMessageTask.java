@@ -27,6 +27,8 @@ import net.es.nsi.lib.soap.gen.nsi_2_0_r117.framework.types.ServiceExceptionType
 import net.es.nsi.lib.soap.gen.nsi_2_0_r117.framework.types.TypeValuePairListType;
 import net.es.oscars.utils.task.Task;
 import net.es.oscars.utils.task.TaskException;
+import org.apache.cxf.endpoint.Client;
+import org.apache.cxf.frontend.ClientProxy;
 import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 
@@ -36,6 +38,7 @@ import javax.xml.ws.Holder;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.GregorianCalendar;
+import java.util.Map;
 import java.util.UUID;
 
 public class SendNSIMessageTask extends Task  {
@@ -138,6 +141,9 @@ public class SendNSIMessageTask extends Task  {
 
             ClientConfig cc = SpringContext.getInstance().getContext().getBean("clientConfig", ClientConfig.class);
             ConnectionRequesterPort port = ClientUtil.getInstance().getRequesterPort(url, cc);
+            Client client = ClientProxy.getClient(port);
+            log.info(client.getBus().toString());
+
 
 
             Holder outHolder = new Holder<CommonHeaderType>();
