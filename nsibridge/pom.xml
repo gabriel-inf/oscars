@@ -22,7 +22,7 @@
         <nsi-soap.version>2014_03_r117</nsi-soap.version>
         <skipTests>false</skipTests>
         <cucumber.options>--strict</cucumber.options>
-        <nsi-client.version>1.0.4</nsi-client.version>
+        <nsi-client.version>1.0.5</nsi-client.version>
 
     </properties>
 
