@@ -3,7 +3,7 @@ package net.es.oscars.nsibridge.config;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
-public class SpringContext implements net.es.nsi.lib.client.types.SpringContext {
+public class SpringContext  {
     private static SpringContext instance;
     public static SpringContext getInstance() {
         if (instance == null) {

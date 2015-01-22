@@ -1,7 +1,8 @@
 package net.es.oscars.nsibridge.task;
 
 
-import net.es.nsi.lib.client.util.RequesterPortHolder;
+import net.es.nsi.lib.client.config.ClientConfig;
+import net.es.nsi.lib.client.util.ClientUtil;
 import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.config.nsa.NSAStubConfig;
 import net.es.nsi.lib.soap.gen.nsi_2_0_r117.connection.requester.ConnectionRequesterPort;
@@ -45,7 +46,9 @@ public class PrepareCallbackTask extends Task  {
             return;
         }
 
-        ConnectionRequesterPort port = RequesterPortHolder.getInstance().getPort(url);
+        ClientConfig cc = SpringContext.getInstance().getContext().getBean("clientConfig", ClientConfig.class);
+        ConnectionRequesterPort port = ClientUtil.createRequesterClient(url, cc);
+
 
         log.debug(this.id+" starting");
 
