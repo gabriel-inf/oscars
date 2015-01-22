@@ -2,7 +2,7 @@ package net.es.oscars.nsibridge.beans.db;
 
 
 import net.es.oscars.nsibridge.ifces.CallbackMessages;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.EventEnumType;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.connection.types.EventEnumType;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;

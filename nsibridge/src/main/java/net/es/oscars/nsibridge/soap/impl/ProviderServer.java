@@ -1,8 +1,8 @@
 package net.es.oscars.nsibridge.soap.impl;
 
 import net.es.oscars.nsibridge.config.HttpConfig;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.ifce.ServiceException;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.provider.ConnectionProviderPort;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.connection.ifce.ServiceException;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.connection.provider.ConnectionProviderPort;
 import org.apache.cxf.bus.spring.SpringBusFactory;
 import org.apache.cxf.feature.Feature;
 import org.apache.cxf.feature.LoggingFeature;
@@ -48,7 +48,7 @@ public class ProviderServer {
         }
         props.put("jaxb.additionalContextClasses",
                         new Class[] {
-                            net.es.oscars.nsi.soap.gen.nsi_2_0_r117.services.point2point.ObjectFactory.class
+                            net.es.nsi.lib.soap.gen.nsi_2_0_r117.services.point2point.ObjectFactory.class
                         });
         sf.setProperties(props);
 

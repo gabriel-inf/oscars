@@ -1,11 +1,10 @@
 package net.es.oscars.nsibridge.state.prov;
 
 
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.connection.ifce.ServiceException;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
-import net.es.oscars.nsibridge.beans.db.DataplaneStatusRecord;
 import net.es.oscars.nsibridge.beans.db.OscarsStatusRecord;
 import net.es.oscars.nsibridge.beans.db.ResvRecord;
-import net.es.oscars.nsibridge.common.PersistenceHolder;
 import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.config.TimingConfig;
 import net.es.oscars.nsibridge.ifces.CallbackMessages;
@@ -14,9 +13,6 @@ import net.es.oscars.nsibridge.ifces.StateMachineType;
 import net.es.oscars.nsibridge.oscars.OscarsStates;
 import net.es.oscars.nsibridge.oscars.OscarsUtil;
 import net.es.oscars.nsibridge.prov.DB_Util;
-import net.es.oscars.nsibridge.prov.NSI_SM_Holder;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.ifce.ServiceException;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.EventEnumType;
 import net.es.oscars.nsibridge.task.*;
 import net.es.oscars.utils.task.TaskException;
 import net.es.oscars.utils.task.sched.Workflow;

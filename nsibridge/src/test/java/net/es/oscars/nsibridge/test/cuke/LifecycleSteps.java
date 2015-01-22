@@ -1,8 +1,8 @@
 package net.es.oscars.nsibridge.test.cuke;
 
 import cucumber.api.java.en.When;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.ifce.ServiceException;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.headers.CommonHeaderType;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.connection.ifce.ServiceException;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.framework.headers.CommonHeaderType;
 import net.es.oscars.nsibridge.soap.impl.ConnectionProvider;
 import net.es.oscars.nsibridge.test.req.NSIRequestFactory;
 import org.apache.log4j.Logger;

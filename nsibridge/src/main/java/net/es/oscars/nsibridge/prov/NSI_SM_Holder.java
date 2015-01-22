@@ -1,8 +1,8 @@
 package net.es.oscars.nsibridge.prov;
 
 
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.ifce.ServiceException;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.ProvisionStateEnumType;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.connection.ifce.ServiceException;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.connection.types.ProvisionStateEnumType;
 import net.es.oscars.nsibridge.state.life.NSI_Life_SM;
 import net.es.oscars.nsibridge.state.life.NSI_Life_TH;
 import net.es.oscars.nsibridge.state.life.NSI_UP_Life_Impl;

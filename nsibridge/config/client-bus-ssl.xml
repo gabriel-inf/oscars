@@ -45,15 +45,7 @@
 
 
   <http:conduit name="*.http-conduit">
-    <!-- Uncomment below for HTTP BASIC authentication -->
-    <!-- 
-    <http:authorization>
-        <sec:UserName>myuser</sec:UserName>
-        <sec:Password>mypassword</sec:Password>
-        <sec:AuthorizationType>Basic</sec:AuthorizationType>
-    </http:authorization> 
-    -->
-  
+
     <http:tlsClientParameters disableCNCheck="true" secureSocketProtocol="TLS">
 
         <sec:trustManagers>
@@ -65,20 +57,12 @@
                           file="config/client-oscars-keystore.jks"/>
         </sec:keyManagers>
 
-      <sec:cipherSuitesFilter>
-        <!-- these filters ensure that a ciphersuite with
-          export-suitable or null encryption is used,
-          but exclude anonymous Diffie-Hellman key change as
-          this is vulnerable to man-in-the-middle attacks -->
-        <sec:include>.*_EXPORT_.*</sec:include>
-        <sec:include>.*_EXPORT1024_.*</sec:include>
-        <sec:include>.*_WITH_DES_.*</sec:include>
-        <sec:include>.*_WITH_AES_.*</sec:include>
-        <sec:include>.*_WITH_NULL_.*</sec:include>
-        <sec:exclude>.*_DH_anon_.*</sec:exclude>
-      </sec:cipherSuitesFilter>
+
 
     </http:tlsClientParameters>
    </http:conduit>
+
+
+
 </beans>
 

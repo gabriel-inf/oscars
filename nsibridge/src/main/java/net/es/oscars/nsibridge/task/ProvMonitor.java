@@ -6,8 +6,8 @@ import net.es.oscars.nsibridge.beans.db.ResvRecord;
 import net.es.oscars.nsibridge.oscars.OscarsOps;
 import net.es.oscars.nsibridge.oscars.OscarsProvQueue;
 import net.es.oscars.nsibridge.prov.DB_Util;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.ifce.ServiceException;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.LifecycleStateEnumType;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.connection.ifce.ServiceException;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.connection.types.LifecycleStateEnumType;
 import net.es.oscars.utils.task.TaskException;
 import org.apache.log4j.Logger;
 

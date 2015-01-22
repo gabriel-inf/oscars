@@ -3,15 +3,15 @@ import net.es.oscars.nsibridge.beans.QueryRequest;
 import net.es.oscars.nsibridge.beans.ResvRequest;
 import net.es.oscars.nsibridge.beans.SimpleRequest;
 import net.es.oscars.nsibridge.beans.SimpleRequestType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.*;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.services.types.*;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.connection.types.*;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.services.types.*;
 
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.services.point2point.*;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.services.point2point.*;
 
 
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.headers.CommonHeaderType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.types.TypeValuePairListType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.types.TypeValuePairType;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.framework.headers.CommonHeaderType;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.framework.types.TypeValuePairListType;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.framework.types.TypeValuePairType;
 import net.es.oscars.nsibridge.test.cuke.HelperSteps;
 
 import javax.xml.datatype.DatatypeConfigurationException;

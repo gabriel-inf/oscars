@@ -1,23 +1,17 @@
 package net.es.oscars.nsibridge.config;
 
+import org.apache.log4j.Logger;
 
-public class ClientConfig {
-    protected String bus;
-    protected String sslBus;
-
-    public String getBus() {
-        return bus;
+public class ClientConfig implements net.es.nsi.lib.client.config.ClientConfig {
+    private String busConfigPath;
+    private static final Logger log = Logger.getLogger(ClientConfig.class);
+    @Override
+    public String getBusConfigPath() {
+        return null;
+    }
+    public void setBusConfigPath(String path) {
+        log.info("Setting client bus config path to "+path);
+        this.busConfigPath = path;
     }
 
-    public void setBus(String bus) {
-        this.bus = bus;
-    }
-
-    public String getSslBus() {
-        return sslBus;
-    }
-
-    public void setSslBus(String sslBus) {
-        this.sslBus = sslBus;
-    }
 }

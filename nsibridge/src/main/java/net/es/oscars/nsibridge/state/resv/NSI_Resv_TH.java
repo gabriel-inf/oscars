@@ -3,7 +3,7 @@ package net.es.oscars.nsibridge.state.resv;
 import net.es.oscars.nsibridge.ifces.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.ReservationStateEnumType;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.connection.types.ReservationStateEnumType;
 
 import java.util.HashSet;
 import java.util.Set;

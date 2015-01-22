@@ -1,9 +1,7 @@
 package net.es.oscars.nsibridge.state.prov;
 
 import net.es.oscars.nsibridge.ifces.*;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.ProvisionStateEnumType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.ReservationStateEnumType;
-import net.es.oscars.nsibridge.state.resv.NSI_Resv_State;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.connection.types.ProvisionStateEnumType;
 import org.apache.log4j.Logger;
 
 import java.util.Set;

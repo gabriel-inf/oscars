@@ -12,9 +12,8 @@ import net.es.oscars.nsibridge.config.TimingConfig;
 import net.es.oscars.nsibridge.prov.DB_Util;
 import net.es.oscars.nsibridge.prov.NSI_OSCARS_Translation;
 import net.es.oscars.nsibridge.prov.TranslationException;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.ifce.ServiceException;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.connection.ifce.ServiceException;
 import net.es.oscars.utils.soap.OSCARSServiceException;
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import javax.persistence.EntityManager;

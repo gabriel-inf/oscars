@@ -1,10 +1,10 @@
 package net.es.oscars.nsibridge.task;
 
 
+import net.es.nsi.lib.client.util.RequesterPortHolder;
 import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.config.nsa.NSAStubConfig;
-import net.es.oscars.nsibridge.prov.RequesterPortHolder;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.requester.ConnectionRequesterPort;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.connection.requester.ConnectionRequesterPort;
 import net.es.oscars.utils.task.Task;
 import net.es.oscars.utils.task.TaskException;
 import org.apache.log4j.Logger;

@@ -1,21 +1,25 @@
 package net.es.oscars.nsibridge.task;
 
 
+import net.es.nsi.lib.client.config.ClientConfig;
+import net.es.nsi.lib.client.util.ClientUtil;
 import net.es.oscars.nsibridge.beans.QueryRequest;
-import net.es.oscars.nsibridge.client.ClientUtil;
 
+import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.prov.*;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.ifce.ServiceException;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.requester.ConnectionRequesterPort;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.QuerySummaryConfirmedType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.headers.CommonHeaderType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.types.ServiceExceptionType;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.connection.ifce.ServiceException;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.connection.requester.ConnectionRequesterPort;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.connection.types.QuerySummaryConfirmedType;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.framework.headers.CommonHeaderType;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.framework.types.ServiceExceptionType;
 import org.apache.log4j.Logger;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
 import javax.xml.ws.Holder;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 public class QuerySummaryJob implements Job  {
     private static final Logger log = Logger.getLogger(QuerySummaryJob.class);
@@ -35,7 +39,17 @@ public class QuerySummaryJob implements Job  {
         }
         
         //build the client. if this fails we can't send failure
-        ConnectionRequesterPort client = ClientUtil.createRequesterClient(request.getInHeader().getReplyTo());
+        ClientConfig cc = SpringContext.getInstance().getContext().getBean("clientConfig", ClientConfig.class);
+        String replyTo = request.getInHeader().getReplyTo();
+        URL url;
+        try {
+            url = new URL(replyTo);
+        } catch (MalformedURLException e) {
+            log.error(e.getMessage(), e);
+            return;
+        }
+
+        ConnectionRequesterPort client = ClientUtil.createRequesterClient(url, cc);
         try {
             //perform query
             QuerySummaryConfirmedType result = RequestProcessor.getInstance().syncQuerySum(request);

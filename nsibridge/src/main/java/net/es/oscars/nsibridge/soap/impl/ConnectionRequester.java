@@ -1,6 +1,6 @@
 package net.es.oscars.nsibridge.soap.impl;
 
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.requester.ConnectionRequesterPort;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.connection.requester.ConnectionRequesterPort;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
@@ -12,17 +12,17 @@ import javax.xml.ws.Holder;
 import javax.xml.ws.RequestWrapper;
 import javax.xml.ws.ResponseWrapper;
 
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.ifce.*;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.*;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.headers.*;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.types.*;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.connection.ifce.*;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.connection.types.*;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.framework.headers.*;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.framework.types.*;
 
 @WebService(
         serviceName = "ConnectionServiceRequester",
         portName = "ConnectionServiceRequesterPort",
         targetNamespace = "http://schemas.ogf.org/nsi/2013/12/connection/requester",
 //        wsdlLocation = "file:schema/2013_07/ogf_nsi_connection_requester_v2_0.wsdl",
-        endpointInterface = "net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.requester.ConnectionRequesterPort")
+        endpointInterface = "net.es.nsi.lib.soap.gen.nsi_2_0_r117.connection.requester.ConnectionRequesterPort")
 
 public class ConnectionRequester implements ConnectionRequesterPort {
 

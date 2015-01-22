@@ -5,7 +5,7 @@ import net.es.oscars.nsibridge.beans.db.OscarsStatusRecord;
 import net.es.oscars.nsibridge.ifces.StateException;
 import net.es.oscars.nsibridge.oscars.*;
 import net.es.oscars.nsibridge.prov.*;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.ifce.ServiceException;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.connection.ifce.ServiceException;
 import net.es.oscars.utils.task.TaskException;
 import org.apache.log4j.Logger;
 

@@ -1,6 +1,8 @@
 package net.es.oscars.nsibridge.task;
 
 
+import net.es.nsi.lib.client.config.ClientConfig;
+import net.es.nsi.lib.client.util.ClientUtil;
 import net.es.oscars.nsibridge.beans.ResvRequest;
 import net.es.oscars.nsibridge.beans.SimpleRequest;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
@@ -17,12 +19,12 @@ import net.es.oscars.nsibridge.config.nsa.NsaConfig;
 import net.es.oscars.nsibridge.config.nsa.NsaConfigProvider;
 import net.es.oscars.nsibridge.ifces.CallbackMessages;
 import net.es.oscars.nsibridge.prov.*;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.ifce.ServiceException;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.requester.ConnectionRequesterPort;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.*;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.headers.CommonHeaderType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.types.ServiceExceptionType;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.types.TypeValuePairListType;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.connection.ifce.ServiceException;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.connection.requester.ConnectionRequesterPort;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.connection.types.*;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.framework.headers.CommonHeaderType;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.framework.types.ServiceExceptionType;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.framework.types.TypeValuePairListType;
 import net.es.oscars.utils.task.Task;
 import net.es.oscars.utils.task.TaskException;
 import org.apache.log4j.Logger;
@@ -134,9 +136,8 @@ public class SendNSIMessageTask extends Task  {
                 return;
             }
 
-
-
-            ConnectionRequesterPort port = RequesterPortHolder.getInstance().getPort(url);
+            ClientConfig cc = SpringContext.getInstance().getContext().getBean("clientConfig", ClientConfig.class);
+            ConnectionRequesterPort port = ClientUtil.createRequesterClient(url, cc);
 
 
             Holder outHolder = new Holder<CommonHeaderType>();

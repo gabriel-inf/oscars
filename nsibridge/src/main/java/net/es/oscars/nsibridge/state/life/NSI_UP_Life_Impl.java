@@ -1,6 +1,8 @@
 package net.es.oscars.nsibridge.state.life;
 
 
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.connection.ifce.ServiceException;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.connection.types.EventEnumType;
 import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.config.TimingConfig;
 import net.es.oscars.nsibridge.ifces.CallbackMessages;
@@ -8,9 +10,6 @@ import net.es.oscars.nsibridge.ifces.NsiLifeMdl;
 import net.es.oscars.nsibridge.ifces.StateMachineType;
 import net.es.oscars.nsibridge.oscars.OscarsOps;
 import net.es.oscars.nsibridge.prov.DB_Util;
-import net.es.oscars.nsibridge.prov.NSI_SM_Holder;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.ifce.ServiceException;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.EventEnumType;
 import net.es.oscars.nsibridge.task.OscarsCancelOrModifyTask;
 import net.es.oscars.nsibridge.task.SMTransitionTask;
 import net.es.oscars.nsibridge.task.SendNSIMessageTask;

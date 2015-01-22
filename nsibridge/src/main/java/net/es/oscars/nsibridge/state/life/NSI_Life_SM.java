@@ -1,7 +1,7 @@
 package net.es.oscars.nsibridge.state.life;
 
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.connection.types.LifecycleStateEnumType;
 import net.es.oscars.nsibridge.ifces.*;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.types.LifecycleStateEnumType;
 import org.apache.log4j.Logger;
 
 import java.util.Set;

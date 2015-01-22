@@ -1,7 +1,7 @@
 package net.es.oscars.nsibridge.beans;
 
 
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.headers.CommonHeaderType;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.framework.headers.CommonHeaderType;
 
 import java.util.HashSet;
 import java.util.UUID;

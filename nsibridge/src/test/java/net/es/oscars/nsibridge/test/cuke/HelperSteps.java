@@ -3,7 +3,7 @@ package net.es.oscars.nsibridge.test.cuke;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import net.es.oscars.nsibridge.beans.ResvRequest;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.services.point2point.P2PServiceBaseType;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.services.point2point.P2PServiceBaseType;
 import net.es.oscars.nsibridge.test.req.NSIRequestFactory;
 
 import javax.xml.datatype.DatatypeFactory;

@@ -1,8 +1,7 @@
 package net.es.oscars.nsibridge.prov;
 
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.connection.ifce.ServiceException;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.types.ServiceExceptionType;
-import net.es.oscars.nsibridge.config.nsa.NsaConfigProvider;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.connection.ifce.ServiceException;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.framework.types.ServiceExceptionType;
 
 public class ServiceExceptionUtil {
     public static ServiceException makeException(String text, String connectionId, String errorId) {

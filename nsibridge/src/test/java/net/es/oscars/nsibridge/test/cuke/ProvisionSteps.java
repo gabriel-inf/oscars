@@ -14,7 +14,7 @@ import net.es.oscars.nsibridge.oscars.OscarsOps;
 import net.es.oscars.nsibridge.oscars.OscarsProvQueue;
 import net.es.oscars.nsibridge.prov.DB_Util;
 import net.es.oscars.nsibridge.prov.RequestHolder;
-import net.es.oscars.nsi.soap.gen.nsi_2_0_r117.framework.headers.CommonHeaderType;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.framework.headers.CommonHeaderType;
 import net.es.oscars.nsibridge.soap.impl.ConnectionProvider;
 import net.es.oscars.nsibridge.test.req.NSIRequestFactory;
 import org.apache.log4j.Logger;
