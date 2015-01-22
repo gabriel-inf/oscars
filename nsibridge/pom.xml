@@ -24,6 +24,7 @@
         <cucumber.options>--strict</cucumber.options>
     </properties>
 
+
     <!-- puts all code & libraries in one jar -->
     <pluginRepositories>
         <pluginRepository>
