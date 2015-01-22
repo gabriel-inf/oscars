@@ -22,7 +22,6 @@
         <nsi-soap.version>2014_03_r117</nsi-soap.version>
         <skipTests>false</skipTests>
         <cucumber.options>--strict</cucumber.options>
-
     </properties>
 
 
