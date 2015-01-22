@@ -61,6 +61,13 @@ public abstract class OscarsTask extends SMTask {
                 return;
             }
 
+            DB_Util.restoreStateMachines(connectionId);
+            if (this.getStateMachine() == null) {
+                processFail(connectionId, "could not restore state machine");
+                this.onSuccess();
+                return;
+            }
+
 
             // do not need to perform the action if it is not needed for this state
             // ie no need to setup if already active
