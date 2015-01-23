@@ -11,6 +11,7 @@ import net.es.oscars.nsibridge.beans.db.NotificationRecord;
 import net.es.oscars.nsibridge.beans.db.ResvRecord;
 import net.es.oscars.nsibridge.common.WorkflowAction;
 import net.es.oscars.nsibridge.common.WorkflowRecord;
+import net.es.oscars.nsibridge.config.RequestersConfig;
 import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.config.TimingConfig;
 import net.es.oscars.nsibridge.config.nsa.JsonNsaConfigProvider;
@@ -27,6 +28,7 @@ import net.es.nsi.lib.soap.gen.nsi_2_0_r117.framework.types.ServiceExceptionType
 import net.es.nsi.lib.soap.gen.nsi_2_0_r117.framework.types.TypeValuePairListType;
 import net.es.oscars.utils.task.Task;
 import net.es.oscars.utils.task.TaskException;
+import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.cxf.endpoint.Client;
 import org.apache.cxf.frontend.ClientProxy;
 import org.apache.log4j.Logger;
@@ -139,10 +141,21 @@ public class SendNSIMessageTask extends Task  {
                 return;
             }
 
-            ClientConfig cc = SpringContext.getInstance().getContext().getBean("clientConfig", ClientConfig.class);
+            RequestersConfig rc = SpringContext.getInstance().getContext().getBean("requestersConfig", RequestersConfig.class);
+            if (rc == null) {
+                log.error("could not get requester config");
+            }
+
+            ClientConfig cc = rc.getClientConfig(replyTo);
+            if (cc == null) {
+                log.error("could not get client config for URL "+replyTo);
+            }
+
+
+
             ConnectionRequesterPort port = ClientUtil.getInstance().getRequesterPort(url, cc);
             Client client = ClientProxy.getClient(port);
-            log.info(client.getBus().toString());
+            log.info("client: \n"+ToStringBuilder.reflectionToString(client));
 
 
 

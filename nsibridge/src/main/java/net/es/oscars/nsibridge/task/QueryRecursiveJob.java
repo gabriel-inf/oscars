@@ -9,6 +9,7 @@ import net.es.nsi.lib.client.config.ClientConfig;
 import net.es.nsi.lib.client.util.ClientUtil;
 import net.es.oscars.nsibridge.beans.QueryRequest;
 
+import net.es.oscars.nsibridge.config.RequestersConfig;
 import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.prov.*;
 import net.es.nsi.lib.soap.gen.nsi_2_0_r117.connection.ifce.ServiceException;
@@ -41,7 +42,6 @@ public class QueryRecursiveJob implements Job  {
             throw new RuntimeException("No replyTo provided for query");
         }
         //build the client. if this fails we can't send failure
-        ClientConfig cc = SpringContext.getInstance().getContext().getBean("clientConfig", ClientConfig.class);
         String replyTo = request.getInHeader().getReplyTo();
         URL url;
         try {
@@ -51,13 +51,23 @@ public class QueryRecursiveJob implements Job  {
             return;
         }
 
-        ConnectionRequesterPort client = ClientUtil.getInstance().getRequesterPort(url, cc);
+        RequestersConfig rc = SpringContext.getInstance().getContext().getBean("requestersConfig", RequestersConfig.class);
+        if (rc == null) {
+            log.error("could not get requester config");
+        }
+
+        ClientConfig cc = rc.getClientConfig(replyTo);
+        if (cc == null) {
+            log.error("could not get client config for URL "+replyTo);
+        }
+        ConnectionRequesterPort port = ClientUtil.getInstance().getRequesterPort(url, cc);
+
 
         try {
             //perform query
             QuerySummaryConfirmedType summResult = RequestProcessor.getInstance().syncQuerySum(request);   
             List<QueryRecursiveResultType> result = NSI_OSCARS_Translation.querySummToRecursive(summResult);
-            client.queryRecursiveConfirmed(result , request.getInHeader(), new  Holder<CommonHeaderType>());
+            port.queryRecursiveConfirmed(result , request.getInHeader(), new  Holder<CommonHeaderType>());
             log.info("Recursive query confirmation sent to " + request.getInHeader().getReplyTo() + 
                     ", corr id: "+ request.getInHeader().getCorrelationId());
         } catch (Exception ex) {
@@ -67,7 +77,7 @@ public class QueryRecursiveJob implements Job  {
             serviceEx.setText(ex.getMessage());
             serviceEx.setErrorId("500");
             try {
-                client.error(serviceEx, request.getInHeader(), new Holder<CommonHeaderType>());
+                port.error(serviceEx, request.getInHeader(), new Holder<CommonHeaderType>());
                 log.info("Recursive query failed error sent to " + request.getInHeader().getReplyTo() +
                          ", corr id: "+ request.getInHeader().getCorrelationId());
             } catch (ServiceException e) {
