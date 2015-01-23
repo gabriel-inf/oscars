@@ -19,8 +19,7 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
 import javax.xml.ws.Holder;
-import java.net.MalformedURLException;
-import java.net.URL;
+
 
 public class QuerySummaryJob implements Job  {
     private static final Logger log = Logger.getLogger(QuerySummaryJob.class);
@@ -41,13 +40,6 @@ public class QuerySummaryJob implements Job  {
         
         //build the client. if this fails we can't send failure
         String replyTo = request.getInHeader().getReplyTo();
-        URL url;
-        try {
-            url = new URL(replyTo);
-        } catch (MalformedURLException e) {
-            log.error(e.getMessage(), e);
-            return;
-        }
 
         RequestersConfig rc = SpringContext.getInstance().getContext().getBean("requestersConfig", RequestersConfig.class);
         if (rc == null) {
@@ -58,7 +50,7 @@ public class QuerySummaryJob implements Job  {
         if (cc == null) {
             log.error("could not get client config for URL "+replyTo);
         }
-        ConnectionRequesterPort port = ClientUtil.getInstance().getRequesterPort(url, cc);
+        ConnectionRequesterPort port = ClientUtil.getInstance().getRequesterPort(replyTo, cc);
 
         try {
             //perform query

@@ -1,8 +1,7 @@
 package net.es.oscars.nsibridge.task;
 
 
-import java.net.MalformedURLException;
-import java.net.URL;
+
 import java.util.List;
 
 import net.es.nsi.lib.client.config.ClientConfig;
@@ -43,13 +42,7 @@ public class QueryRecursiveJob implements Job  {
         }
         //build the client. if this fails we can't send failure
         String replyTo = request.getInHeader().getReplyTo();
-        URL url;
-        try {
-            url = new URL(replyTo);
-        } catch (MalformedURLException e) {
-            log.error(e.getMessage(), e);
-            return;
-        }
+
 
         RequestersConfig rc = SpringContext.getInstance().getContext().getBean("requestersConfig", RequestersConfig.class);
         if (rc == null) {
@@ -60,7 +53,7 @@ public class QueryRecursiveJob implements Job  {
         if (cc == null) {
             log.error("could not get client config for URL "+replyTo);
         }
-        ConnectionRequesterPort port = ClientUtil.getInstance().getRequesterPort(url, cc);
+        ConnectionRequesterPort port = ClientUtil.getInstance().getRequesterPort(replyTo, cc);
 
 
         try {

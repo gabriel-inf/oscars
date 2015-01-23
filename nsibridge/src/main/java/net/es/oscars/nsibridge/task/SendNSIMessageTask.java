@@ -28,7 +28,6 @@ import net.es.nsi.lib.soap.gen.nsi_2_0_r117.framework.types.ServiceExceptionType
 import net.es.nsi.lib.soap.gen.nsi_2_0_r117.framework.types.TypeValuePairListType;
 import net.es.oscars.utils.task.Task;
 import net.es.oscars.utils.task.TaskException;
-import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.cxf.configuration.jsse.TLSClientParameters;
 import org.apache.cxf.endpoint.Client;
 import org.apache.cxf.frontend.ClientProxy;
@@ -39,10 +38,7 @@ import org.springframework.context.ApplicationContext;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.ws.Holder;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.GregorianCalendar;
-import java.util.Map;
 import java.util.UUID;
 
 public class SendNSIMessageTask extends Task  {
@@ -135,14 +131,6 @@ public class SendNSIMessageTask extends Task  {
                 return;
             }
 
-            URL url;
-            try {
-                url = new URL(replyTo);
-            } catch (MalformedURLException e) {
-                log.error(e.getMessage(), e);
-                return;
-            }
-
             RequestersConfig rc = SpringContext.getInstance().getContext().getBean("requestersConfig", RequestersConfig.class);
             if (rc == null) {
                 log.error("could not get requester config");
@@ -155,7 +143,7 @@ public class SendNSIMessageTask extends Task  {
 
 
 
-            ConnectionRequesterPort port = ClientUtil.getInstance().getRequesterPort(url, cc);
+            ConnectionRequesterPort port = ClientUtil.getInstance().getRequesterPort(replyTo, cc);
             Client client = ClientProxy.getClient(port);
             HTTPConduit conduit = (HTTPConduit) client.getConduit();
             TLSClientParameters params = conduit.getTlsClientParameters();
