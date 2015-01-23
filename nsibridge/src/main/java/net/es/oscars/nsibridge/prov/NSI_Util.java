@@ -111,7 +111,6 @@ public class NSI_Util {
             }
 
         }
-        System.exit(0);
 
     }
 
