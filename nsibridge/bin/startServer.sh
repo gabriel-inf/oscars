@@ -33,8 +33,10 @@ javaFlags="$javaFlags -Dnsibridge.beans=file:$confDir/beans.xml "
 javaFlags="$javaFlags -Dcom.sun.xml.bind.v2.runtime.JAXBContextImpl.fastBoot=true "
 javaFlags="$javaFlags -Dorg.apache.cxf.JDKBugHacks.defaultUsesCaches=true "
 
+# debugFlags="-Djavax.net.debug=all "
+# debugFlags="-Xdebug -Xrunjdwp:server=y,transport=dt_socket,address=4000,suspend=n "
 
+java $debugFlags $javaFlags -jar $jarfile&
 
-java $javaFlags  -jar $jarfile&
 echo $! > $pidfile
 

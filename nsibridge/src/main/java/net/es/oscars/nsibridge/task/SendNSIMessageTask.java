@@ -29,8 +29,10 @@ import net.es.nsi.lib.soap.gen.nsi_2_0_r117.framework.types.TypeValuePairListTyp
 import net.es.oscars.utils.task.Task;
 import net.es.oscars.utils.task.TaskException;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.cxf.configuration.jsse.TLSClientParameters;
 import org.apache.cxf.endpoint.Client;
 import org.apache.cxf.frontend.ClientProxy;
+import org.apache.cxf.transport.http.HTTPConduit;
 import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 
@@ -155,7 +157,14 @@ public class SendNSIMessageTask extends Task  {
 
             ConnectionRequesterPort port = ClientUtil.getInstance().getRequesterPort(url, cc);
             Client client = ClientProxy.getClient(port);
-            log.info("client: \n"+ToStringBuilder.reflectionToString(client));
+            HTTPConduit conduit = (HTTPConduit) client.getConduit();
+            TLSClientParameters params = conduit.getTlsClientParameters();
+
+            log.debug("conduit: \n"+ToStringBuilder.reflectionToString(conduit));
+
+            log.debug("params: \n"+ToStringBuilder.reflectionToString(params));
+
+            log.debug("client: \n"+ToStringBuilder.reflectionToString(client));
 
 
 
