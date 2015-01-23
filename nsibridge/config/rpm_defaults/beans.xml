@@ -21,43 +21,17 @@
           scope="singleton">
         <property name="requesters">
             <map>
-                <entry key="https://nsi-aggr-west.es.net/nsi-v2/ConnectionServiceRequester">
-                    <ref bean="aggrClientConfig" />
-                </entry>
-                <entry key="https">
-                    <ref bean="httpsClientConfig" />
-                </entry>
-                <entry key="http">
-                    <ref bean="httpClientConfig" />
-                </entry>
+                <!-- add more as needed -->
+                <entry key="https://nsi-aggr-west.es.net/nsi-v2/ConnectionServiceRequester"
+                       value="/etc/oscars/NsiBridgeService/conf/aggr-client-bus.xml"/>
             </map>
         </property>
 
     </bean>
 
-    <!-- add more as needed -->
-    <bean id="aggrClientConfig"
-          class="net.es.oscars.nsibridge.config.ClientConfig"
-          scope="singleton">
-        <property name="busConfigPath" value="/etc/oscars/NsiBridgeService/conf/aggr-client-bus-ssl.xml"/>
-    </bean>
-
-
 
 
     <!-- usually no need to change below this line -->
-    <bean id="httpClientConfig"
-          class="net.es.oscars.nsibridge.config.ClientConfig"
-          scope="singleton">
-        <property name="busConfigPath" value="/etc/oscars/NsiBridgeService/conf/default-client-bus-http.xml"/>
-    </bean>
-
-
-    <bean id="httpsClientConfig"
-          class="net.es.oscars.nsibridge.config.ClientConfig"
-          scope="singleton">
-        <property name="busConfigPath" value="/etc/oscars/NsiBridgeService/conf/default-client-bus-https.xml"/>
-    </bean>
 
 
 

@@ -43,7 +43,7 @@
     </cxf:bus>
 
 
-  <http:conduit name="*.http-conduit">
+  <http:conduit name="*.ConnectionRequesterPortPort.http-conduit">
 
     <http:tlsClientParameters disableCNCheck="true" secureSocketProtocol="TLS">
 

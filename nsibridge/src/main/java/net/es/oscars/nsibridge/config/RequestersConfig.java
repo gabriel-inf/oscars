@@ -1,32 +1,49 @@
 package net.es.oscars.nsibridge.config;
 
 
-import net.es.nsi.lib.client.config.ClientConfig;
+import org.apache.log4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class RequestersConfig {
-    private HashMap<String, net.es.nsi.lib.client.config.ClientConfig> requesters;
+    private static final Logger log = Logger.getLogger(RequestersConfig.class);
+    /*
+    private static RequestersConfig instance;
 
-    public Map<String, ClientConfig> getRequesters() {
+    private RequestersConfig() {
+
+    }
+
+    public static RequestersConfig getInstance() {
+        if (instance == null) {
+            instance = new RequestersConfig();
+        }
+        return instance;
+    }
+    */
+
+
+    private HashMap<String, String> requesters = new HashMap<String, String>();
+
+    public Map<String, String> getRequesters() {
         return requesters;
     }
 
-    public void setRequesters(Map<String, ClientConfig> requesters) {
-        this.requesters = new HashMap<String, ClientConfig>();
-        this.requesters.putAll(requesters);
+    public void setRequesters(Map<String, String> requesters) {
+        HashMap<String, String> temp = new HashMap<String, String>();
+        temp.putAll(requesters);
+        for (String key : requesters.keySet()) {
+            log.debug(key+" "+requesters.get(key));
+        }
+        this.requesters = temp;
     }
-    public ClientConfig getClientConfig(String requesterUrl) {
 
-        if (this.requesters.get(requesterUrl) != null) {
-            return this.requesters.get(requesterUrl);
-        }
-        if (requesterUrl.startsWith("https")) {
-            return this.requesters.get("https");
-        } else if (requesterUrl.startsWith("http")) {
-            return this.requesters.get("http");
-        }
-        return null;
+    public ClientConfig getClientConfig(String url) {
+        ClientConfig cfg = new ClientConfig();
+        cfg.setBusConfigPath(requesters.get(url));
+        return cfg;
+
     }
+
 }

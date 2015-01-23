@@ -1,7 +1,11 @@
 package net.es.oscars.nsibridge.prov;
 
+import net.es.nsi.lib.client.config.ClientConfig;
+import net.es.nsi.lib.client.util.ClientUtil;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.connection.requester.ConnectionRequesterPort;
 import net.es.oscars.nsibridge.beans.db.*;
 import net.es.oscars.nsibridge.config.HttpConfig;
+import net.es.oscars.nsibridge.config.RequestersConfig;
 import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.config.nsa.JsonNsaConfigProvider;
 import net.es.oscars.nsibridge.config.nsa.NsaConfig;
@@ -10,9 +14,16 @@ import net.es.oscars.nsibridge.oscars.OscarsStates;
 import net.es.nsi.lib.soap.gen.nsi_2_0_r117.connection.ifce.ServiceException;
 import net.es.nsi.lib.soap.gen.nsi_2_0_r117.framework.headers.CommonHeaderType;
 import net.es.nsi.lib.soap.gen.nsi_2_0_r117.framework.types.ServiceExceptionType;
+import org.apache.commons.io.FileUtils;
+import org.apache.cxf.configuration.jsse.TLSClientParameters;
+import org.apache.cxf.endpoint.Client;
+import org.apache.cxf.frontend.ClientProxy;
+import org.apache.cxf.transport.http.HTTPConduit;
 import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.UUID;
 
 public class NSI_Util {
@@ -65,7 +76,44 @@ public class NSI_Util {
         return st;
     }
 
+    public static void prepareRequesterClients() {
+        ApplicationContext ax = SpringContext.getInstance().getContext();
 
+
+        RequestersConfig rc = SpringContext.getInstance().getContext().getBean("requestersConfig", RequestersConfig.class);
+        if (rc == null) {
+            log.error("could not get requester config");
+        }
+
+        for (String requesterUrl : rc.getRequesters().keySet()) {
+            log.debug("attempting to get client for "+requesterUrl);
+            ClientConfig cc = rc.getClientConfig(requesterUrl);
+            if (cc == null) {
+                log.error("could not get client config for requester URL "+requesterUrl);
+            } else {
+                log.debug("client bus config for "+requesterUrl+" at "+cc.getBusConfigPath());
+                File f = new File(cc.getBusConfigPath());
+                try {
+                    String busConfig = FileUtils.readFileToString(f);
+                    log.debug(busConfig);
+                } catch (IOException e) {
+                    log.error(e);
+                }
+            }
+
+            ConnectionRequesterPort port = ClientUtil.getInstance().getRequesterPort(requesterUrl, cc);
+            Client client = ClientProxy.getClient(port);
+            HTTPConduit conduit = (HTTPConduit) client.getConduit();
+            TLSClientParameters params = conduit.getTlsClientParameters();
+            log.debug("loaded config for requester URL " + requesterUrl);
+            if (params != null) {
+                log.debug("have TLS params");
+            }
+
+        }
+        System.exit(0);
+
+    }
 
 
 

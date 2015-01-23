@@ -160,13 +160,6 @@ public class SendNSIMessageTask extends Task  {
             HTTPConduit conduit = (HTTPConduit) client.getConduit();
             TLSClientParameters params = conduit.getTlsClientParameters();
 
-            log.debug("conduit: \n"+ToStringBuilder.reflectionToString(conduit));
-
-            log.debug("params: \n"+ToStringBuilder.reflectionToString(params));
-
-            log.debug("client: \n"+ToStringBuilder.reflectionToString(client));
-
-
 
             Holder outHolder = new Holder<CommonHeaderType>();
             ServiceExceptionType st;

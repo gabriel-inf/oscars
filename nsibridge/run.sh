@@ -7,13 +7,16 @@ javaFlags="$javaFlags -Dlog4j.configuration=file:./config/log4j.properties "
 javaFlags="$javaFlags -Dcom.sun.xml.bind.v2.runtime.JAXBContextImpl.fastBoot=true "
 javaFlags="$javaFlags -Dorg.apache.cxf.JDKBugHacks.defaultUsesCaches=true "
 
+javaFlags="$javaFlags -Dnsibridge.manifest=file:./config/manifest.yaml "
+javaFlags="$javaFlags -Dnsibridge.beans=file:./config/beans.xml "
+
 debugSSL="-Djavax.net.debug=ssl,handshake,data,all"
 
 
-javaFlags="$javaFlags $debugSSL -jar target/nsibridge-1.0.one-jar.jar"
+javaFlags="$javaFlags $debugSSL -jar target/nsibridge-1.0-one-jar.jar"
 if [ -n "$1" ]; then
   if [ "$1" == "-d" ]; then 
-    debugFlags="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005"
+    debugFlags="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=4000"
     argOk="ok"
   else 
     if [ "$1" == "-h" ]; then 

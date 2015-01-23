@@ -13,6 +13,7 @@ import net.es.oscars.nsibridge.config.nsa.NsaConfigProvider;
 import net.es.oscars.nsibridge.config.nsa.StpConfig;
 import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.oscars.OscarsProxy;
+import net.es.oscars.nsibridge.prov.NSI_Util;
 import net.es.oscars.nsibridge.prov.ScheduleUtils;
 import net.es.oscars.nsibridge.soap.impl.ProviderServer;
 import net.es.oscars.utils.config.ConfigDefaults;
@@ -105,6 +106,10 @@ public class Invoker implements Runnable {
         HttpConfig hc = ax.getBean("httpConfig", HttpConfig.class);
 
         EntityManager em = PersistenceHolder.getEntityManager();
+
+        System.out.print("Preparing requester clients...");
+        NSI_Util.prepareRequesterClients();
+        System.out.println(" done.");
 
 
         try {
