@@ -52,7 +52,6 @@
         <module>wsnbroker</module>
         <module>tools</module>
         <module>oscars-client</module>
-        <module>nsi-soap</module>
 	<module>ion-war</module>
 	<module>ionui</module>
 	<!-- 2 lines above added for ion -->
