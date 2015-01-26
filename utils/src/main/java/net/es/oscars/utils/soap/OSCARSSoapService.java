@@ -12,6 +12,7 @@ import javax.xml.ws.Service;
 
 import net.es.oscars.utils.sharedConstants.ErrorCodes;
 import net.es.oscars.utils.topology.PathTools;
+import org.apache.cxf.endpoint.Server;
 import org.apache.log4j.Logger;
 import org.apache.cxf.frontend.ClientProxy;
 import org.apache.cxf.endpoint.Client;
@@ -41,6 +42,8 @@ public class OSCARSSoapService <S,P> {
     private Service     service         = null;
     private Client      clientProxy     = null;
     private URL         host            = null;
+    private Server      server          = null;
+
 
     @SuppressWarnings("unchecked")
     private Map         config          = null;
@@ -279,6 +282,7 @@ public class OSCARSSoapService <S,P> {
         if (this.publishTo != "") {
             LOG.info(netLogger.start(event, "started at " + this.publishTo));
             EndpointImpl jaxWsEndpoint = (EndpointImpl) Endpoint.publish(this.publishTo, this.getPortType());
+            server = jaxWsEndpoint.getServer();
             // org.apache.cxf.endpoint.Endpoint cxfEndpoint = jaxWsEndpoint.getServer().getEndpoint();
             return jaxWsEndpoint;
         } else {
@@ -405,5 +409,9 @@ public class OSCARSSoapService <S,P> {
             throw  new OSCARSServiceException(errRep);
         }
 
+    }
+
+    public Server getServer() {
+        return server;
     }
 }
