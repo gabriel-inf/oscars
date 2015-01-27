@@ -266,6 +266,7 @@ public class SR_VPLS_V2_ConfigGen implements DeviceConfigGenerator, PostCommitCo
         VPLS_RequestParamHolder holder = VPLS_RequestParamHolder.getInstance();
         VPLS_RequestParams rp = holder.getRequestParams().get(res.getGlobalReservationId());
         String vplsName = sdng.getVplsName(gri, res.getDescription());
+        String ifceName = ng.getIfceName(gri);
 
         boolean softPolice = rp.getParams().isSoftPolice();
         boolean applyQos = rp.getParams().isApplyQos();
@@ -337,7 +338,7 @@ public class SR_VPLS_V2_ConfigGen implements DeviceConfigGenerator, PostCommitCo
             vpls.put("protect_id", vplsIds.getSecondaryVplsId().toString());
         }
 
-        vpls.put("loopback_ifce", gri);
+        vpls.put("loopback_ifce", ifceName);
         vpls.put("loopback_address", loopback.getVplsLoopback());
         vpls.put("endpoint", vplsName);
         vpls.put("has_protect", protect);
@@ -539,6 +540,8 @@ public class SR_VPLS_V2_ConfigGen implements DeviceConfigGenerator, PostCommitCo
         String vplsId = vplsIds.getVplsId().toString();
         String vplsDesc = sdng.getVplsDescription(gri, ingQosBandwidth * 1000000, description);
         String vplsName = sdng.getVplsName(gri, description);
+        String ifceName = ng.getIfceName(gri);
+
 
         vpls.put("description", vplsDesc);
         vpls.put("name", vplsName);
@@ -550,7 +553,7 @@ public class SR_VPLS_V2_ConfigGen implements DeviceConfigGenerator, PostCommitCo
         if (!sameDevice) {
             vpls.put("protect_id", vplsIds.getSecondaryVplsId().toString());
             vpls.put("loopback_address", loopback.getVplsLoopback());
-            vpls.put("loopback_ifce", gri);
+            vpls.put("loopback_ifce", ifceName);
         }
 
 
