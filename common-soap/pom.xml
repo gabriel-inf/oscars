@@ -10,8 +10,21 @@
     </parent>
 
     <properties>
-        <cxf.version>3.0.2</cxf.version>
+        <cxf.version>3.0.4</cxf.version>
     </properties>
+
+    <repositories>
+        <repository>
+            <id>apache.org snapshots</id>
+            <url>http://repository.apache.org/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
 
     <!-- puts all code & libraries in one jar -->
