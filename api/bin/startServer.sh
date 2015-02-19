@@ -35,7 +35,6 @@ javaFlags="$javaFlags -Dcom.sun.xml.bind.v2.runtime.JAXBContextImpl.fastBoot=tru
 javaFlags="$javaFlags -Dorg.apache.cxf.JDKBugHacks.defaultUsesCaches=true "
 
 
-java $debugFlags $javaFlags -jar $jarfile  -c $context
+java $debugFlags $javaFlags -jar $jarfile -c $context &
 
 echo $! > $pidfile
-
