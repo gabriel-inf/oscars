@@ -7,12 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.net.MalformedURLException;
 
-import net.es.oscars.api.http.MyWSDLInterceptor;
 import net.es.oscars.logging.ModuleName;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.cxf.endpoint.Server;
-import org.apache.cxf.endpoint.Endpoint;
-import org.apache.cxf.frontend.WSDLGetInterceptor;
 import org.apache.log4j.Logger;
 
 import net.es.oscars.api.http.OSCARSInternalServer;
@@ -27,7 +24,6 @@ import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.soap.OSCARSSoapService;
 import net.es.oscars.utils.svc.ServiceNames;
 import net.es.oscars.utils.topology.PathTools;
-import net.es.oscars.utils.validator.DataValidator;
 import net.es.oscars.utils.validator.EndpointValidator;
 import net.es.oscars.utils.clients.CoordClient;
 import net.es.oscars.utils.clients.AuthNClient;
@@ -429,7 +425,6 @@ public class OSCARSIDC implements Runnable {
             OSCARSInternalServer.getInstance().startServer(false);
             Server server = OSCARSInternalServer.getInstance().getServer();
 
-            // endpoint.getInInterceptors().add(new MyWSDLInterceptor());
 
             OSCARSIDC.internalAPIStarted = true;
         }
