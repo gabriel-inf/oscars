@@ -16,6 +16,10 @@ import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLDecoder;
+
 @OSCARSNetLoggerize(moduleName = ModuleName.API)
 public class Invoker {
 
@@ -47,6 +51,8 @@ public class Invoker {
             System.out.println("caught ConfigurationException " + ex.getMessage());
             System.exit(-1);
         }
+
+
         String event = "Invoker";
         netLogger = OSCARSNetLogger.getTlogger();
         netLogger.init(ModuleName.API, "0000");

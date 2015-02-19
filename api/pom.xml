@@ -12,8 +12,9 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <cxf.version>3.0.3-SNAPSHOT</cxf.version>
+        <cxf.version>3.0.5-SNAPSHOT</cxf.version>
         <spring.version>3.2.3.RELEASE</spring.version>
+        <xmlschema.version>2.2.0</xmlschema.version>
 
     </properties>
 
@@ -38,6 +39,12 @@
     </repositories>
 
     <dependencies>
+        <dependency>
+            <groupId>org.apache.ws.xmlschema</groupId>
+            <artifactId>xmlschema-core</artifactId>
+            <version>${xmlschema.version}</version>
+        </dependency>
+
         <!-- CXF -->
 
         <dependency>
