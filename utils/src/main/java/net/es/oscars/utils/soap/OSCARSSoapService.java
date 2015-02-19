@@ -109,6 +109,8 @@ public class OSCARSSoapService <S,P> {
             this.clientProxy = ClientProxy.getClient(this.portType);
             // configureLoginToken();
         } catch (Exception e) {
+            // print stacktrace to log
+            LOG.error(e);
             LOG.debug(this.netLogger.error(event, ErrSev.MAJOR,
                                         "Exception from ProxyClient.getClient " + e.getClass().getName() + 
                                         "  " + e.toString() + "  " + e.getMessage()));
