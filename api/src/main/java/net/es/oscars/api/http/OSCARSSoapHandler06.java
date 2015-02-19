@@ -4,10 +4,6 @@ import net.es.oscars.api.soap.gen.v06.*;
 import net.es.oscars.utils.sharedConstants.ErrorCodes;
 import net.es.oscars.utils.soap.ErrorReport;
 import org.apache.log4j.Logger;
-import org.apache.ws.security.WSConstants;
-import org.apache.ws.security.WSSecurityEngineResult;
-import org.apache.ws.security.handler.WSHandlerConstants;
-import org.apache.ws.security.handler.WSHandlerResult;
 
 import java.util.*;
 
@@ -36,6 +32,10 @@ import net.es.oscars.utils.clients.CoordClient;
 import net.es.oscars.utils.clients.AuthNClient;
 import net.es.oscars.utils.validator.DataValidator;
 import oasis.names.tc.saml._2_0.assertion.AttributeType;
+import org.apache.wss4j.dom.WSConstants;
+import org.apache.wss4j.dom.WSSecurityEngineResult;
+import org.apache.wss4j.dom.handler.WSHandlerConstants;
+import org.apache.wss4j.dom.handler.WSHandlerResult;
 
 /**
  * Implementation class for the OSCARService V.06
@@ -575,7 +575,7 @@ public class OSCARSSoapHandler06 implements OSCARS {
                 LOG.error(netLogger.error(event,ErrSev.MAJOR, "message context is NULL"));
                 return null;
             }
-            Vector results = (Vector) inContext.get(WSHandlerConstants.RECV_RESULTS);
+            List results = (List) inContext.get(WSHandlerConstants.RECV_RESULTS);
             for (int i = 0; results != null && i < results.size(); i++) {
                 WSHandlerResult hResult = (WSHandlerResult) results.get(i);
                 List<WSSecurityEngineResult>  hResults = hResult.getResults();

@@ -7,7 +7,6 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 
 import org.apache.log4j.Logger;
-import org.apache.ws.security.WSPasswordCallback;
 
 import net.es.oscars.logging.ErrSev;
 import net.es.oscars.logging.OSCARSNetLogger;
@@ -15,6 +14,7 @@ import net.es.oscars.utils.config.ConfigException;
 import net.es.oscars.utils.config.ContextConfig;
 import net.es.oscars.utils.soap.OSCARSServiceException;
 import net.es.oscars.utils.svc.ServiceNames;
+import org.apache.wss4j.common.ext.WSPasswordCallback;
 
 public class ServerX509PasswordCB implements CallbackHandler {
      private static Logger LOG = Logger.getLogger(ServerX509PasswordCB.class);
