@@ -578,10 +578,9 @@ public class OSCARSSoapHandler06 implements OSCARS {
             Vector results = (Vector) inContext.get(WSHandlerConstants.RECV_RESULTS);
             for (int i = 0; results != null && i < results.size(); i++) {
                 WSHandlerResult hResult = (WSHandlerResult) results.get(i);
-                Vector hResults = hResult.getResults();
+                List<WSSecurityEngineResult>  hResults = hResult.getResults();
                 //LOG.debug(netLogger.getMsg(event,"handler results size is " + hResults.size()));
-                for (int j = 0; j < hResults.size(); j++) {
-                    WSSecurityEngineResult eResult = (WSSecurityEngineResult) hResults.get(j);
+                for (WSSecurityEngineResult eResult : hResults) {
                     // A timestamp action does not have an
                     // associated principal. Only Signature and UsernameToken
                     // actions return a principal.
