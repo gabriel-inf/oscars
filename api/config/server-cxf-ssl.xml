@@ -31,7 +31,7 @@
   <!--  configuration for ssl connections -->
   <httpj:engine-factory>
    <httpj:engine port="9001">
-    <httpj:tlsServerParameters secureSocketProtocol="TLS">
+    <httpj:tlsServerParameters secureSocketProtocol="TLSv1">
       <sec:keyManagers keyPassword="changeit">
            <sec:keyStore type="JKS" password="changeit"
                 file="keystore-server.jks"/>
@@ -58,7 +58,7 @@
    </httpj:engine>
 
    <httpj:engine port="9002">
-    <httpj:tlsServerParameters secureSocketProtocol="TLS">
+    <httpj:tlsServerParameters secureSocketProtocol="TLSv1">
       <sec:keyManagers keyPassword="changeit">
            <sec:keyStore type="JKS" password="changeit"
                 file="keystore-server.jks"/>

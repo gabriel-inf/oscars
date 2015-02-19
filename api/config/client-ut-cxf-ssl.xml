@@ -44,7 +44,7 @@
 
   <!--  configuration for SSL, always use ssl since we are sending passwords in message -->
   <http:conduit name="{http://oscars.es.net/OSCARS}OSCARS.http-conduit">
-    <http:tlsClientParameters disableCNCheck="true" secureSocketProtocol="TLS">
+    <http:tlsClientParameters disableCNCheck="true" secureSocketProtocol="TLSv1">
       <sec:trustManagers>
           <sec:keyStore type="JKS" password="changeit"
                file="keystore-truststore.jks"/>
@@ -62,7 +62,7 @@
    </http:conduit>
 
   <http:conduit name="{http://oscars.es.net/OSCARS/06}OSCARS.http-conduit">
-    <http:tlsClientParameters disableCNCheck="true" secureSocketProtocol="TLS">
+    <http:tlsClientParameters disableCNCheck="true" secureSocketProtocol="TLSv1">
       <sec:trustManagers>
           <sec:keyStore type="JKS" password="changeit"
                file="keystore-truststore.jks"/>
@@ -82,7 +82,7 @@
 
 
   <http:conduit name="{http://oscars.es.net/OSCARS/06}OSCARSInternalPortType.http-conduit">
-    <http:tlsClientParameters disableCNCheck="true" secureSocketProtocol="TLS">
+    <http:tlsClientParameters disableCNCheck="true" secureSocketProtocol="TLSv1">
       <sec:trustManagers>
           <sec:keyStore type="JKS" password="changeit"
                file="keystore-truststore.jks"/>
