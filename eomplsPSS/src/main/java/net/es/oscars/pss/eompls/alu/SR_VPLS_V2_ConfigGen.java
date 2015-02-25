@@ -579,7 +579,8 @@ public class SR_VPLS_V2_ConfigGen implements DeviceConfigGenerator, PostCommitCo
             Map ifce = new HashMap();
             ifce.put("name", ifceInfo.getName());
             ifce.put("vlan", ifceInfo.getVlan());
-            String sapDesc = sdng.getInterfaceDescription(gri, ingQosBandwidth*1000000, description);
+            String descGri = ng.getName(gri, "", 24);
+            String sapDesc = sdng.getInterfaceDescription(descGri, ingQosBandwidth*1000000, description);
             ifce.put("description", sapDesc);
             ifces.add(ifce);
         }

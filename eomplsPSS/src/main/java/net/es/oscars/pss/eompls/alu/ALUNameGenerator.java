@@ -16,15 +16,15 @@ public class ALUNameGenerator {
         return instance;
     }
     public String getLSPName(String gri)  throws PSSException {
-        return getName(gri, "_lsp", 28);
+        return getName(gri, "_lsp", 26);
     }
 
     public String getPathName(String gri)  throws PSSException {
-        return getName(gri, "_path", 28);
+        return getName(gri, "_path", 26);
     }
 
     public String getIfceName(String gri)  throws PSSException {
-        return getName(gri, "_ifce", 28);
+        return getName(gri, "_ifce", 26);
     }
 
     public String getName(String gri, String postfix, int maxLength) throws PSSException {
