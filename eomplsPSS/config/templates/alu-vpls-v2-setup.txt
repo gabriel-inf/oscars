@@ -81,6 +81,7 @@ exit all
 configure router interface "${vpls.loopback_ifce}"
 address ${vpls.loopback_address}/32
 loopback
+enable-ingress-stats
 no shutdown
 exit all
 </#if>
