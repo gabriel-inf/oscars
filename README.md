@@ -65,3 +65,4 @@ $OSCARS_DIST/bin/startServers.sh PRODCUCTION ALL
 $OSCARS_DIST/bin/stopServers.sh ALL
 ```
 
+*Note: You may stop individual services by replacing the first argument with the module name*
