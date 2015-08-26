@@ -10,6 +10,7 @@
         <class>net.es.oscars.nsibridge.beans.db.OscarsStatusRecord</class>
         <class>net.es.oscars.nsibridge.beans.db.ExceptionRecord</class>
         <class>net.es.oscars.nsibridge.beans.db.NotificationRecord</class>
+        <class>net.es.oscars.nsibridge.beans.db.OscarsInfoRecord</class>
         <properties>
             <property name="hibernate.ejb.cfgfile" value="hibernate.xml"/>
         </properties>

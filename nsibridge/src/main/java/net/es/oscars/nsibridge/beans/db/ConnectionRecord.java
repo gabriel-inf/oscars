@@ -1,4 +1,5 @@
 package net.es.oscars.nsibridge.beans.db;
+
 import net.es.nsi.lib.soap.gen.nsi_2_0_r117.connection.types.LifecycleStateEnumType;
 import net.es.nsi.lib.soap.gen.nsi_2_0_r117.connection.types.ProvisionStateEnumType;
 import net.es.nsi.lib.soap.gen.nsi_2_0_r117.connection.types.ReservationStateEnumType;
@@ -24,14 +25,14 @@ public class ConnectionRecord {
     protected String oscarsAttributes;
 
 
-
-    protected Set<NotificationRecord> notificationRecords= new HashSet<NotificationRecord>();
+    protected Set<NotificationRecord> notificationRecords = new HashSet<NotificationRecord>();
     protected Set<DataplaneStatusRecord> dataplaneStatusRecords = new HashSet<DataplaneStatusRecord>();
     protected Set<ResvRecord> resvRecords = new HashSet<ResvRecord>();
     protected Set<ExceptionRecord> exceptionRecords = new HashSet<ExceptionRecord>();
 
 
     protected OscarsStatusRecord oscarsStatusRecord;
+    protected OscarsInfoRecord oscarsInfoRecord;
 
     protected ProvisionStateEnumType provisionState;
     protected LifecycleStateEnumType lifecycleState;
@@ -48,7 +49,7 @@ public class ConnectionRecord {
 
 
     @Id
-    @GeneratedValue(strategy= GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     public Long getId() {
         return id;
     }
@@ -139,6 +140,15 @@ public class ConnectionRecord {
         this.oscarsStatusRecord = oscarsStatusRecord;
     }
 
+    @OneToOne(cascade = CascadeType.ALL)
+    public OscarsInfoRecord getOscarsInfoRecord() {
+        return oscarsInfoRecord;
+    }
+
+    public void setOscarsInfoRecord(OscarsInfoRecord oscarsInfoRecord) {
+        this.oscarsInfoRecord = oscarsInfoRecord;
+    }
+
     public String getRequesterNSA() {
         return requesterNSA;
     }
@@ -162,9 +172,6 @@ public class ConnectionRecord {
     public void setNotifyUrl(String notifyUrl) {
         this.notifyUrl = notifyUrl;
     }
-
-
-
 
 
     public static ResvRecord getCommittedResvRecord(ConnectionRecord cr) {
@@ -194,7 +201,7 @@ public class ConnectionRecord {
     }
 
     @Lob
-    @Column(length=65535)
+    @Column(length = 65535)
     public String getOscarsAttributes() {
         return oscarsAttributes;
     }

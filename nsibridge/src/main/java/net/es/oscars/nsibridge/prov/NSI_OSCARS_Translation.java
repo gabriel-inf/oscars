@@ -4,6 +4,7 @@ import net.es.oscars.api.soap.gen.v06.*;
 import net.es.oscars.common.soap.gen.SubjectAttributes;
 import net.es.oscars.nsibridge.beans.ResvRequest;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
+import net.es.oscars.nsibridge.beans.db.OscarsInfoRecord;
 import net.es.oscars.nsibridge.beans.db.ResvRecord;
 import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.config.nsa.NsaConfig;
@@ -431,7 +432,7 @@ public class NSI_OSCARS_Translation {
         //Set schedule fields
         ScheduleType scheduleType = new ScheduleType();
         GregorianCalendar startCal = new GregorianCalendar();
-        startCal.setTimeInMillis(startTime*1000);
+        startCal.setTimeInMillis(startTime * 1000);
         GregorianCalendar endCal = new GregorianCalendar();
         endCal.setTimeInMillis(endTime*1000);
         try {
@@ -497,6 +498,21 @@ public class NSI_OSCARS_Translation {
                 String dstVlan = pathInfo.getLayer2Info().getDestVtag().getValue();
                 dstStp += "?vlan="+dstVlan;
             }
+            //set ero
+            StpListType ero = new StpListType();
+            p2pType.setEro(ero);
+
+            OrderedStpType srcOrdStp = new OrderedStpType();
+            srcOrdStp.setOrder(1);
+            srcOrdStp.setStp(srcStp);
+            ero.getOrderedSTP().add(srcOrdStp);
+
+            OrderedStpType dstOrdStp = new OrderedStpType();
+            dstOrdStp.setOrder(2);
+            dstOrdStp.setStp(dstStp);
+            ero.getOrderedSTP().add(dstOrdStp);
+
+
         } else {
             throw new TranslationException("OSCARS reservation has no path or Layer2Info set so cannot determine STPs");
         }
@@ -506,6 +522,22 @@ public class NSI_OSCARS_Translation {
         criteriaType.getAny().add(objFactory.createP2Ps(p2pType));
         
         return criteriaType;
+    }
+    public static OscarsInfoRecord makeOscarsInfo(ResDetails oscarsResDetails) throws TranslationException {
+        OscarsInfoRecord result = new OscarsInfoRecord();
+        PathInfo pathInfo = null;
+        if (oscarsResDetails.getReservedConstraint() != null) {
+            pathInfo = oscarsResDetails.getReservedConstraint().getPathInfo();
+        } else {
+            throw new TranslationException("could not find reserved constraints");
+        }
+        List<CtrlPlaneHopContent> hops = pathInfo.getPath().getHop();
+        String srcVlan = hops.get(0).getLink().getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getVlanRangeAvailability();
+        String dstVlan = hops.get(hops.size() - 1).getLink().getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getVlanRangeAvailability();
+
+        result.setSrcVlan(srcVlan);
+        result.setDstVlan(dstVlan);
+        return result;
     }
 
     public static StpConfig findStp(String stpId) {

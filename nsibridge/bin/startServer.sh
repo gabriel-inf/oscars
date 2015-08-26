@@ -37,7 +37,7 @@ javaFlags="$javaFlags -Dnsibridge.beans=file:$confDir/beans.xml "
 # debugFlags="-Djavax.net.debug=all "
 # debugFlags="-Xdebug -Xrunjdwp:server=y,transport=dt_socket,address=4000,suspend=n "
 
-java $debugFlags $javaFlags -jar $jarfile&
+java $debugFlags $javaFlags -jar $jarfile &
 
 echo $! > $pidfile
 

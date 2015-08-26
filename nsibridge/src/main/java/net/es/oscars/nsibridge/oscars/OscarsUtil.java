@@ -4,6 +4,7 @@ import net.es.oscars.api.soap.gen.v06.*;
 import net.es.oscars.common.soap.gen.SubjectAttributes;
 import net.es.oscars.nsibridge.beans.ResvRequest;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
+import net.es.oscars.nsibridge.beans.db.OscarsInfoRecord;
 import net.es.oscars.nsibridge.beans.db.OscarsStatusRecord;
 import net.es.oscars.nsibridge.beans.db.ResvRecord;
 import net.es.oscars.nsibridge.common.PersistenceHolder;
@@ -182,8 +183,13 @@ public class OscarsUtil {
                 QueryResReply reply = OscarsProxy.getInstance().sendQuery(qc, attrs);
                 String oscStatus =  reply.getReservationDetails().getStatus();
 
+
                 log.debug("query result for connId: "+cr.getConnectionId()+" gri: "+oscarsGri+" status: "+oscStatus);
                 OscarsStatusRecord or = addOscarsRecord(cr, oscarsGri, new Date(), oscStatus);
+
+                OscarsInfoRecord ir = NSI_OSCARS_Translation.makeOscarsInfo(reply.getReservationDetails());
+                updateOscarsInfoRecord(cr, ir);
+
                 return or;
 
             } catch (OSCARSServiceException ex) {
@@ -280,11 +286,19 @@ public class OscarsUtil {
         }
     }
 
+    public static void updateOscarsInfoRecord(ConnectionRecord cr, OscarsInfoRecord infoRecord) {
+        EntityManager em = PersistenceHolder.getEntityManager();
+        em.getEntityManagerFactory().getCache().evictAll();
 
+        cr.setOscarsInfoRecord(infoRecord);
+        em.getTransaction().begin();
+        em.persist(cr);
+        em.getTransaction().commit();
+    }
 
     public static OscarsStatusRecord addOscarsRecord(ConnectionRecord cr, String gri, Date date, String status) {
         String connId = cr.getConnectionId();
-        log.debug("addOscarsRecord connId: "+connId+" gri: "+gri+" status: "+status+" date: "+date.getTime());
+        log.debug("addOscarsRecord connId: " + connId + " gri: " + gri + " status: " + status + " date: " + date.getTime());
         EntityManager em = PersistenceHolder.getEntityManager();
         em.getEntityManagerFactory().getCache().evictAll();
 
@@ -301,52 +315,6 @@ public class OscarsUtil {
 
     }
 
-    public static String normalizeDN(String dn) {
-        // incoming format:
-        // /C=US/ST=CA/L=Berkeley/O=ESnet/OU=ANTG/CN=MaintDB
-        // desired format:
-        // "CN=MaintDB, OU=ANTG, O=ESnet, L=Berkeley, ST=CA, C=US";
-        
-        //if DN does not start with / then it is already in the desired form
-        dn = dn.trim();
-        if(!dn.startsWith("/")){
-            return dn;
-        }
-        
-        //remove leading slash
-        dn = dn.replaceFirst("^\\/", "");
-        String result = "";
-        String[] parts = dn.split("\\/");
-        if(parts[parts.length - 1].startsWith("CN=")){
-            //if ends with CN then reverse
-            for(int i = parts.length - 1; i >= 0; i--){
-                //don't add comma if first element or doesn't contain =. 
-                if(i != parts.length - 1 && parts[i].contains("=")){
-                    result += ", ";
-                }
-               //Compensates for edge case where part contains a /
-                if(!parts[i].contains("=")){
-                    result += "/";
-                }
-                result += parts[i];
-            }
-        }else{
-            for(int i = 0; i < parts.length; i++){
-                //don't add comma if first element or doesn't contain =. 
-                
-                if(i != 0 && parts[i].contains("=")){
-                    result += ", ";
-                }
-                //Compensates for edge case where part contains a /
-                if(!parts[i].contains("=")){
-                    result += "/";
-                }
-                result += parts[i];
-            }
-        }
-
-        return result;
-    }
 
     public static OscarsLogicAction pollUntilOpAllowed(OscarsOps op, ConnectionRecord cr, UUID taskId) throws TranslationException {
         HashSet<OscarsOps> ops = new HashSet<OscarsOps>();

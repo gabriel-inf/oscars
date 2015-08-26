@@ -7,7 +7,6 @@ import net.es.oscars.nsibridge.config.HttpConfig;
 import net.es.oscars.nsibridge.config.OscarsStubConfig;
 import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.oscars.OscarsProxy;
-import net.es.oscars.nsibridge.oscars.OscarsUtil;
 import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
@@ -109,17 +108,12 @@ public class OscarsCertInInterceptor extends AbstractPhaseInterceptor<Message> {
         String certSubjectDN = cert.getSubjectDN().toString().trim();
         String certIssuerDN = cert.getIssuerDN().toString().trim();
 
-        if (certSubjectDN == null || certSubjectDN.toLowerCase().equals("(null)") || certIssuerDN == null || certIssuerDN.toLowerCase().equals("(null)")) {
+        if (certSubjectDN.toLowerCase().equals("(null)") || certIssuerDN.toLowerCase().equals("(null)")) {
             log.debug("null subject / issuer DN");
             return false;
         }
 
-        log.debug("s: "+certSubjectDN+" i: "+certIssuerDN);
-        certSubjectDN  = OscarsUtil.normalizeDN(certSubjectDN);
-        certIssuerDN = OscarsUtil.normalizeDN(certIssuerDN);
-
-        log.debug("normalized: s: "+certSubjectDN+" i: "+certIssuerDN);
-
+        log.debug("verifying incoming cert DNs, s: "+certSubjectDN+" i: "+certIssuerDN);
 
         try {
             MessagePropertiesType mp = OscarsProxy.getInstance().makeMessageProps();
@@ -147,12 +141,7 @@ public class OscarsCertInInterceptor extends AbstractPhaseInterceptor<Message> {
         }
 
 
-        log.debug("s: "+subjectDN+" i: "+issuerDN);
-        issuerDN  = OscarsUtil.normalizeDN(issuerDN);
-        subjectDN = OscarsUtil.normalizeDN(subjectDN);
-
-        log.debug("normalized: s: "+subjectDN+" i: "+issuerDN);
-
+        log.debug("verifying incoming cert DNs, s: "+subjectDN+" i: "+issuerDN);
 
         try {
             MessagePropertiesType mp = OscarsProxy.getInstance().makeMessageProps();
