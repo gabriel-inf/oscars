@@ -24,3 +24,14 @@
           "TEARDOWN":       "dell-teardown.txt"
           "MODIFY":         ""
           "STATUS":         ""
+
+- id: "dell-f10"
+  services:
+    - id:               bridge
+      configGenerator:  "net.es.oscars.pss.bridge.generic.GenericConfigGen"
+      templateConfig:
+        templates:
+          "SETUP":          "dell-f10-setup.txt"
+          "TEARDOWN":       "dell-f10-teardown.txt"
+          "MODIFY":         ""
+          "STATUS":         ""

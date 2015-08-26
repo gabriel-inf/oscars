@@ -19,11 +19,11 @@ import net.es.oscars.pss.config.ConfigHolder;
 
 /**
  * responsible for configuring & loading the various PSS agent classes
- * @author haniotak
  *
+ * @author haniotak
  */
 public class ClassFactory {
-   
+
     private ConnectorDirectory connectorDirectory;
     private DeviceConnectorMap deviceConnectorMap;
     private DeviceModelMap deviceModelMap;
@@ -33,12 +33,13 @@ public class ClassFactory {
     private Validator validator;
     private Workflow workflow;
     private CircuitService circuitService;
-    
+
     private static ClassFactory instance;
     private Logger log = Logger.getLogger(ClassFactory.class);
 
     /**
      * singleton constructor
+     *
      * @return
      */
     private ClassFactory() {
@@ -79,19 +80,18 @@ public class ClassFactory {
      * configures the agent factory through YAML from the argument filename
      * loads and configures agent classes
      *
-     * @param filename
      */
     public void configure() throws PSSException {
 
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        
+
         BaseConfig baseConfig = ConfigHolder.getInstance().getBaseConfig();
         if (baseConfig == null) {
             log.error("No base configuration stanza!");
             System.err.println("No base configuration stanza!");
             System.exit(1);
         }
-        
+
         String connectionDirectoryCN = baseConfig.getConnectorDirectory().getImpl();
         String deviceConnectorMapCN = baseConfig.getDeviceConnectorMap().getImpl();
         String deviceModelMapCN = baseConfig.getDeviceModelMap().getImpl();
@@ -100,76 +100,78 @@ public class ClassFactory {
         String verifierCN = baseConfig.getVerify().getImpl();
         String validatorCN = baseConfig.getValidate().getImpl();
         String workflowCN = baseConfig.getWorkflow().getImpl();
-        
+
         String circuitServiceId = baseConfig.getCircuitService().getId();
         CircuitServiceDefinition csdef = ConfigHolder.getInstance().getCircuitServiceDefinition(circuitServiceId);
+        if (csdef == null) {
+            throw new PSSException("Could not find service definition for service id " + circuitServiceId);
+        }
         String circuitServiceCN = csdef.getImpl();
-        Class<?> aClass = null;        
+        Class<?> aClass = null;
         try {
-            if (this.connectorDirectory == null) { 
+            if (this.connectorDirectory == null) {
                 aClass = cl.loadClass(connectionDirectoryCN);
                 connectorDirectory = (ConnectorDirectory) aClass.newInstance();
                 connectorDirectory.setConfig(baseConfig.getConnectorDirectory());
-                log.debug("connectionDirectory loaded OK: "+connectionDirectoryCN);
+                log.debug("connectionDirectory loaded OK: " + connectionDirectoryCN);
             }
-            
-            
 
-            if (this.deviceConnectorMap == null) { 
+
+            if (this.deviceConnectorMap == null) {
                 aClass = cl.loadClass(deviceConnectorMapCN);
                 deviceConnectorMap = (DeviceConnectorMap) aClass.newInstance();
                 deviceConnectorMap.setConfig(baseConfig.getDeviceConnectorMap());
-                log.debug("deviceConnectorMap loaded OK: "+deviceConnectorMapCN);
+                log.debug("deviceConnectorMap loaded OK: " + deviceConnectorMapCN);
             }
 
-            if (this.deviceResolver == null) { 
+            if (this.deviceResolver == null) {
                 aClass = cl.loadClass(deviceModelMapCN);
                 deviceModelMap = (DeviceModelMap) aClass.newInstance();
                 deviceModelMap.setConfig(baseConfig.getDeviceModelMap());
-                log.debug("deviceModelMap loaded OK: "+deviceModelMapCN);
+                log.debug("deviceModelMap loaded OK: " + deviceModelMapCN);
             }
-            
-            if (this.deviceResolver == null) { 
+
+            if (this.deviceResolver == null) {
                 aClass = cl.loadClass(deviceResolverCN);
                 deviceResolver = (DeviceAddressResolver) aClass.newInstance();
                 deviceResolver.setConfig(baseConfig.getDeviceResolve());
-                log.debug("resolver loaded OK: "+deviceResolverCN);
+                log.debug("resolver loaded OK: " + deviceResolverCN);
             }
-            
-            if (this.notifier == null) { 
+
+            if (this.notifier == null) {
                 aClass = cl.loadClass(notifierCN);
                 notifier = (Notifier) aClass.newInstance();
                 notifier.setConfig(baseConfig.getNotify());
-                log.debug("notifier loaded OK: "+notifierCN);
+                log.debug("notifier loaded OK: " + notifierCN);
             }
-            if (this.verifier == null) { 
+            if (this.verifier == null) {
                 aClass = cl.loadClass(verifierCN);
                 verifier = (Verifier) aClass.newInstance();
                 verifier.setConfig(baseConfig.getVerify());
-                log.debug("verifier loaded OK: "+verifierCN);
+                log.debug("verifier loaded OK: " + verifierCN);
             }
-            
-            if (this.workflow == null) { 
+
+            if (this.workflow == null) {
                 aClass = cl.loadClass(validatorCN);
                 validator = (Validator) aClass.newInstance();
                 validator.setConfig(baseConfig.getValidate());
-                log.debug("validator loaded OK: "+validatorCN);
+                log.debug("validator loaded OK: " + validatorCN);
             }
-            
-            if (this.workflow == null) { 
+
+            if (this.workflow == null) {
                 aClass = cl.loadClass(workflowCN);
                 workflow = (Workflow) aClass.newInstance();
                 workflow.setConfig(baseConfig.getWorkflow());
-                log.debug("workflow loaded OK: "+workflowCN);
+                log.debug("workflow loaded OK: " + workflowCN);
             }
-            
-            if (this.circuitService == null) { 
+
+            if (this.circuitService == null) {
                 aClass = cl.loadClass(circuitServiceCN);
                 circuitService = (CircuitService) aClass.newInstance();
                 circuitService.setConfig(baseConfig.getCircuitService());
-                log.debug("circuitService loaded OK: "+circuitServiceCN);
+                log.debug("circuitService loaded OK: " + circuitServiceCN);
             }
-            
+
 
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
@@ -181,7 +183,7 @@ public class ClassFactory {
             e.printStackTrace();
             throw new PSSException(e);
         }
-        
+
     }
 
     public Notifier getNotifier() {
@@ -255,8 +257,6 @@ public class ClassFactory {
     public void setVerifier(Verifier verifier) {
         this.verifier = verifier;
     }
-
-
 
 
 }

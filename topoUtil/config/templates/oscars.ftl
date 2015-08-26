@@ -14,7 +14,7 @@
       <CtrlPlane:granularity>${port.granularity}</CtrlPlane:granularity>
 <#list port.links as link>
 <#assign isMpls = link.isMpls>
-<#assign isCustomer = link.isMpls>
+<#assign isCustomer = link.isCustomer>
         <CtrlPlane:link id="urn:ogf:network:domain=${base.domainId}:node=${deviceSpec.name}:port=${port.name}:link=${link.name}">
 <#if isCustomer>
           <CtrlPlane:remoteLinkId>${link.remoteId}</CtrlPlane:remoteLinkId>
