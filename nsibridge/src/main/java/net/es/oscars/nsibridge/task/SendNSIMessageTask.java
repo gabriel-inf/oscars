@@ -3,6 +3,7 @@ package net.es.oscars.nsibridge.task;
 
 import net.es.nsi.lib.client.config.ClientConfig;
 import net.es.nsi.lib.client.util.ClientUtil;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.services.point2point.P2PServiceBaseType;
 import net.es.oscars.nsibridge.beans.ResvRequest;
 import net.es.oscars.nsibridge.beans.SimpleRequest;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
@@ -217,6 +218,26 @@ public class SendNSIMessageTask extends Task  {
                     }
                     rcct.getAny().addAll(rrct.getAny());
                     rcct.getOtherAttributes().putAll(rrct.getOtherAttributes());
+
+                    // JUST LOOK AT THIS AND DESPAIR
+                    for (Object obj : rcct.getAny()) {
+                        if (obj.getClass().equals(P2PServiceBaseType.class)) {
+                            P2PServiceBaseType ps2ps = (P2PServiceBaseType) obj;
+
+                            String srcVlan = cr.getOscarsInfoRecord().getSrcVlan();
+                            String srcStp = ps2ps.getSourceSTP();
+                            String[] srcParts = srcStp.split("\\?");
+                            srcStp = srcParts[0]+'?'+srcVlan;
+
+                            String dstVlan = cr.getOscarsInfoRecord().getDstVlan();
+                            String dstStp = ps2ps.getDestSTP();
+                            String[] dstParts = dstStp.split("\\?");
+                            dstStp = dstParts[0]+'?'+dstVlan;
+
+                            ps2ps.setSourceSTP(srcStp);
+                            ps2ps.setDestSTP(dstStp);
+                        }
+                    }
 
                     if (!stubConfig.isPerformCallback()) {
                         this.onSuccess();

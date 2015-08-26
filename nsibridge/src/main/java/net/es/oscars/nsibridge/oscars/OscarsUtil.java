@@ -25,7 +25,7 @@ import java.util.*;
 public class OscarsUtil {
     private static final Logger log = Logger.getLogger(OscarsUtil.class);
 
-    public static void submitResv(ResvRequest resvRequest) throws TranslationException, ServiceException  {
+    public static void submitResv(ResvRequest resvRequest) throws TranslationException, ServiceException {
         log.debug("submitResv start");
         String connId = resvRequest.getReserveType().getConnectionId();
         ConnectionRecord cr = DB_Util.getConnectionRecord(connId);
@@ -58,7 +58,7 @@ public class OscarsUtil {
 
         try {
             CreateReply reply = OscarsProxy.getInstance().sendCreate(rc, attrs);
-            log.debug("connId: "+connId+" gri: "+reply.getGlobalReservationId());
+            log.debug("connId: " + connId + " gri: " + reply.getGlobalReservationId());
             addOscarsRecord(cr, reply.getGlobalReservationId(), new Date(), reply.getStatus());
         } catch (OSCARSServiceException ex) {
             addOscarsRecord(cr, null, new Date(), OscarsStates.FAILED.toString());
@@ -66,6 +66,7 @@ public class OscarsUtil {
             throw new ServiceException("Failed to submit reservation");
         }
     }
+
     public static void submitSetup(ConnectionRecord cr) throws ServiceException {
         log.debug("submitSetup start");
         String oscarsGri = cr.getOscarsGri();
@@ -135,9 +136,7 @@ public class OscarsUtil {
     }
 
 
-
-
-    public static void submitCancel(ConnectionRecord cr) throws ServiceException  {
+    public static void submitCancel(ConnectionRecord cr) throws ServiceException {
         log.debug("submitCancel start");
         String oscarsGri = cr.getOscarsGri();
 
@@ -165,7 +164,7 @@ public class OscarsUtil {
     public static OscarsStatusRecord submitQuery(ConnectionRecord cr) throws TranslationException {
         String oscarsGri = cr.getOscarsGri();
         if (oscarsGri == null || oscarsGri.equals("")) {
-            throw new TranslationException("could not find OSCARS GRI for connId: "+cr.getConnectionId());
+            throw new TranslationException("could not find OSCARS GRI for connId: " + cr.getConnectionId());
         }
         QueryResContent qc = NSI_OSCARS_Translation.makeOscarsQuery(oscarsGri);
         SubjectAttributes attrs = null;
@@ -181,10 +180,10 @@ public class OscarsUtil {
         if (qc != null) {
             try {
                 QueryResReply reply = OscarsProxy.getInstance().sendQuery(qc, attrs);
-                String oscStatus =  reply.getReservationDetails().getStatus();
+                String oscStatus = reply.getReservationDetails().getStatus();
 
 
-                log.debug("query result for connId: "+cr.getConnectionId()+" gri: "+oscarsGri+" status: "+oscStatus);
+                log.debug("query result for connId: " + cr.getConnectionId() + " gri: " + oscarsGri + " status: " + oscStatus);
                 OscarsStatusRecord or = addOscarsRecord(cr, oscarsGri, new Date(), oscStatus);
 
                 OscarsInfoRecord ir = NSI_OSCARS_Translation.makeOscarsInfo(reply.getReservationDetails());
@@ -201,7 +200,7 @@ public class OscarsUtil {
         }
     }
 
-    public static void submitModify(ResvRequest resvRequest) throws TranslationException, ServiceException  {
+    public static void submitModify(ResvRequest resvRequest) throws TranslationException, ServiceException {
         log.debug("submitModify start");
         String connId = resvRequest.getReserveType().getConnectionId();
         ConnectionRecord cr = DB_Util.getConnectionRecord(connId);
@@ -234,7 +233,7 @@ public class OscarsUtil {
 
         try {
             ModifyResReply reply = OscarsProxy.getInstance().sendModify(mc, attrs);
-            log.debug("connId: "+connId+" gri: "+reply.getGlobalReservationId());
+            log.debug("connId: " + connId + " gri: " + reply.getGlobalReservationId());
             addOscarsRecord(cr, cr.getOscarsGri(), new Date(), reply.getStatus());
         } catch (OSCARSServiceException ex) {
             addOscarsRecord(cr, cr.getOscarsGri(), new Date(), "FAILED");
@@ -244,7 +243,7 @@ public class OscarsUtil {
         }
     }
 
-    public static void submitRollback(ConnectionRecord cr) throws TranslationException, ServiceException  {
+    public static void submitRollback(ConnectionRecord cr) throws TranslationException, ServiceException {
         log.debug("submitRollback start");
         ResvRecord rr = ConnectionRecord.getCommittedResvRecord(cr);
         SubjectAttributes attrs = null;
@@ -276,7 +275,7 @@ public class OscarsUtil {
 
         try {
             ModifyResReply reply = OscarsProxy.getInstance().sendModify(mc, attrs);
-            log.debug("connId: "+cr.getConnectionId()+" gri: "+reply.getGlobalReservationId());
+            log.debug("connId: " + cr.getConnectionId() + " gri: " + reply.getGlobalReservationId());
             addOscarsRecord(cr, cr.getOscarsGri(), new Date(), reply.getStatus());
         } catch (OSCARSServiceException ex) {
             addOscarsRecord(cr, cr.getOscarsGri(), new Date(), "FAILED");
@@ -339,13 +338,13 @@ public class OscarsUtil {
 
                 OscarsLogicAction anAction = OscarsStateLogic.isOperationAllowed(op, OscarsStates.valueOf(or.getStatus()));
                 allActions.put(op, anAction);
-                log.debug("op: "+op+" action:"+anAction);
+                log.debug("op: " + op + " action:" + anAction);
             }
         } else {
             for (OscarsOps op : ops) {
                 OscarsLogicAction anAction = OscarsStateLogic.isOperationAllowed(op, OscarsStates.UNSUBMITTED);
                 allActions.put(op, anAction);
-                log.debug("op: "+op+" action:"+anAction);
+                log.debug("op: " + op + " action:" + anAction);
             }
         }
 
@@ -353,7 +352,7 @@ public class OscarsUtil {
         boolean foundYes = false;
         boolean foundYesOrAskLater = false;
         for (OscarsOps op : ops) {
-            log.debug("op: "+op+" action:"+allActions.get(op));
+            log.debug("op: " + op + " action:" + allActions.get(op));
 
             if (allActions.get(op).equals(OscarsLogicAction.YES)) {
                 foundYes = true;
@@ -370,7 +369,7 @@ public class OscarsUtil {
 
         while (result == OscarsLogicAction.ASK_LATER && elapsed < timeout) {
             try {
-                log.debug("task "+taskId+" waiting...");
+                log.debug("task " + taskId + " waiting...");
                 Thread.sleep(pollInterval.longValue());
                 elapsed += pollInterval;
                 OscarsUtil.submitQuery(cr);
@@ -421,7 +420,7 @@ public class OscarsUtil {
         Double pollInterval = tc.getOscarsTimingConfig().getPollInterval() * 1000;
         Double pollTimeout = tc.getOscarsTimingConfig().getPollTimeout() * 1000;
         try {
-            log.debug("waiting "+pollInterval+" ms to poll for connId: "+cr.getConnectionId()+" timeout: "+pollTimeout);
+            log.debug("waiting " + pollInterval + " ms to poll for connId: " + cr.getConnectionId() + " timeout: " + pollTimeout);
             Thread.sleep(pollInterval.longValue());
 
 
@@ -434,50 +433,41 @@ public class OscarsUtil {
         double elapsed = 0;
         double timeout = pollTimeout;
 
+        boolean stable = false;
 
-        OscarsStatusRecord or = cr.getOscarsStatusRecord();
         try {
-            or = OscarsUtil.submitQuery(cr);
+            // query at least once
+            OscarsStatusRecord or = OscarsUtil.submitQuery(cr);
+            OscarsStates os = OscarsStates.valueOf(or.getStatus());
+
+            while (!stable && timeout > elapsed) {
+                stable = OscarsStateLogic.isStateSteady(os);
+
+                if (!stable) {
+                    try {
+                        Thread.sleep(pollInterval.longValue());
+                        elapsed += pollInterval;
+                        or = OscarsUtil.submitQuery(cr);
+                        os = OscarsStates.valueOf(or.getStatus());
+                        log.debug("queried oscars, elapsed ms: " + elapsed + " state: " + os);
+
+                    } catch (InterruptedException ex) {
+                        log.error(ex.getMessage(), ex);
+                        throw new ServiceException("interrupted");
+                    }
+                }
+            }
+            // timed out waiting
+            if (elapsed > timeout && !stable) {
+                throw new ServiceException("timed out");
+            }
+            log.debug("stable state: " + os);
+            return os;
         } catch (TranslationException ex) {
-            log.error(ex);
+
+            log.error(ex.getMessage(), ex);
             throw new ServiceException("could not poll");
         }
 
-        OscarsStates os = OscarsStates.valueOf(or.getStatus());
-        boolean stable = false;
-
-
-        while (!stable && timeout > elapsed) {
-            stable = OscarsStateLogic.isStateSteady(os);
-            if (!stable) {
-                try {
-                    Thread.sleep(pollInterval.longValue());
-                    elapsed += pollInterval;
-                    or = OscarsUtil.submitQuery(cr);
-                    os = OscarsStates.valueOf(or.getStatus());
-                    log.debug("queried oscars, elapsed ms: "+elapsed+" state: "+os);
-
-
-
-                } catch (InterruptedException ex) {
-
-                    log.error(ex.getMessage(), ex);
-                    throw new ServiceException("interrupted");
-                } catch (TranslationException ex) {
-
-                    log.error(ex.getMessage(), ex);
-                    throw new ServiceException("could not poll");
-                }
-            }
-        }
-
-        // timed out waiting
-        if (elapsed > timeout && !stable) {
-            throw new ServiceException("timed out");
-        }
-        log.debug("stable state: "+os);
-
-
-        return os;
     }
 }

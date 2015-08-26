@@ -15,6 +15,18 @@
         <property name="trustedSSLProxy" value="" />
     </bean>
 
+    <bean id="requestersConfig"
+          class="net.es.oscars.nsibridge.config.RequestersConfig"
+          scope="singleton">
+        <property name="requesters">
+            <map>
+                <entry key="https://nsi-aggr-west.es.net/nsi-v2/ConnectionServiceRequester"
+                       value="config/aggr-client-bus.xml"/>
+            </map>
+        </property>
+
+    </bean>
+
 
 
     <!-- usually no need to change below this line -->

@@ -5,6 +5,7 @@ Feature: inspect workflow tasks
     Scenario: Reserve task tracking
         Given I have set up the run environment
         Given I clear all existing tasks
+        When I generate a reservation request
 
         When I assign random connId and corrId
 

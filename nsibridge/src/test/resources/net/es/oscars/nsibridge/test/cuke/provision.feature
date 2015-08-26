@@ -6,11 +6,11 @@ Feature: provision a reservation
         Given I have set up the run environment
         Given I clear all existing tasks
         Given that I know the count of all pending provisioning requests
+        When I generate a reservation request
         When I assign random connId and corrId
 
         When I submit reserve
         When I wait up to 15000 ms until I know the OSCARS gri
-
 
         When I assign a random corrId
         When I submit provision
