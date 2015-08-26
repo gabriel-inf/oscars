@@ -43,6 +43,7 @@ fi
 #Determine if we need to upgrade
 DB05=0
 DB06=0
+DB061=0
 #Test for 0.5 tables
 mysql -u $MYSQL_USER ${MYSQL_PASSWORD} --execute "SELECT id FROM users LIMIT 1" aaa > /dev/null 2>&1
 if [ $? -eq 0 ]; then
@@ -54,9 +55,22 @@ if [ $? -eq  0 ]; then
     DB06=1
 fi
 
-if [ $DB06 -eq 1 ]; then
-    ###tables already exist - nothing to do
+#Test for 0.6.1 tables
+mysql -u $MYSQL_USER ${MYSQL_PASSWORD} --execute "SELECT certSubjectNorm FROM users LIMIT 1" authn > /dev/null 2>&1
+if [ $? -eq  0 ]; then
+    DB061=1
+fi
+
+if [ $DB061 -eq 1 ]; then
+    ### tables already exist - nothing to do
     exit 0
+elif [ $DB06 -eq 1 ]; then
+    ### upgrade tables from 0.6.0 to 0.6.1
+    mysql -u $MYSQL_USER ${MYSQL_PASSWORD}< $SQL_DIR/upgradeTables0.6-0.6.1.sql
+    if [ $? -ne 0 ]; then
+        echo "WARN: Unable to upgrade authn user tables"
+        exit 1
+    fi
 elif [ $DB05 -eq 1 ]; then
     ###upgrade tables from 0.5
     #Grant privileges and create tables

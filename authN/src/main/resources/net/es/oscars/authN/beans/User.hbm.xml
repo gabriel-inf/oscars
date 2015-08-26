@@ -24,8 +24,10 @@
     </property>
 
     <property name="certIssuer" />
+    <property name="certIssuerNorm" />
 
     <property name="certSubject" />
+    <property name="certSubjectNorm" />
 
     <property name="lastName" not-null="true">
         <meta attribute="field-description">

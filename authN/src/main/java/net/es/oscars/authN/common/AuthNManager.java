@@ -2,6 +2,8 @@ package net.es.oscars.authN.common;
 
 import java.util.*;
 
+import javax.security.auth.x500.X500Principal;
+
 import net.es.oscars.authN.beans.User;
 import net.es.oscars.authN.dao.UserDAO;
 import net.es.oscars.authN.soap.gen.DNType;
@@ -10,6 +12,7 @@ import net.es.oscars.logging.OSCARSNetLogger;
 import org.apache.log4j.Logger;
 
 import oasis.names.tc.saml._2_0.assertion.AttributeType;
+import org.hibernate.HibernateException;
 
 /**
  * AuthNManager handles all authentication related method calls.
@@ -35,39 +38,61 @@ public class AuthNManager {
      * @param dn contains the subject and issue DNs from a certificate
      * @return a list of user attributes, if any
      */
-    public List<AttributeType> verifyDN(DNType dn)  throws  AuthNException {
+    public List<AttributeType> verifyDN(DNType dn) throws AuthNException {
 
         String event = "mgrVerifyDN";
         String subjectDN = dn.getSubjectDN();
         String issuerDN = dn.getIssuerDN();
-        OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
-        this.log.debug(netLogger.start(event,"subjectDN is " +  subjectDN));
-
         List<AttributeType> attributes = new ArrayList<AttributeType>();
-        UserDAO userDAO = new UserDAO(this.dbname);
-        User user = userDAO.fromDN(subjectDN);
-        if (user == null) {
-            // try the reverse of the elements in the DN
-            String reverseDN = reverseElements(subjectDN);
-            this.log.debug(netLogger.getMsg(event, "checkUser reverse DN: " + reverseDN));
-            user = userDAO.fromDN(reverseDN);
-            if (user == null){
-                this.log.error(netLogger.getMsg(event, "No user found for DN: " + subjectDN));
+
+        try {
+            X500Principal subjectPrincipal = new X500Principal(subjectDN);
+            X500Principal issuerPrincipal = new X500Principal(issuerDN);
+
+            String normSubjectDN = subjectPrincipal.getName();
+            String normIssuerDN = issuerPrincipal.getName();
+
+
+            OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
+            this.log.debug(netLogger.start(event, "submitted subjectDN: " + subjectDN));
+
+            this.log.debug("submitted subjectDN: " + subjectDN + " normalized: " + normSubjectDN);
+            this.log.debug("submitted issuerDN: " + issuerDN + " normalized: " + normIssuerDN);
+
+            UserDAO userDAO = new UserDAO(this.dbname);
+            User user;
+
+            try {
+                user = userDAO.fromNormalizedDN(normSubjectDN);
+            } catch (HibernateException ex) {
+                AuthNException error = new AuthNException( "verifyDN: DB error " + ex.getMessage());
+                this.log.error(error);
+                throw error;
+            }
+
+            if (user == null) {
+                AuthNException error = new AuthNException( "verifyDN: could not find user cert subject DN in db: " + normSubjectDN);
+                this.log.error(error);
+                throw error;
+            }
+
+            String userIssuerNorm = user.getCertIssuerNorm();
+
+            if (!userIssuerNorm.equals(normIssuerDN)) {
+                this.log.error(netLogger.getMsg(event, "User found for DN, '" + subjectDN + "', but issuer does not match issuer DN: " + issuerDN));
                 return attributes;
             }
+            String login = user.getLogin();
+            attributes = this.authNUtils.getAttributesForUser(user.getLogin());
+            this.log.debug(netLogger.end(event, "loginName is " + login));
+            return attributes;
+
+        } catch (IllegalArgumentException ex) {
+            AuthNException error = new AuthNException( "verifyDN: could not parse DN " + ex.getMessage());
+            this.log.error(error);
+            throw error;
         }
-        if (!user.getCertIssuer().equals(issuerDN)) {
-            String reverseDN = reverseElements(issuerDN);
-            this.log.debug(netLogger.getMsg(event, "checkUser issuer reverse DN: " + reverseDN));
-            if (!user.getCertIssuer().equals(reverseDN)) {
-                this.log.error(netLogger.getMsg(event, "User found for DN, '" + subjectDN + "', but issuer does not match issuer DN: " + issuerDN ));
-                return attributes;
-            }
-        }
-        String login = user.getLogin();
-        attributes = this.authNUtils.getAttributesForUser(user.getLogin());
-        this.log.debug(netLogger.end(event,"loginName is " + login));
-        return attributes;
+
     }
 
     /**
@@ -111,18 +136,4 @@ public class AuthNManager {
         return attributes;
     }
 
-    /**
-     * reverse the elements in a DN
-     * @param dn
-     * @return
-     */
-    private String reverseElements(String dn){
-        String[] dnElems = dn.split(",");
-        String reverseDN = " " + dnElems[0];
-        for (int i = 1; i < dnElems.length; i++) {
-            reverseDN = dnElems[i] + "," + reverseDN;
-        }
-        reverseDN = reverseDN.substring(1);
-        return reverseDN;
-    }
 }

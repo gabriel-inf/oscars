@@ -46,11 +46,11 @@ public class UserDAO extends GenericHibernateDAO<User, Integer> {
     /**
      * Makes sure user corresponding to DN has an entry in the db.
      *
-     * @param certSubject A string containing the subject from the certificate
+     * @param certSubjectDn A string containing the subject from the certificate
      * @return user the associated user instance, if any.
      */
-    public User fromDN(String certSubject) {
-        User user = (User) this.queryByParam("certSubject", certSubject);
+    public User fromNormalizedDN(String certSubjectDn) {
+        User user = (User) this.queryByParam("certSubjectNorm", certSubjectDn);
         return user;
     }
 
