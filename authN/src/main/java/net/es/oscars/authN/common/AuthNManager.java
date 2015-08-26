@@ -7,12 +7,15 @@ import javax.security.auth.x500.X500Principal;
 import net.es.oscars.authN.beans.User;
 import net.es.oscars.authN.dao.UserDAO;
 import net.es.oscars.authN.soap.gen.DNType;
+import net.es.oscars.authN.soap.gen.policy.UserDetails;
 import net.es.oscars.logging.OSCARSNetLogger;
 
+import net.es.oscars.utils.soap.OSCARSFaultUtils;
 import org.apache.log4j.Logger;
 
 import oasis.names.tc.saml._2_0.assertion.AttributeType;
 import org.hibernate.HibernateException;
+import org.hibernate.Session;
 
 /**
  * AuthNManager handles all authentication related method calls.
@@ -30,6 +33,7 @@ public class AuthNManager {
         this.dbname = dbname;
         this.salt = salt;
         this.authNUtils = new AuthNUtils(dbname);
+
     }
 
     /**
@@ -63,22 +67,22 @@ public class AuthNManager {
             User user;
 
             try {
-                user = userDAO.fromNormalizedDN(normSubjectDN);
+                user = userDAO.fromDN(normSubjectDN);
             } catch (HibernateException ex) {
-                AuthNException error = new AuthNException( "verifyDN: DB error " + ex.getMessage());
+                AuthNException error = new AuthNException("verifyDN: DB error " + ex.getMessage());
                 this.log.error(error);
                 throw error;
             }
 
             if (user == null) {
-                AuthNException error = new AuthNException( "verifyDN: could not find user cert subject DN in db: " + normSubjectDN);
+                AuthNException error = new AuthNException("verifyDN: could not find user cert subject DN in db: " + normSubjectDN);
                 this.log.error(error);
                 throw error;
             }
 
-            String userIssuerNorm = user.getCertIssuerNorm();
+            String dbCertIssuer = user.getCertIssuer();
 
-            if (!userIssuerNorm.equals(normIssuerDN)) {
+            if (!dbCertIssuer.equals(normIssuerDN)) {
                 this.log.error(netLogger.getMsg(event, "User found for DN, '" + subjectDN + "', but issuer does not match issuer DN: " + issuerDN));
                 return attributes;
             }
@@ -88,7 +92,7 @@ public class AuthNManager {
             return attributes;
 
         } catch (IllegalArgumentException ex) {
-            AuthNException error = new AuthNException( "verifyDN: could not parse DN " + ex.getMessage());
+            AuthNException error = new AuthNException("verifyDN: could not parse DN: " + ex.getMessage());
             this.log.error(error);
             throw error;
         }
@@ -105,34 +109,33 @@ public class AuthNManager {
      * @return a list of all the user's attributes
      */
 
-    public List<AttributeType>
-        verifyLogin(String userName, String password) throws AuthNException {
+    public List<AttributeType> verifyLogin(String userName, String password) throws AuthNException {
 
         User user = null;
         String event = "mgrVerifyLogin";
         OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
 
-        this.log.debug(netLogger.start(event,"loginId is " + userName));
+        this.log.debug(netLogger.start(event, "loginId is " + userName));
         UserDAO userDAO = new UserDAO(this.dbname);
         if (password == null) {
-            throw new AuthNException(
-                "verifyLogin: null password given for user " + userName);
+            throw new AuthNException("verifyLogin: null password given for user " + userName);
         }
+
         user = userDAO.query(userName);
         if (user == null) {
-            throw new AuthNException(
-                    "verifyLogin: User not registered " + userName + ".");
+            throw new AuthNException("verifyLogin: User not registered " + userName + ".");
         }
+
         // encrypt the password before comparison
         String encryptedPwd = Jcrypt.crypt(this.salt, password);
         if (!encryptedPwd.equals(user.getPassword())) {
-            throw new AuthNException( "verifyLogin: password is incorrect for " + userName);
+            throw new AuthNException("verifyLogin: password is incorrect for " + userName);
         }
 
-        List<AttributeType> attributes =
-            this.authNUtils.getAttributesForUser(user.getLogin());
+        List<AttributeType> attributes = this.authNUtils.getAttributesForUser(user.getLogin());
         userDAO.update(user);
-        this.log.info(netLogger.end(event,"verified login for " + userName));
+
+        this.log.info(netLogger.end(event, "verified login for " + userName));
         return attributes;
     }
 

@@ -1,8 +1,11 @@
 package net.es.oscars.authN.common;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
+import net.es.oscars.authN.beans.User;
+import net.es.oscars.authN.dao.UserDAO;
 import net.es.oscars.database.hibernate.HibernateUtil;
 import net.es.oscars.database.hibernate.Initializer;
 import net.es.oscars.logging.OSCARSNetLogger;
@@ -15,6 +18,8 @@ import net.es.oscars.utils.svc.ServiceNames;
 
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
+
+import javax.security.auth.x500.X500Principal;
 
 
 /**
@@ -121,12 +126,73 @@ public class AuthNCore {
     public void initDatabase() {
         OSCARSNetLogger netLogger = OSCARSNetLogger.getTlogger();
         String event = "initDatabase";
-        log.debug(netLogger.start(event,dbname));
+        log.debug(netLogger.start(event, dbname));
         ArrayList<String> dbnames = new ArrayList<String>();
         dbnames.add(dbname);
         Initializer dbInitializer = new Initializer();
         dbInitializer.initDatabase(dbnames, username, password, monitor, ServiceNames.SVC_AUTHN);
         log.debug(netLogger.end(event));
+        try {
+            normalizeDNsOnStartup();
+        } catch (AuthNException ex) {
+            log.error(ex);
+        }
+    }
+
+
+    private void normalizeDNsOnStartup() throws AuthNException {
+        AuthNCore core = AuthNCore.getInstance();
+
+        PolicyManager mgr = core.getPolicyManager();
+        Session session = core.getSession();
+        List<User> users;
+        UserDAO userDAO = new UserDAO(dbname);
+
+        session.beginTransaction();
+        users = mgr.listUsers(null, null); // gets all users
+        for (User user: users) {
+            boolean needChanges = false;
+            String normSubject = null;
+            String normIssuer = null;
+
+            String certSubject = user.getCertSubject();
+            if (certSubject != null && !certSubject.equals("")) {
+                try {
+                    X500Principal principal = new X500Principal(certSubject);
+                    normSubject = principal.getName();
+                } catch (IllegalArgumentException ex) {
+                    log.error("Could not parse cert subject "+certSubject+ " for user "+user.getLogin());
+                    log.error(ex);
+                }
+                if (!certSubject.equals(normSubject)) {
+                    needChanges = true;
+                }
+            }
+
+            String certIssuer= user.getCertIssuer();
+            if (certIssuer != null && !certIssuer.equals("")) {
+                try {
+                    X500Principal principal = new X500Principal(certIssuer);
+                    normIssuer = principal.getName();
+                } catch (IllegalArgumentException ex) {
+                    log.error("Could not parse cert issuer "+certIssuer+ " for user "+user.getLogin());
+                    log.error(ex);
+                }
+                if (!certIssuer.equals(normIssuer)) {
+                    needChanges = true;
+                }
+            }
+
+            if (needChanges) {
+                log.info("Normalized user subject / issuer DNs for "+user.getLogin());
+                user.setCertSubject(normSubject);
+                user.setCertIssuer(normIssuer);
+                log.info("  New subject : " + normSubject);
+                log.info("  New issuer : "+normIssuer);
+                userDAO.update(user);
+            }
+        }
+        session.getTransaction().commit();
     }
 
     /**

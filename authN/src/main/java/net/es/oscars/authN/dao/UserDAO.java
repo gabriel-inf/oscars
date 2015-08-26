@@ -49,8 +49,8 @@ public class UserDAO extends GenericHibernateDAO<User, Integer> {
      * @param certSubjectDn A string containing the subject from the certificate
      * @return user the associated user instance, if any.
      */
-    public User fromNormalizedDN(String certSubjectDn) {
-        User user = (User) this.queryByParam("certSubjectNorm", certSubjectDn);
+    public User fromDN(String certSubjectDn) {
+        User user = (User) this.queryByParam("certSubject", certSubjectDn);
         return user;
     }
 

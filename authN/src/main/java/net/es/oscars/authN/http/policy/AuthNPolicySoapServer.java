@@ -11,11 +11,11 @@ import net.es.oscars.utils.config.ConfigDefaults;
 import net.es.oscars.authN.soap.gen.policy.AuthNPolicyService;
 import net.es.oscars.authN.soap.gen.policy.AuthNPolicyPortType;
 
-@OSCARSNetLoggerize(moduleName=ModuleName.AUTHNP)
-@OSCARSService (
-		implementor = "net.es.oscars.authN.http.policy.AuthNPolicySoapHandler",
-		serviceName = ServiceNames.SVC_AUTHN_POLICY,
-		config = ConfigDefaults.CONFIG
+@OSCARSNetLoggerize(moduleName = ModuleName.AUTHNP)
+@OSCARSService(
+        implementor = "net.es.oscars.authN.http.policy.AuthNPolicySoapHandler",
+        serviceName = ServiceNames.SVC_AUTHN_POLICY,
+        config = ConfigDefaults.CONFIG
 )
 public class AuthNPolicySoapServer extends OSCARSSoapService<AuthNPolicyService, AuthNPolicyPortType> {
     private static AuthNPolicySoapServer instance;

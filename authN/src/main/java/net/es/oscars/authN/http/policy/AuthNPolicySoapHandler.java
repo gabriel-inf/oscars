@@ -37,6 +37,8 @@ import net.es.oscars.utils.svc.ServiceNames;
 import net.es.oscars.utils.soap.ErrorReport;
 import net.es.oscars.utils.sharedConstants.ErrorCodes;
 
+import javax.security.auth.x500.X500Principal;
+
 @OSCARSNetLoggerize(moduleName=ModuleName.AUTHNP)
 @javax.jws.WebService(
     serviceName = ServiceNames.SVC_AUTHN_POLICY,
@@ -555,8 +557,33 @@ public class AuthNPolicySoapHandler implements AuthNPolicyPortType {
         User user = new User();
         user.setLogin(userDetails.getLogin());
         user.setPassword(userDetails.getPassword());
-        user.setCertIssuer(userDetails.getCertIssuer());
-        user.setCertSubject(userDetails.getCertSubject());
+
+        String certSubject = userDetails.getCertSubject();
+        if (certSubject != null && !certSubject.equals("")) {
+            try {
+                X500Principal principal = new X500Principal(certSubject);
+                user.setCertSubject(principal.getName());
+            } catch (IllegalArgumentException ex) {
+                LOG.error("Could not parse cert subject "+certSubject);
+                LOG.error(ex);
+            }
+        } else {
+            user.setCertSubject(certSubject);
+        }
+
+        String certIssuer= userDetails.getCertIssuer();
+        if (certIssuer != null && !certIssuer.equals("")) {
+            try {
+                X500Principal principal = new X500Principal(certIssuer);
+                user.setCertIssuer(principal.getName());
+            } catch (IllegalArgumentException ex) {
+                LOG.error("Could not parse cert issuer "+certIssuer);
+                LOG.error(ex);
+            }
+        } else {
+            user.setCertIssuer(certIssuer);
+        }
+
         user.setLastName(userDetails.getLastName());
         user.setFirstName(userDetails.getFirstName());
         user.setEmailPrimary(userDetails.getEmailPrimary());

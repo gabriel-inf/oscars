@@ -16,14 +16,9 @@ public class User extends HibernateBean implements Serializable {
     /** nullable persistent field */
     private String certIssuer;
 
-    /** nullable persistent field */
-    private String certIssuerNorm;
 
     /** nullable persistent field */
     private String certSubject;
-
-    /** nullable persistent field */
-    private String certSubjectNorm;
 
     /** persistent field */
     private String lastName;
@@ -102,22 +97,6 @@ public class User extends HibernateBean implements Serializable {
     public void setCertSubject(String certSubject) {
         this.certSubject = certSubject;
     }
-    public String getCertSubjectNorm() {
-        return certSubjectNorm;
-    }
-
-    public void setCertSubjectNorm(String certSubjectNorm) {
-        this.certSubjectNorm = certSubjectNorm;
-    }
-
-    public String getCertIssuerNorm() {
-        return certIssuerNorm;
-    }
-
-    public void setCertIssuerNorm(String certIssuerNorm) {
-        this.certIssuerNorm = certIssuerNorm;
-    }
-
 
     /**
      * @return lastName A String with the user's last name
