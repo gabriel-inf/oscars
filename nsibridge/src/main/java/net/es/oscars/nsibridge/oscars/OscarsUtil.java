@@ -17,10 +17,16 @@ import net.es.nsi.lib.soap.gen.nsi_2_0_r117.connection.ifce.ServiceException;
 import net.es.oscars.utils.soap.OSCARSServiceException;
 import org.apache.log4j.Logger;
 
+import javax.naming.InvalidNameException;
+import javax.naming.ldap.LdapName;
+import javax.naming.ldap.Rdn;
 import javax.persistence.EntityManager;
+import javax.security.auth.x500.X500Principal;
 import javax.xml.bind.JAXBException;
 import javax.xml.stream.XMLStreamException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class OscarsUtil {
     private static final Logger log = Logger.getLogger(OscarsUtil.class);
@@ -468,6 +474,51 @@ public class OscarsUtil {
             log.error(ex.getMessage(), ex);
             throw new ServiceException("could not poll");
         }
-
     }
+
+    public static String normalizeDN(String dn) throws IllegalArgumentException, InvalidNameException {
+        // SEE:
+
+        // https://github.com/hessu/ham-cert-web-demo/issues/1
+
+        // incoming format:
+        // /C=US/ST=CA/L=Berkeley/O=ESnet/OU=ANTG/CN=MaintDB
+        // desired format:
+        // "CN=MaintDB, OU=ANTG, O=ESnet, L=Berkeley, ST=CA, C=US";
+
+        //if DN does not start with / then it should already be in the desired form
+        String normalized;
+
+        if (dn.startsWith("/")) {
+            LdapName ldn = new LdapName("");
+            Rdn rdn;
+
+            String regex = "(.+)?/(\\w+)=(.+)";
+            Pattern pattern = Pattern.compile(regex);
+
+            while (dn != null && !dn.equals("")) {
+                Matcher matcher = pattern.matcher(dn);
+                while (matcher.find()) {
+                    String name = matcher.group(2);
+                    String value = matcher.group(3);
+                    dn = matcher.group(1);
+                    if (name != null && value != null) {
+                        rdn = new Rdn(name, value);
+                        ldn.add(0, rdn);
+                    }
+                    // for (int i = 0; i <= 3; i++) {
+                        // System.out.println("group " + i + ": " + matcher.group(i));
+                    // }
+                }
+            }
+            normalized = ldn.toString();
+        } else {
+            normalized = dn;
+        }
+
+        X500Principal principal = new X500Principal(normalized);
+        return principal.getName();
+    }
+
+
 }

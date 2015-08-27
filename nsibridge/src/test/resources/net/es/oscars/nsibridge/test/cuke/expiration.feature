@@ -1,4 +1,3 @@
-@wip
 Feature: reservation expiration
     I want to verify that reservations expire after end time is reached
 

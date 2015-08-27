@@ -7,6 +7,7 @@ import net.es.oscars.nsibridge.config.HttpConfig;
 import net.es.oscars.nsibridge.config.OscarsStubConfig;
 import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.oscars.OscarsProxy;
+import net.es.oscars.utils.auth.AuthUtils;
 import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
@@ -26,6 +27,7 @@ public class OscarsCertInInterceptor extends AbstractPhaseInterceptor<Message> {
     private static final Logger log = Logger.getLogger(OscarsCertInInterceptor.class);
 
     private static OscarsCertInInterceptor instance;
+
     public static OscarsCertInInterceptor getInstance() {
         if (instance == null) {
             instance = new OscarsCertInInterceptor();
@@ -52,14 +54,14 @@ public class OscarsCertInInterceptor extends AbstractPhaseInterceptor<Message> {
 
         HttpConfig config = SpringContext.getInstance().getContext().getBean("httpConfig", HttpConfig.class);
         String trustedProxy = config.getTrustedSSLProxy();
-        if (trustedProxy  != null && !trustedProxy.isEmpty() ) {
+        if (trustedProxy != null && !trustedProxy.isEmpty()) {
             log.debug("trusting an SSL proxy to set SSL headers");
             trustedProxy = trustedProxy.toLowerCase().trim();
 
 
             HttpServletRequest httpRequest = (HttpServletRequest) message.get(AbstractHTTPDestination.HTTP_REQUEST);
             String remoteHost = httpRequest.getRemoteHost().toLowerCase().trim();
-            log.debug("remote: "+remoteHost+" trusted: "+trustedProxy);
+            log.debug("remote: " + remoteHost + " trusted: " + trustedProxy);
 
             if (!remoteHost.equals(trustedProxy)) {
                 UntrustedURLConnectionIOException ex = new UntrustedURLConnectionIOException("incoming request not from trusted SSL proxy");
@@ -68,6 +70,13 @@ public class OscarsCertInInterceptor extends AbstractPhaseInterceptor<Message> {
 
             String issuerDN = httpRequest.getHeader(idnHeader);
             String subjectDN = httpRequest.getHeader(sdnHeader);
+            log.debug("incoming SSL_CLIENT_S_DN : " + subjectDN);
+            log.debug("incoming SSL_CLIENT_I_DN : " + issuerDN);
+
+            subjectDN = AuthUtils.normalizeDN(subjectDN);
+            issuerDN = AuthUtils.normalizeDN(issuerDN);
+
+
             if (!verifyDNs(subjectDN, issuerDN)) {
                 if (!httpBasicFailover) {
                     UntrustedURLConnectionIOException ex = new UntrustedURLConnectionIOException("untrusted subject / issuer DN headers set by SSL proxy");
@@ -85,10 +94,10 @@ public class OscarsCertInInterceptor extends AbstractPhaseInterceptor<Message> {
                 if (certs == null || certs.length == 0) {
                     throw new UntrustedURLConnectionIOException("No client certificates were found");
                 } else {
-                    X509Certificate[] x509Certs = (X509Certificate[])certs;
+                    X509Certificate[] x509Certs = (X509Certificate[]) certs;
                     if (!verifyCert(x509Certs[0])) {
                         throw new UntrustedURLConnectionIOException(
-                            "The client certificate does not match the defined cert constraints");
+                                "The client certificate does not match the defined cert constraints");
                     }
                 }
             } catch (UntrustedURLConnectionIOException ex) {
@@ -99,7 +108,6 @@ public class OscarsCertInInterceptor extends AbstractPhaseInterceptor<Message> {
                 }
             }
         }
-
 
 
     }
@@ -113,7 +121,7 @@ public class OscarsCertInInterceptor extends AbstractPhaseInterceptor<Message> {
             return false;
         }
 
-        log.debug("verifying incoming cert DNs, s: "+certSubjectDN+" i: "+certIssuerDN);
+        log.debug("verifying incoming cert DNs, s: " + certSubjectDN + " i: " + certIssuerDN);
 
         try {
             MessagePropertiesType mp = OscarsProxy.getInstance().makeMessageProps();
@@ -132,7 +140,6 @@ public class OscarsCertInInterceptor extends AbstractPhaseInterceptor<Message> {
     }
 
 
-
     private boolean verifyDNs(String subjectDN, String issuerDN) {
 
         if (subjectDN == null || subjectDN.equals("(null)") || issuerDN == null || issuerDN.equals("(null)")) {
@@ -141,7 +148,8 @@ public class OscarsCertInInterceptor extends AbstractPhaseInterceptor<Message> {
         }
 
 
-        log.debug("verifying incoming cert DNs, s: "+subjectDN+" i: "+issuerDN);
+        log.debug("verifying incoming cert DNs, s: " + subjectDN + " i: " + issuerDN);
+
 
         try {
             MessagePropertiesType mp = OscarsProxy.getInstance().makeMessageProps();
@@ -158,8 +166,6 @@ public class OscarsCertInInterceptor extends AbstractPhaseInterceptor<Message> {
         }
         return true;
     }
-
-
 
 
     public boolean isHttpBasicFailover() {
