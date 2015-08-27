@@ -21,4 +21,5 @@ Feature: miscellaneous tests
     Given the incoming DN is "CN=ion.net.internet2.edu, OU=PlatinumSSL, OU=Internet2 NOC, O=Internet2, STREET=2737 E 10th St, L=Bloomington, ST=Indiana, OID.2.5.4.17=47408, C=US"
     Then the normalized DN matches "CN=ion.net.internet2.edu, OU=PlatinumSSL, OU=Internet2 NOC, O=Internet2, STREET=2737 E 10th St, L=Bloomington, ST=Indiana, OID.2.5.4.17=47408, C=US"
 
-
+    Given the incoming DN is "CN=oscars/oscars.es.net,OU=Services,DC=ES,DC=net"
+    Given the incoming DN is "CN=oscars/oscars.es.net,OU=Services,DC=ES,DC=net"

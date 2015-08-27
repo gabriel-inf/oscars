@@ -3,7 +3,8 @@ package net.es.oscars.nsibridge.task;
 
 import net.es.nsi.lib.client.config.ClientConfig;
 import net.es.nsi.lib.client.util.ClientUtil;
-import net.es.nsi.lib.soap.gen.nsi_2_0_r117.services.point2point.P2PServiceBaseType;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.services.point2point.*;
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.services.point2point.ObjectFactory;
 import net.es.oscars.nsibridge.beans.ResvRequest;
 import net.es.oscars.nsibridge.beans.SimpleRequest;
 import net.es.oscars.nsibridge.beans.db.ConnectionRecord;
@@ -36,6 +37,8 @@ import org.apache.cxf.transport.http.HTTPConduit;
 import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 
+import net.es.nsi.lib.soap.gen.nsi_2_0_r117.services.point2point.ObjectFactory;
+import javax.xml.bind.JAXBElement;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.ws.Holder;
@@ -221,21 +224,31 @@ public class SendNSIMessageTask extends Task  {
 
                     // JUST LOOK AT THIS AND DESPAIR
                     for (Object obj : rcct.getAny()) {
-                        if (obj.getClass().equals(P2PServiceBaseType.class)) {
-                            P2PServiceBaseType ps2ps = (P2PServiceBaseType) obj;
+                        Class c = obj.getClass();
+                        log.debug("object class: "+c.getName());
+                        if (obj.getClass().equals(JAXBElement.class)) {
+                            JAXBElement<P2PServiceBaseType> element = (JAXBElement<P2PServiceBaseType>) obj;
+                            P2PServiceBaseType p2ps = element.getValue();
+                            if (cr!= null && cr.getOscarsInfoRecord() != null) {
+                                String srcVlan = cr.getOscarsInfoRecord().getSrcVlan();
+                                String srcStp = p2ps.getSourceSTP();
+                                String[] srcParts = srcStp.split("\\?");
+                                srcStp = srcParts[0]+'?'+srcVlan;
+                                log.debug("setting src stp to: "+srcStp);
 
-                            String srcVlan = cr.getOscarsInfoRecord().getSrcVlan();
-                            String srcStp = ps2ps.getSourceSTP();
-                            String[] srcParts = srcStp.split("\\?");
-                            srcStp = srcParts[0]+'?'+srcVlan;
+                                String dstVlan = cr.getOscarsInfoRecord().getDstVlan();
+                                String dstStp = p2ps.getDestSTP();
+                                String[] dstParts = dstStp.split("\\?");
+                                dstStp = dstParts[0]+'?'+dstVlan;
+                                log.debug("setting dst stp to: "+dstStp);
 
-                            String dstVlan = cr.getOscarsInfoRecord().getDstVlan();
-                            String dstStp = ps2ps.getDestSTP();
-                            String[] dstParts = dstStp.split("\\?");
-                            dstStp = dstParts[0]+'?'+dstVlan;
+                                p2ps.setSourceSTP(srcStp);
+                                p2ps.setDestSTP(dstStp);
+                            } else {
+                                log.error("no infoRecord!");
+                            }
 
-                            ps2ps.setSourceSTP(srcStp);
-                            ps2ps.setDestSTP(dstStp);
+
                         }
                     }
 
