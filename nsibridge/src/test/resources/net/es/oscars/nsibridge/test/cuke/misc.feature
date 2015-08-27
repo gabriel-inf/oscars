@@ -5,6 +5,10 @@ Feature: miscellaneous tests
     Given the incoming DN is "/C=US/ST=CA/L=Berkeley/O=ESnet/OU=ANTG/CN=MaintDB"
     Then the normalized DN matches "CN=MaintDB, OU=ANTG, O=ESnet, L=Berkeley, ST=CA, C=US"
 
+    Given the incoming DN is "/OU=Domain Control Validated/CN=nsi-aggr-west.es.net"
+    Then the normalized DN matches "CN=nsi-aggr-west.es.net, OU=Domain Control Validated"
+
+
     Given the incoming DN is "/C=US/ST=Arizona/L=Scottsdale/O=GoDaddy.com, Inc./OU=http://certs.godaddy.com/repository//CN=Go Daddy Secure Certificate Authority - G2"
     Then the normalized DN matches "CN=Go Daddy Secure Certificate Authority - G2, OU=http://certs.godaddy.com/repository/, O=GoDaddy.com\, Inc.,  L=Scottsdale, ST=Arizona, C=US"
 

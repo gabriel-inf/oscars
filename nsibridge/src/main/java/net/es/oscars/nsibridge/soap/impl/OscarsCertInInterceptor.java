@@ -7,7 +7,7 @@ import net.es.oscars.nsibridge.config.HttpConfig;
 import net.es.oscars.nsibridge.config.OscarsStubConfig;
 import net.es.oscars.nsibridge.config.SpringContext;
 import net.es.oscars.nsibridge.oscars.OscarsProxy;
-import net.es.oscars.utils.auth.AuthUtils;
+import net.es.oscars.nsibridge.oscars.OscarsUtil;
 import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
@@ -17,6 +17,7 @@ import org.apache.cxf.transport.http.AbstractHTTPDestination;
 import org.apache.cxf.transport.http.UntrustedURLConnectionIOException;
 import org.apache.log4j.Logger;
 
+import javax.naming.InvalidNameException;
 import javax.servlet.http.HttpServletRequest;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -72,9 +73,13 @@ public class OscarsCertInInterceptor extends AbstractPhaseInterceptor<Message> {
             String subjectDN = httpRequest.getHeader(sdnHeader);
             log.debug("incoming SSL_CLIENT_S_DN : " + subjectDN);
             log.debug("incoming SSL_CLIENT_I_DN : " + issuerDN);
-
-            subjectDN = AuthUtils.normalizeDN(subjectDN);
-            issuerDN = AuthUtils.normalizeDN(issuerDN);
+            try {
+                subjectDN = OscarsUtil.normalizeDN(subjectDN);
+                issuerDN = OscarsUtil.normalizeDN(issuerDN);
+            } catch (InvalidNameException ex) {
+                log.error(ex);
+                throw new Fault(ex);
+            }
 
 
             if (!verifyDNs(subjectDN, issuerDN)) {
