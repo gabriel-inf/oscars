@@ -40,7 +40,6 @@ import javax.xml.stream.XMLStreamException;
 
 public class NSI_OSCARS_Translation {
     private static final Logger log = Logger.getLogger(NSI_OSCARS_Translation.class);
-
     public static CancelResContent makeOscarsCancel(String oscarsGri) {
         CancelResContent crc = new CancelResContent();
         crc.setGlobalReservationId(oscarsGri);
@@ -50,12 +49,12 @@ public class NSI_OSCARS_Translation {
     }
 
     public static ModifyResContent makeOscarsModify(ResvRequest req, String oscarsGri) throws TranslationException {
-        log.debug("modify gri: " + oscarsGri);
+        log.debug("modify gri: "+oscarsGri);
 
         ReservationRequestCriteriaType crit = req.getReserveType().getCriteria();
         P2PServiceBaseType p2pType = null;
         for (Object o : crit.getAny()) {
-            if (o instanceof P2PServiceBaseType) {
+            if (o instanceof P2PServiceBaseType ) {
                 p2pType = (P2PServiceBaseType) o;
             } else {
                 try {
@@ -91,7 +90,7 @@ public class NSI_OSCARS_Translation {
 
 
     public static ModifyResContent makeOscarsRollback(ResvRecord resvRecord, String oscarsGri) throws TranslationException {
-        log.debug("rollback gri: " + oscarsGri);
+        log.debug("rollback gri: "+oscarsGri);
 
         Long capacity = resvRecord.getCapacity();
         int bandwidth = capacity.intValue();
@@ -109,6 +108,7 @@ public class NSI_OSCARS_Translation {
 
         return mrc;
     }
+
 
 
     public static ResCreateContent makeOscarsResv(ResvRequest req) throws TranslationException {
@@ -135,7 +135,7 @@ public class NSI_OSCARS_Translation {
 
         P2PServiceBaseType p2pType = null;
         for (Object o : crit.getAny()) {
-            if (o instanceof P2PServiceBaseType) {
+            if (o instanceof P2PServiceBaseType ) {
                 p2pType = (P2PServiceBaseType) o;
             } else {
                 try {
@@ -167,10 +167,10 @@ public class NSI_OSCARS_Translation {
         String dstNetworkId = STPUtil.getNetworkId(dstStp);
 
         if (srcNetworkId == null || !srcNetworkId.equals(localNetworkId())) {
-            log.error("Invalid source networkId: " + srcNetworkId);
+            log.error("Invalid source networkId: "+srcNetworkId);
         }
         if (dstNetworkId == null || !dstNetworkId.equals(localNetworkId())) {
-            log.error("Invalid dest networkId: " + dstNetworkId);
+            log.error("Invalid dest networkId: "+dstNetworkId);
         }
 
         String srcUrn = STPUtil.getUrn(srcStp);
@@ -181,12 +181,12 @@ public class NSI_OSCARS_Translation {
 
         String nsiSrcVlan = STPUtil.getVlanRange(srcStp);
         String nsiDstVlan = STPUtil.getVlanRange(dstStp);
-        nsiLog = "nsi gri: " + req.getReserveType().getGlobalReservationId() + "\n";
-        nsiLog += "nsi connId: " + req.getReserveType().getConnectionId() + "\n";
-        nsiLog += "src stp: " + srcStp + " vlan: " + nsiSrcVlan + "\n";
-        nsiLog += "dst stp: " + dstStp + " vlan: " + nsiDstVlan + "\n";
-        nsiLog += "stime " + crit.getSchedule().getStartTime();
-        nsiLog += "etime " + crit.getSchedule().getEndTime();
+        nsiLog = "nsi gri: "+req.getReserveType().getGlobalReservationId()+"\n";
+        nsiLog += "nsi connId: "+req.getReserveType().getConnectionId()+"\n";
+        nsiLog += "src stp: "+srcStp+" vlan: "+nsiSrcVlan+"\n";
+        nsiLog += "dst stp: "+dstStp+" vlan: "+nsiDstVlan+"\n";
+        nsiLog += "stime "+crit.getSchedule().getStartTime();
+        nsiLog += "etime "+crit.getSchedule().getEndTime();
 
 
         pi.getLayer2Info().setSrcEndpoint(srcStpCfg.getOscarsId());
@@ -209,66 +209,59 @@ public class NSI_OSCARS_Translation {
             hasEro = false;
         }
 
+        /* add first hop */
+        CtrlPlaneHopContent srcHop = new CtrlPlaneHopContent();
+        CtrlPlaneLinkContent srcLink = new CtrlPlaneLinkContent();
+        CtrlPlaneSwcapContent srcSwcap = new CtrlPlaneSwcapContent();
+        CtrlPlaneSwitchingCapabilitySpecificInfo srcSwcapInfo = new CtrlPlaneSwitchingCapabilitySpecificInfo();
 
+        srcHop.setLinkIdRef(srcStpCfg.getOscarsId());
+        srcHop.setLink(srcLink);
+
+        srcSwcapInfo.setVlanRangeAvailability(nsiSrcVlan);
+        srcSwcap.setSwitchingCapabilitySpecificInfo(srcSwcapInfo);
+
+        srcLink.setSwitchingCapabilityDescriptors(srcSwcap);
+        srcLink.setId(srcHop.getLinkIdRef());
+
+        pathHops.add(srcHop);
+
+        /* add intermediate hops if they were provided */
         if (hasEro) {
             List<OrderedStpType> orderedSTPs = stpList.getOrderedSTP();
-            int size = orderedSTPs.size();
-            int i = 0;
             for (OrderedStpType orderedStp : orderedSTPs) {
 
                 String stp = orderedStp.getStp();
                 String urn = STPUtil.getUrn(stp);
                 StpConfig stpCfg = findStp(urn);
+
                 CtrlPlaneHopContent hop = new CtrlPlaneHopContent();
-                hop.setLinkIdRef(stpCfg.getOscarsId());
-
                 CtrlPlaneLinkContent link = new CtrlPlaneLinkContent();
-                CtrlPlaneSwcapContent swcap = new CtrlPlaneSwcapContent();
-                CtrlPlaneSwitchingCapabilitySpecificInfo swcapInfo = new CtrlPlaneSwitchingCapabilitySpecificInfo();
-                if (i == 0) {
-                    swcapInfo.setVlanRangeAvailability(nsiSrcVlan);
-                } else if (i == size - 1) {
-                    swcapInfo.setVlanRangeAvailability(nsiDstVlan);
 
-                }
-                swcap.setSwitchingCapabilitySpecificInfo(swcapInfo);
-                link.setSwitchingCapabilityDescriptors(swcap);
-                link.setId(hop.getLinkIdRef());
+                hop.setLinkIdRef(stpCfg.getOscarsId());
                 hop.setLink(link);
+
+                link.setId(hop.getLinkIdRef());
+
                 pathHops.add(hop);
-                i++;
             }
-
-        } else {
-
-            CtrlPlaneHopContent srcHop = new CtrlPlaneHopContent();
-            srcHop.setLinkIdRef(srcStpCfg.getOscarsId());
-            CtrlPlaneLinkContent srcLink = new CtrlPlaneLinkContent();
-            CtrlPlaneSwcapContent srcSwcap = new CtrlPlaneSwcapContent();
-            CtrlPlaneSwitchingCapabilitySpecificInfo srcSwcapInfo = new CtrlPlaneSwitchingCapabilitySpecificInfo();
-            srcSwcapInfo.setVlanRangeAvailability(nsiSrcVlan);
-            srcSwcap.setSwitchingCapabilitySpecificInfo(srcSwcapInfo);
-            srcLink.setSwitchingCapabilityDescriptors(srcSwcap);
-            srcLink.setId(srcHop.getLinkIdRef());
-            srcHop.setLinkIdRef(null);
-            srcHop.setLink(srcLink);
-
-            CtrlPlaneHopContent dstHop = new CtrlPlaneHopContent();
-            dstHop.setLinkIdRef(dstStpCfg.getOscarsId());
-            CtrlPlaneLinkContent dstLink = new CtrlPlaneLinkContent();
-            CtrlPlaneSwcapContent dstSwcap = new CtrlPlaneSwcapContent();
-            CtrlPlaneSwitchingCapabilitySpecificInfo dstSwcapInfo = new CtrlPlaneSwitchingCapabilitySpecificInfo();
-            dstSwcapInfo.setVlanRangeAvailability(nsiDstVlan);
-            dstSwcap.setSwitchingCapabilitySpecificInfo(dstSwcapInfo);
-            dstLink.setSwitchingCapabilityDescriptors(dstSwcap);
-            dstLink.setId(dstHop.getLinkIdRef());
-            dstHop.setLinkIdRef(null);
-            dstHop.setLink(dstLink);
-
-
-            pathHops.add(srcHop);
-            pathHops.add(dstHop);
         }
+        /* add destination hop */
+        CtrlPlaneHopContent dstHop = new CtrlPlaneHopContent();
+        CtrlPlaneLinkContent dstLink = new CtrlPlaneLinkContent();
+        CtrlPlaneSwcapContent dstSwcap = new CtrlPlaneSwcapContent();
+        CtrlPlaneSwitchingCapabilitySpecificInfo dstSwcapInfo = new CtrlPlaneSwitchingCapabilitySpecificInfo();
+
+        dstHop.setLinkIdRef(dstStpCfg.getOscarsId());
+        dstHop.setLink(dstLink);
+
+        dstSwcapInfo.setVlanRangeAvailability(nsiDstVlan);
+        dstSwcap.setSwitchingCapabilitySpecificInfo(dstSwcapInfo);
+
+        dstLink.setSwitchingCapabilityDescriptors(dstSwcap);
+        dstLink.setId(dstHop.getLinkIdRef());
+        pathHops.add(dstHop);
+
 
         OptionalConstraintType oct = new OptionalConstraintType();
         oct.setCategory("policing");
@@ -282,10 +275,11 @@ public class NSI_OSCARS_Translation {
         log.debug(nsiLog);
 
 
-        oscarsLog = "oscars src: [" + pi.getLayer2Info().getSrcEndpoint() + "]";
+        oscarsLog = "oscars src: ["+pi.getLayer2Info().getSrcEndpoint()+"]";
         log.debug(oscarsLog);
-        oscarsLog = "oscars dst: [" + pi.getLayer2Info().getDestEndpoint() + "]";
+        oscarsLog = "oscars dst: ["+pi.getLayer2Info().getDestEndpoint()+"]";
         log.debug(oscarsLog);
+
 
 
         return rc;
@@ -310,7 +304,7 @@ public class NSI_OSCARS_Translation {
         return tp;
     }
 
-    public static QuerySummaryResultType makeNSIQueryResult(ConnectionRecord cr) throws TranslationException {
+    public static QuerySummaryResultType makeNSIQueryResult(ConnectionRecord cr)  throws TranslationException {
         QuerySummaryResultType resultType = new QuerySummaryResultType();
         NSI_SM_Holder smh = NSI_SM_Holder.getInstance();
         RequestHolder rh = RequestHolder.getInstance();
@@ -326,29 +320,29 @@ public class NSI_OSCARS_Translation {
         NSI_Prov_SM psm = smh.findNsiProvSM(cr.getConnectionId());
         DataPlaneStatusType dst = new DataPlaneStatusType();
         //null checks to avoid errors, especially in stub mode
-        if (lsm != null && lsm.getState() != null) {
-            LifecycleStateEnumType lst = (LifecycleStateEnumType) lsm.getState().state();
+        if(lsm != null && lsm.getState() != null){
+            LifecycleStateEnumType      lst = (LifecycleStateEnumType) lsm.getState().state();
             cst.setLifecycleState(lst);
         }
-        if (psm != null && psm.getState() != null) {
-            //for now just link dataplane state to provision state since we don't have way to get this directly
-            ProvisionStateEnumType pst = (ProvisionStateEnumType) psm.getState().state();
-            if (ProvisionStateEnumType.PROVISIONED.equals(pst.value()) ||
-                    ProvisionStateEnumType.RELEASING.equals(pst.value())) {
+        if(psm != null && psm.getState() != null){
+           //for now just link dataplane state to provision state since we don't have way to get this directly
+            ProvisionStateEnumType      pst = (ProvisionStateEnumType) psm.getState().state();
+            if(ProvisionStateEnumType.PROVISIONED.equals(pst.value()) ||
+                    ProvisionStateEnumType.RELEASING.equals(pst.value())){
                 dst.setActive(true);
-            } else {
+            }else{
                 dst.setActive(false);
             }
             cst.setProvisionState(pst);
         }
-        if (rsm != null && rsm.getState() != null) {
-            ReservationStateEnumType rst = (ReservationStateEnumType) rsm.getState().state();
+        if(rsm != null && rsm.getState() != null){
+            ReservationStateEnumType    rst = (ReservationStateEnumType) rsm.getState().state();
             cst.setReservationState(rst);
         }
         int version = 0;
-        if (cr.getResvRecords() != null) {
+        if(cr.getResvRecords() != null){
             for (ResvRecord resvRec : cr.getResvRecords()) {
-                if (resvRec.getVersion() > version) {
+                if(resvRec.getVersion() > version){
                     version = resvRec.getVersion();
                 }
             }
@@ -359,7 +353,7 @@ public class NSI_OSCARS_Translation {
         resultType.setConnectionStates(cst);
 
         //May not be GRI if there was a failure before hitting OSCARS
-        if (cr.getOscarsGri() == null) {
+        if(cr.getOscarsGri() == null){
             return resultType;
         }
 
@@ -378,7 +372,7 @@ public class NSI_OSCARS_Translation {
             }
 
             QueryResReply reply = OscarsProxy.getInstance().sendQuery(qc, attrs);
-            if (reply == null || reply.getReservationDetails() == null) {
+            if(reply == null || reply.getReservationDetails() == null){
                 throw new TranslationException("No matching OSCARS reservation found with oscars GRI " + cr.getOscarsGri());
             }
             //set description
@@ -411,17 +405,17 @@ public class NSI_OSCARS_Translation {
         long endTime = 0;
         int bandwidth = 0;
         PathInfo pathInfo = null;
-        if (oscarsResDetails.getReservedConstraint() != null) {
+        if(oscarsResDetails.getReservedConstraint() != null){
             startTime = oscarsResDetails.getReservedConstraint().getStartTime();
             endTime = oscarsResDetails.getReservedConstraint().getEndTime();
-            bandwidth = oscarsResDetails.getReservedConstraint().getBandwidth();
+            bandwidth  = oscarsResDetails.getReservedConstraint().getBandwidth();
             pathInfo = oscarsResDetails.getReservedConstraint().getPathInfo();
-        } else if (oscarsResDetails.getUserRequestConstraint() != null) {
+        }else if(oscarsResDetails.getUserRequestConstraint() != null){
             startTime = oscarsResDetails.getUserRequestConstraint().getStartTime();
             endTime = oscarsResDetails.getUserRequestConstraint().getEndTime();
-            bandwidth = oscarsResDetails.getUserRequestConstraint().getBandwidth();
+            bandwidth  = oscarsResDetails.getUserRequestConstraint().getBandwidth();
             pathInfo = oscarsResDetails.getUserRequestConstraint().getPathInfo();
-        } else {
+        }else {
             //nothing to convert so exit
             return criteriaType;
         }
@@ -431,7 +425,7 @@ public class NSI_OSCARS_Translation {
         GregorianCalendar startCal = new GregorianCalendar();
         startCal.setTimeInMillis(startTime * 1000);
         GregorianCalendar endCal = new GregorianCalendar();
-        endCal.setTimeInMillis(endTime * 1000);
+        endCal.setTimeInMillis(endTime*1000);
         try {
             scheduleType.setStartTime(DatatypeFactory.newInstance().newXMLGregorianCalendar(startCal));
             scheduleType.setEndTime(DatatypeFactory.newInstance().newXMLGregorianCalendar(endCal));
@@ -450,52 +444,50 @@ public class NSI_OSCARS_Translation {
         String dstStp = "urn:ogf:network:";
 
         String nsaId = findNsaId();
-        if (nsaId != null) {
+        if(nsaId != null){
             srcStp += localNetworkId();
             dstStp += localNetworkId();
         }
-        if (pathInfo.getPath() != null && pathInfo.getPath().getHop() != null && pathInfo.getPath().getHop().size() >= 2) {
+        if (pathInfo.getPath() != null &&  pathInfo.getPath().getHop() != null && pathInfo.getPath().getHop().size() >= 2) {
             List<CtrlPlaneHopContent> hops = pathInfo.getPath().getHop();
-            srcStp += ":" + findStpByOSCARSId(NMWGParserUtil.getURN(hops.get(0))).getStpId();
+            srcStp += ":"+ findStpByOSCARSId(NMWGParserUtil.getURN(hops.get(0))).getStpId();
 
-            if (PathTools.isVlanHop(hops.get(0))) {
-                String srcVlan = hops.get(0).getLink().getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getVlanRangeAvailability();
-                ;
-                srcStp += "?vlan=" + srcVlan;
+            if(PathTools.isVlanHop(hops.get(0))){
+                String srcVlan = hops.get(0).getLink().getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getVlanRangeAvailability();;
+                srcStp += "?vlan="+srcVlan;
             }
 
-            dstStp += ":" + findStpByOSCARSId(NMWGParserUtil.getURN(hops.get(hops.size() - 1))).getStpId();
-            if (PathTools.isVlanHop(hops.get(hops.size() - 1))) {
-                String dstVlan = hops.get(hops.size() - 1).getLink().getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getVlanRangeAvailability();
-                ;
-                dstStp += "?vlan=" + dstVlan;
+            dstStp += ":"+ findStpByOSCARSId(NMWGParserUtil.getURN(hops.get(hops.size() - 1))).getStpId();
+            if(PathTools.isVlanHop(hops.get(hops.size() - 1))){
+                String dstVlan = hops.get(hops.size() - 1).getLink().getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getVlanRangeAvailability();;
+                dstStp += "?vlan="+dstVlan;
             }
 
             //set ero
             StpListType ero = new StpListType();
             p2pType.setEro(ero);
-            for (int i = 1; i < hops.size() - 2; i++) {
+            for(int i = 1; i < hops.size() - 2; i++){
                 OrderedStpType ordStp = new OrderedStpType();
                 String hopStp = "urn:ogf:network:";
-                if (nsaId != null) {
+                if(nsaId != null){
                     hopStp += localNetworkId();
                 }
-                hopStp += ":" + findStpByOSCARSId(NMWGParserUtil.getURN(hops.get(i))).getStpId();
+                hopStp += ":"+findStpByOSCARSId(NMWGParserUtil.getURN(hops.get(i))).getStpId();
                 ordStp.setOrder(i);
                 ordStp.setStp(hopStp);
                 ero.getOrderedSTP().add(ordStp);
             }
-        } else if (pathInfo.getLayer2Info() != null) {
-            srcStp += ":" + findStpByOSCARSId(pathInfo.getLayer2Info().getSrcEndpoint()).getStpId();
-            if (pathInfo.getLayer2Info().getSrcVtag() != null && pathInfo.getLayer2Info().getSrcVtag().getValue() != null) {
+        } else if (pathInfo.getLayer2Info() != null){
+            srcStp += ":"+ findStpByOSCARSId(pathInfo.getLayer2Info().getSrcEndpoint()).getStpId();
+            if(pathInfo.getLayer2Info().getSrcVtag() != null && pathInfo.getLayer2Info().getSrcVtag().getValue() != null){
                 String srcVlan = pathInfo.getLayer2Info().getSrcVtag().getValue();
-                srcStp += "?vlan=" + srcVlan;
+                srcStp += "?vlan="+srcVlan;
             }
 
-            dstStp += ":" + findStpByOSCARSId(pathInfo.getLayer2Info().getDestEndpoint()).getStpId();
-            if (pathInfo.getLayer2Info().getDestVtag() != null && pathInfo.getLayer2Info().getDestVtag().getValue() != null) {
+            dstStp += ":"+ findStpByOSCARSId(pathInfo.getLayer2Info().getDestEndpoint()).getStpId();
+            if(pathInfo.getLayer2Info().getDestVtag() != null && pathInfo.getLayer2Info().getDestVtag().getValue() != null){
                 String dstVlan = pathInfo.getLayer2Info().getDestVtag().getValue();
-                dstStp += "?vlan=" + dstVlan;
+                dstStp += "?vlan="+dstVlan;
             }
             //set ero
             StpListType ero = new StpListType();
@@ -522,22 +514,20 @@ public class NSI_OSCARS_Translation {
 
         return criteriaType;
     }
-
     public static OscarsInfoRecord makeOscarsInfo(ResDetails oscarsResDetails) throws TranslationException {
         OscarsInfoRecord result = new OscarsInfoRecord();
+        PathInfo pathInfo = null;
         if (oscarsResDetails.getReservedConstraint() != null) {
-            PathInfo pathInfo = oscarsResDetails.getReservedConstraint().getPathInfo();
-            List<CtrlPlaneHopContent> hops = pathInfo.getPath().getHop();
-            String srcVlan = hops.get(0).getLink().getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getVlanRangeAvailability();
-            String dstVlan = hops.get(hops.size() - 1).getLink().getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getVlanRangeAvailability();
-
-            result.setSrcVlan(srcVlan);
-            result.setDstVlan(dstVlan);
-            result.setPresent(true);
+            pathInfo = oscarsResDetails.getReservedConstraint().getPathInfo();
         } else {
-            result.setPresent(false);
+            return null;
         }
+        List<CtrlPlaneHopContent> hops = pathInfo.getPath().getHop();
+        String srcVlan = hops.get(0).getLink().getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getVlanRangeAvailability();
+        String dstVlan = hops.get(hops.size() - 1).getLink().getSwitchingCapabilityDescriptors().getSwitchingCapabilitySpecificInfo().getVlanRangeAvailability();
 
+        result.setSrcVlan(srcVlan);
+        result.setDstVlan(dstVlan);
         return result;
     }
 
@@ -557,16 +547,16 @@ public class NSI_OSCARS_Translation {
             if (cfg.getStpId().equals(stpId)) return cfg;
         }
 
-        log.info("could not find STP config for: " + stpId + ", generating a default one");
+        log.info("could not find STP config for: "+stpId+", generating a default one with no mapping");
         StpConfig def = new StpConfig();
         def.setOscarsId(stpId);
         def.setStpId(stpId);
 
         List<StpTransformConfig> transforms = nc.getStpTransforms();
         for (StpTransformConfig transform : transforms) {
-            log.debug("applying an STP transformation: match " + transform.getMatch() + " replace: " + transform.getReplace());
+            log.debug("applying an STP transformation: match "+transform.getMatch()+" replace: "+transform.getReplace());
             String transformed = StringUtils.replace(def.getOscarsId(), transform.getMatch(), transform.getReplace());
-            log.debug("OSCARS URN was: " + def.getOscarsId() + " now: " + transformed);
+            log.debug("OSCARS URN was: "+def.getOscarsId()+" now: "+transformed);
             def.setOscarsId(transformed);
         }
 
@@ -589,14 +579,14 @@ public class NSI_OSCARS_Translation {
             if (NMWGParserUtil.normalizeURN(cfg.getOscarsId()).equals(oscarsId)) return cfg;
         }
 
-        log.info("could not find STP config for: " + oscarsId + ", generating a default one");
+        log.info("could not find STP config for: "+oscarsId+", generating a default one");
         StpConfig def = new StpConfig();
         def.setOscarsId(oscarsId);
         def.setStpId(oscarsId);
         return def;
     }
 
-    public static String findNsaId() {
+    public static String findNsaId(){
         SpringContext sc = SpringContext.getInstance();
         ApplicationContext ax = sc.getContext();
         NsaConfigProvider np = ax.getBean("nsaConfigProvider", NsaConfigProvider.class);
@@ -605,7 +595,7 @@ public class NSI_OSCARS_Translation {
         return nc.getNsaId();
     }
 
-    public static String findServiceType() {
+    public static String findServiceType(){
         SpringContext sc = SpringContext.getInstance();
         ApplicationContext ax = sc.getContext();
         NsaConfigProvider np = ax.getBean("nsaConfigProvider", NsaConfigProvider.class);
@@ -626,7 +616,7 @@ public class NSI_OSCARS_Translation {
             QuerySummaryConfirmedType summResult) {
         List<QueryRecursiveResultType> recursiveList = new ArrayList<QueryRecursiveResultType>();
 
-        for (QuerySummaryResultType summResv : summResult.getReservation()) {
+        for(QuerySummaryResultType summResv : summResult.getReservation()){
             QueryRecursiveResultType recResult = new QueryRecursiveResultType();
             recResult.setConnectionId(summResv.getConnectionId());
             recResult.setConnectionStates(summResv.getConnectionStates());
@@ -634,8 +624,8 @@ public class NSI_OSCARS_Translation {
             recResult.setGlobalReservationId(summResv.getGlobalReservationId());
             recResult.setNotificationId(summResv.getNotificationId());
             recResult.setRequesterNSA(summResv.getRequesterNSA());
-            for (QuerySummaryResultCriteriaType summCrit : summResv.getCriteria()) {
-                if (summCrit.getChildren() != null) {
+            for(QuerySummaryResultCriteriaType summCrit : summResv.getCriteria()){
+                if(summCrit.getChildren() != null){
                     throw new RuntimeException("Connection has children but " +
                             "recursively querying children not supported at this time.");
                 }

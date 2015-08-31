@@ -46,11 +46,11 @@ public class STPUtil {
     public static String getNetworkId(String stp) throws TranslationException {
         String urn = getUrn(stp);
         String[] urnParts = StringUtils.split(urn, ":");
-        if (urnParts.length <= 4) {
+        if (urnParts.length <= 5) {
             throw new TranslationException("unable to determine networkId for STP: "+stp);
         }
         // urn:ogf:network:NETWORK_ID:LOCAL_ID?label=value
-        return urnParts[3];
+        return urnParts[3]+':'+urnParts[4];
     }
 
     public static String getLocalId(String stp) throws TranslationException {

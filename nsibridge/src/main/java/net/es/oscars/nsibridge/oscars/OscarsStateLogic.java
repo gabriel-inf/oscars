@@ -255,21 +255,29 @@ public class OscarsStateLogic {
 
 
     public static OscarsLogicAction didOperationSucceed(OscarsOps op, OscarsStates state) {
+        if (success.get(op) == null) {
+            log.error("Invalid op: "+op);
+            return OscarsLogicAction.NO;
+        }
 
-        OscarsLogicAction result = success.get(op).get(state);
-        return result;
+        return success.get(op).get(state);
     }
 
     public static OscarsLogicAction isOperationAllowed(OscarsOps op, OscarsStates state) {
-        OscarsLogicAction result = allow.get(state).get(op);
-        return result;
+        if (allow.get(state) == null) {
+            log.error("Invalid state: "+state);
+            return OscarsLogicAction.NO;
+        }
+        return allow.get(state).get(op);
 
     }
 
     public static OscarsLogicAction isOperationNeeded(OscarsOps op, OscarsStates state) {
-        OscarsLogicAction result = need.get(state).get(op);
-        return result;
-
+        if (need.get(state) == null) {
+            log.error("Invalid state: "+state);
+            return OscarsLogicAction.YES;
+        }
+        return need.get(state).get(op);
     }
 
 }
