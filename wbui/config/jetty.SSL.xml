@@ -36,6 +36,18 @@
             <Item>SSLv3</Item>
         </Array>
     </Set>
+    <Set name="ExcludeCipherSuites">
+        <Array type="String">
+            <Item>.*NULL.*</Item>
+            <Item>.*RC4.*</Item>
+            <Item>.*MD5.*</Item>
+            <Item>.*DES.*</Item>
+            <Item>.*DSS.*</Item>
+            <Item>.*_DH_.*</Item>
+            <Item>.*_DHE_.*</Item>
+        </Array>
+    </Set>
+    <Set name="renegotiationAllowed">FALSE</Set>
 </New>
 
 <New id="httpConfig" class="org.eclipse.jetty.server.HttpConfiguration">
