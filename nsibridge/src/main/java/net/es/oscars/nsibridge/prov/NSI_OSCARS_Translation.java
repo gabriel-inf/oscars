@@ -214,15 +214,16 @@ public class NSI_OSCARS_Translation {
         CtrlPlaneLinkContent srcLink = new CtrlPlaneLinkContent();
         CtrlPlaneSwcapContent srcSwcap = new CtrlPlaneSwcapContent();
         CtrlPlaneSwitchingCapabilitySpecificInfo srcSwcapInfo = new CtrlPlaneSwitchingCapabilitySpecificInfo();
+        String srcOscarsId = srcStpCfg.getOscarsId();
 
-        srcHop.setLinkIdRef(srcStpCfg.getOscarsId());
+        srcHop.setLinkIdRef(null);
         srcHop.setLink(srcLink);
 
         srcSwcapInfo.setVlanRangeAvailability(nsiSrcVlan);
         srcSwcap.setSwitchingCapabilitySpecificInfo(srcSwcapInfo);
 
         srcLink.setSwitchingCapabilityDescriptors(srcSwcap);
-        srcLink.setId(srcHop.getLinkIdRef());
+        srcLink.setId(srcOscarsId);
 
         pathHops.add(srcHop);
 
@@ -237,11 +238,12 @@ public class NSI_OSCARS_Translation {
 
                 CtrlPlaneHopContent hop = new CtrlPlaneHopContent();
                 CtrlPlaneLinkContent link = new CtrlPlaneLinkContent();
+                String oscarsId = stpCfg.getOscarsId();
 
-                hop.setLinkIdRef(stpCfg.getOscarsId());
+                hop.setLinkIdRef(null);
                 hop.setLink(link);
 
-                link.setId(hop.getLinkIdRef());
+                link.setId(oscarsId);
 
                 pathHops.add(hop);
             }
@@ -252,14 +254,16 @@ public class NSI_OSCARS_Translation {
         CtrlPlaneSwcapContent dstSwcap = new CtrlPlaneSwcapContent();
         CtrlPlaneSwitchingCapabilitySpecificInfo dstSwcapInfo = new CtrlPlaneSwitchingCapabilitySpecificInfo();
 
-        dstHop.setLinkIdRef(dstStpCfg.getOscarsId());
+        String dstOscarsId = dstStpCfg.getOscarsId();
+
+        dstHop.setLinkIdRef(null);
         dstHop.setLink(dstLink);
 
         dstSwcapInfo.setVlanRangeAvailability(nsiDstVlan);
         dstSwcap.setSwitchingCapabilitySpecificInfo(dstSwcapInfo);
 
         dstLink.setSwitchingCapabilityDescriptors(dstSwcap);
-        dstLink.setId(dstHop.getLinkIdRef());
+        dstLink.setId(dstOscarsId);
         pathHops.add(dstHop);
 
 
