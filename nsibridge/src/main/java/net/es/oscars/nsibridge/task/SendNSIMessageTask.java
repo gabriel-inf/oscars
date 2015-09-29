@@ -233,13 +233,13 @@ public class SendNSIMessageTask extends Task  {
                                 String srcVlan = cr.getOscarsInfoRecord().getSrcVlan();
                                 String srcStp = p2ps.getSourceSTP();
                                 String[] srcParts = srcStp.split("\\?");
-                                srcStp = srcParts[0]+'?'+srcVlan;
+                                srcStp = srcParts[0]+"?vlan="+srcVlan;
                                 log.debug("setting src stp to: "+srcStp);
 
                                 String dstVlan = cr.getOscarsInfoRecord().getDstVlan();
                                 String dstStp = p2ps.getDestSTP();
                                 String[] dstParts = dstStp.split("\\?");
-                                dstStp = dstParts[0]+'?'+dstVlan;
+                                dstStp = dstParts[0]+"?vlan="+dstVlan;
                                 log.debug("setting dst stp to: "+dstStp);
 
                                 p2ps.setSourceSTP(srcStp);
