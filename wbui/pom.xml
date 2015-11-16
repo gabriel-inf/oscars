@@ -10,7 +10,7 @@
     </parent>
 
     <properties>
-        <jetty.version>9.3.0.M0</jetty.version>
+        <jetty.version>9.3.0.M2</jetty.version>
     </properties>
 
 
