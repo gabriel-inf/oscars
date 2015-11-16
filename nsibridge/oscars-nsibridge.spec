@@ -1,11 +1,11 @@
 %define package_name nsibridge
 %define service_name NsiBridgeService
-%define mvn_project_list common-logging,common-soap,nsi-soap,utils,%{package_name}
+%define mvn_project_list common-logging,common-soap,utils,%{package_name}
 %define install_base /opt/oscars/%{package_name}
 %define oscars_home /etc/oscars
 %define log_dir /var/log/oscars
 %define run_dir /var/run/oscars
-%define relnum 23
+%define relnum 24
 
 Name:           oscars-%{package_name}
 Version:        0.6.1
