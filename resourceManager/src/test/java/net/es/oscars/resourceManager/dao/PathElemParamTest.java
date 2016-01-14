@@ -3,6 +3,7 @@ package net.es.oscars.resourceManager.dao;
 import org.testng.annotations.*;
 
 import java.util.List;
+
 import org.hibernate.*;
 
 import net.es.oscars.database.hibernate.HibernateUtil;
@@ -13,35 +14,38 @@ import net.es.oscars.resourceManager.common.GlobalParams;
 
 /**
  * This class tests access to the pathElemParams table, which requires a working
- *     PathElemParam.java and PathElemParam.hbm.xml.
+ * PathElemParam.java and PathElemParam.hbm.xml.
  *
  * @author David Robertson (dwrobertson@lbl.gov)
  */
-@Test(groups={ "rm", "pathElemParam" }, dependsOnGroups={ "create" })
+@Test(groups = {"rm", "pathElemParam"}, dependsOnGroups = {"create"})
 public class PathElemParamTest {
     private SessionFactory sf;
     private String dbname;
 
-  @BeforeClass
+    @BeforeClass
     protected void setUpClass() {
         this.dbname = GlobalParams.getTestDbName();
         this.sf = HibernateUtil.getSessionFactory(this.dbname);
     }
-        
-  @Test
+
+    @Test
     public void pathElemParamQuery() {
         this.sf.getCurrentSession().beginTransaction();
         PathElemDAO dao = new PathElemDAO(this.dbname);
-        PathElem pathElem = (PathElem)
-            dao.queryByParam("urn", CommonParams.getSrcEndpoint());
+
+        PathElem pathElem = dao.queryByParam("urn", CommonParams.getSrcEndpoint());
+        assert pathElem != null;
+        assert pathElem.getId() != null;
+
         PathElemParamDAO peParamDAO = new PathElemParamDAO(this.dbname);
-        PathElemParam pathElemParam = (PathElemParam)
-            peParamDAO.queryByParam("pathElemId", pathElem.getId());
-        this.sf.getCurrentSession().getTransaction().commit();
+        PathElemParam pathElemParam = peParamDAO.queryByParam("swcap", "test");
         assert pathElemParam != null;
+
+        this.sf.getCurrentSession().getTransaction().commit();
     }
 
-  @Test
+    @Test
     public void pathElemParamList() {
         this.sf.getCurrentSession().beginTransaction();
         PathElemParamDAO dao = new PathElemParamDAO(this.dbname);

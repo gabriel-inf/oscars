@@ -23,15 +23,14 @@ import javax.security.auth.x500.X500Principal;
 
 
 /**
- *
  * @author Evangelos Chaniotakis, David Robertson
- *
- * A singleton class that is used by both the AuthNService and the AuthNPolicyService.
- * A ContextConfiguration must be initialized before this class is invoked. 
- * The first getInstance call initializes the parameters of the database from the ContextConfig.
- * The class provides methods to open and return a Hibernate
- * session, and shut down the session. it also provides methods to intitialize and return instances
- * of an AuthNManager and a PolicyManager.
+ *         <p/>
+ *         A singleton class that is used by both the AuthNService and the AuthNPolicyService.
+ *         A ContextConfiguration must be initialized before this class is invoked.
+ *         The first getInstance call initializes the parameters of the database from the ContextConfig.
+ *         The class provides methods to open and return a Hibernate
+ *         session, and shut down the session. it also provides methods to intitialize and return instances
+ *         of an AuthNManager and a PolicyManager.
  */
 @SuppressWarnings("unchecked")
 public class AuthNCore {
@@ -51,7 +50,7 @@ public class AuthNCore {
             // same information for both authN and authNPolicy
             ContextConfig cc = ContextConfig.getInstance(ServiceNames.SVC_AUTHN);
             cc.setServiceName(ServiceNames.SVC_AUTHN);
-            String configFile =cc.getFilePath(ConfigDefaults.CONFIG);
+            String configFile = cc.getFilePath(ConfigDefaults.CONFIG);
             Map config = ConfigHelper.getConfiguration(configFile);
             assert config != null : "No configuration";
             Map authN = (Map) config.get("authN");
@@ -65,7 +64,7 @@ public class AuthNCore {
             salt = (String) authN.get("salt");
             assert salt != null : "No salt in configuration";
             monitor = (String) authN.get("monitor");
-        } catch (ConfigException e){
+        } catch (ConfigException e) {
             log.error("configurationException " + e.getMessage());
         }
     }
@@ -79,7 +78,7 @@ public class AuthNCore {
     /**
      * returns the singleton instance, which it creates
      * and initializes the database on it first invocation.
-     * 
+     *
      * @return the OSCARSCore singleton instance
      */
     public static AuthNCore getInstance() {
@@ -110,12 +109,12 @@ public class AuthNCore {
         String event = "getSession";
         Session session = HibernateUtil.getSessionFactory(dbname).getCurrentSession();
         if (session == null || !session.isOpen()) {
-            log.info(netLogger.start(event,"opening authn session"));
+            log.info(netLogger.start(event, "opening authn session"));
             HibernateUtil.getSessionFactory(dbname).openSession();
             session = HibernateUtil.getSessionFactory(dbname).getCurrentSession();
         }
         if (session == null || !session.isOpen()) {
-            log.error(netLogger.error(event,ErrSev.MAJOR,"authn session is still closed!"));
+            log.error(netLogger.error(event, ErrSev.MAJOR, "authn session is still closed!"));
         }
         return session;
     }
@@ -150,18 +149,17 @@ public class AuthNCore {
 
         session.beginTransaction();
         users = mgr.listUsers(null, null); // gets all users
-        for (User user: users) {
+        for (User user : users) {
             boolean needChanges = false;
-            String normSubject = null;
-            String normIssuer = null;
 
             String certSubject = user.getCertSubject();
+            String normSubject = certSubject;
             if (certSubject != null && !certSubject.equals("")) {
                 try {
                     X500Principal principal = new X500Principal(certSubject);
                     normSubject = principal.getName();
                 } catch (IllegalArgumentException ex) {
-                    log.error("Could not parse cert subject "+certSubject+ " for user "+user.getLogin());
+                    log.error("Could not parse cert subject " + certSubject + " for user " + user.getLogin());
                     log.error(ex);
                 }
                 if (!certSubject.equals(normSubject)) {
@@ -169,13 +167,14 @@ public class AuthNCore {
                 }
             }
 
-            String certIssuer= user.getCertIssuer();
+            String certIssuer = user.getCertIssuer();
+            String normIssuer = certIssuer;
             if (certIssuer != null && !certIssuer.equals("")) {
                 try {
                     X500Principal principal = new X500Principal(certIssuer);
                     normIssuer = principal.getName();
                 } catch (IllegalArgumentException ex) {
-                    log.error("Could not parse cert issuer "+certIssuer+ " for user "+user.getLogin());
+                    log.error("Could not parse cert issuer " + certIssuer + " for user " + user.getLogin());
                     log.error(ex);
                 }
                 if (!certIssuer.equals(normIssuer)) {
@@ -184,11 +183,13 @@ public class AuthNCore {
             }
 
             if (needChanges) {
-                log.info("Normalized user subject / issuer DNs for "+user.getLogin());
+                log.info("Normalized user subject / issuer DNs for " + user.getLogin());
                 user.setCertSubject(normSubject);
                 user.setCertIssuer(normIssuer);
+                log.info("  Previous subject : " + certSubject);
                 log.info("  New subject : " + normSubject);
-                log.info("  New issuer : "+normIssuer);
+                log.info("  Previous issuer : " + certIssuer);
+                log.info("  New issuer : " + normIssuer);
                 userDAO.update(user);
             }
         }
@@ -227,7 +228,7 @@ public class AuthNCore {
     /**
      * @return the authn salt value
      */
-    public String getSalt() {;
+    public String getSalt() {
         return salt;
     }
 

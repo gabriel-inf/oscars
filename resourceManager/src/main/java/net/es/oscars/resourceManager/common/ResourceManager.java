@@ -432,11 +432,6 @@ public class ResourceManager {
             }
         }
         try {
-            if (domains != null ){
-                if (!checkDomains(res,domains,netLogger,event)){
-                    throw new OSCARSServiceException(ErrorCodes.ACCESS_DENIED,"not own domain", ErrorReport.USER);
-                }
-            }
             internalPathAuthorized = internalHopsAllowed(authConditions);
             this.log.debug(netLogger.getMsg(event,"internal PathAuthorized is " + internalPathAuthorized));
             ResDetails resDetails = RMUtils.res2resDetails(res, internalPathAuthorized);
@@ -829,24 +824,23 @@ public class ResourceManager {
         List<PathElem> pathElems = reqPath.getPathElems();
         String srcURN = pathElems.get(0).getUrn();
         String destURN = pathElems.get(pathElems.size()-1).getUrn();
-        String src ="";
-        String dest = "";
+        String srcDomain ="";
+        String dstDomain = "";
         try {
-            src = NMWGParserUtil.normalizeURN(NMWGParserUtil.getURN(srcURN, NMWGParserUtil.DOMAIN_TYPE));
-            dest = NMWGParserUtil.normalizeURN(NMWGParserUtil.getURN(destURN, NMWGParserUtil.DOMAIN_TYPE));
+            srcDomain = NMWGParserUtil.normalizeURN(NMWGParserUtil.getURN(srcURN, NMWGParserUtil.DOMAIN_TYPE));
+            dstDomain = NMWGParserUtil.normalizeURN(NMWGParserUtil.getURN(destURN, NMWGParserUtil.DOMAIN_TYPE));
         } catch (OSCARSServiceException e) {
             log.debug(e.getMessage());
             return false;
         }
-        if (dest == null || src == null ) {
+        if (dstDomain == null || srcDomain == null ) {
             log.debug( netLogger.error(event,ErrSev.MINOR,
                         "incorrect path in database for reservation res.getGlobalReservationId()"));
         }
         for (String dom : domains) {
             String normalizedDom = NMWGParserUtil.normalizeURN(dom);
             log.debug("gri=" + res.getGlobalReservationId() + ", " + "normalizedDom=" + normalizedDom + ", " + "dom=" + dom);
-            if (normalizedDom.equals(src) ||
-                    normalizedDom.equals(dest)) {
+            if (normalizedDom.equals(srcDomain) || normalizedDom.equals(dstDomain)) {
                 return true;
             }
         }
