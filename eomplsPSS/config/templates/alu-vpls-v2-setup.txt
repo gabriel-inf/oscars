@@ -84,6 +84,9 @@ loopback
 enable-ingress-stats
 no shutdown
 exit all
+configure router pim
+interface "${vpls.loopback_ifce}" shutdown
+exit all
 </#if>
 
 
