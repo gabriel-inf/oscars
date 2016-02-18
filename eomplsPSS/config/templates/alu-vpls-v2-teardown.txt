@@ -81,7 +81,6 @@ exit all
 <#if lsps??>
 configure router interface "${vpls.loopback_ifce}" shutdown
 configure router no interface "${vpls.loopback_ifce}"
-configure router pim no interface "${vpls.loopback_ifce}"
 exit all
 </#if>
 
